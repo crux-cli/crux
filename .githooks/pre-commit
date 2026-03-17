@@ -6,10 +6,9 @@
 # unstaged edits exist on top of staged changes).
 set -e
 
-if ! command -v uv >/dev/null 2>&1; then
-  echo "pre-commit: uv not found, skipping"
-  exit 0
-fi
+# shellcheck source=.githooks/_ensure_uv.sh
+. "$(git rev-parse --show-toplevel)/.githooks/_ensure_uv.sh"
+_ensure_uv
 
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "${TMPDIR}"' EXIT INT TERM

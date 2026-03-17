@@ -9,11 +9,9 @@ if [ "${SKIP_TESTS}" = "1" ]; then
   exit 0
 fi
 
-# Only run if uv is available
-if ! command -v uv >/dev/null 2>&1; then
-  echo "pre-push: uv not found, skipping tests"
-  exit 0
-fi
+# shellcheck source=.githooks/_ensure_uv.sh
+. "$(git rev-parse --show-toplevel)/.githooks/_ensure_uv.sh"
+_ensure_uv
 
 # Read push info from stdin (remote ref pairs)
 while read -r local_ref local_sha remote_ref _remote_sha; do
