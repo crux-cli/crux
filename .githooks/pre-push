@@ -26,6 +26,7 @@ while read -r local_ref local_sha remote_ref _remote_sha; do
   fi
 
   echo "pre-push: running unit tests before push to ${remote_ref}..."
+  uv sync --quiet 2>/dev/null
   if ! uv run pytest tests/unit/ -q --tb=short; then
     echo ""
     echo "  Unit tests failed. Fix them before pushing."
