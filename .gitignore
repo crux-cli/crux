@@ -1,0 +1,37 @@
+# Gitignore for Crux - Agentic AI OS
+# Ignores ephemeral and generated content
+
+# Generated/ephemeral directories
+/sandbox
+/memory
+
+# Old src/ user projects (now tracked in ~/.crux/)
+/src/test-azure-mcp
+
+# Circular symlink created by Claude Code when run inside core/ (~/.claude)
+/core/.claude
+
+# IDE and OS
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.log
+
+# Dependencies
+node_modules/
+**/__pycache__/
+*.pyc
+**/.venv/
+**/venv/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+src/*.egg-info/
+
+# Auto-generated crux launchers
+/marketplace/mcps/launchers/*.sh
