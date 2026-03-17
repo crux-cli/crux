@@ -30,6 +30,14 @@ Without Crux, managing MCPs at scale looks like this:
 ## Install
 
 ```bash
+curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
+```
+
+The installer checks for [uv](https://docs.astral.sh/uv/), installs it if missing, pulls `crux-cli` from PyPI, initialises `~/.crux/`, and tells you exactly what to do next (PATH fix, skill install).
+
+**Alternatively**, if you already have uv:
+
+```bash
 uv tool install crux-cli
 crux setup
 ```
