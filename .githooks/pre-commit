@@ -1,34 +1,47 @@
 #!/usr/bin/env sh
-# Pre-commit hook — runs ruff lint and format check on staged Python files.
-# Install: git config core.hooksPath .githooks  (done by scripts/install-hooks.sh)
+# Pre-commit hook — ruff lint + format check on staged .py files.
+#
+# Extracts staged content to a tempdir so ruff checks exactly what will be
+# committed, not the working-tree copy (avoids false positives/negatives when
+# unstaged edits exist on top of staged changes).
 set -e
 
-# Only run if uv is available
 if ! command -v uv >/dev/null 2>&1; then
-  echo "pre-commit: uv not found, skipping checks"
+  echo "pre-commit: uv not found, skipping"
   exit 0
 fi
 
-# Collect staged .py files
-STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
+TMPDIR="$(mktemp -d)"
+trap 'rm -rf "${TMPDIR}"' EXIT INT TERM
+LIST="${TMPDIR}/.files"   # NUL-delimited list of extracted temp paths
 
-if [ -z "${STAGED}" ]; then
+# Write each staged .py file's index content to TMPDIR and record its temp
+# path NUL-delimited into LIST.  tr '\0' '\n' converts git's -z output to
+# newlines (safe: git disallows NUL bytes in filenames).
+git diff --cached --name-only -z --diff-filter=ACM -- '*.py' \
+  | tr '\0' '\n' \
+  | while IFS= read -r f; do
+      [ -z "${f}" ] && continue
+      dest="${TMPDIR}/${f}"
+      mkdir -p "$(dirname "${dest}")"
+      git show ":${f}" > "${dest}"
+      printf '%s\0' "${dest}"   # NUL-delimited for xargs -0 below
+    done > "${LIST}"
+
+if [ ! -s "${LIST}" ]; then
   exit 0
 fi
 
-echo "pre-commit: running ruff on staged files..."
+echo "pre-commit: checking staged Python files..."
 
-# Lint
-if ! uv run ruff check ${STAGED}; then
-  echo ""
-  echo "  Fix with:  uv run ruff check --fix ${STAGED}"
+# xargs -0 handles any filename (spaces, special chars); available on macOS + Linux.
+if ! xargs -0 uv run ruff check -- < "${LIST}"; then
+  printf '\n  Fix: uv run ruff check --fix <staged files>\n'
   exit 1
 fi
 
-# Format check
-if ! uv run ruff format --check ${STAGED}; then
-  echo ""
-  echo "  Fix with:  uv run ruff format ${STAGED}"
+if ! xargs -0 uv run ruff format --check -- < "${LIST}"; then
+  printf '\n  Fix: uv run ruff format <staged files>\n'
   exit 1
 fi
 
