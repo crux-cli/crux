@@ -1,0 +1,184 @@
+site_name: Crux
+site_url: https://crux-cli.github.io/crux
+site_description: "Crux — AI Agent Control Plane. Per-project MCP scoping, secure secrets, sandboxed execution."
+site_author: Crux CLI
+repo_url: https://github.com/crux-cli/crux
+repo_name: crux-cli/crux
+edit_uri: edit/main/docs/
+
+copyright: Copyright &copy; 2026 Crux CLI
+
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.action.edit
+    - content.action.view
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/crux-cli/crux
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/crux-cli/
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            docstring_section_style: spacy
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            merge_init_into_class: true
+            show_if_no_docstring: false
+            signature_crossrefs: true
+            separate_signature: true
+            line_length: 80
+  - mike:
+      alias_type: symlink
+      canonical_version: latest
+
+nav:
+  - Home:
+      - index.md
+      - Why Crux: why-crux.md
+      - Changelog: changelog.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Core Concepts: getting-started/concepts.md
+  - Guides:
+      - guides/index.md
+      - Registry Management: guides/registry.md
+      - Project Scoping: guides/projects.md
+      - Secrets Management: guides/secrets.md
+      - Sandboxed Execution: guides/sandbox.md
+      - Health Monitoring: guides/health.md
+      - CI/CD Integration: guides/ci-cd.md
+  - CLI Reference:
+      - cli/index.md
+      - crux setup: cli/setup.md
+      - crux doctor: cli/doctor.md
+      - crux add: cli/add.md
+      - crux remove: cli/remove.md
+      - crux list: cli/list.md
+      - crux search: cli/search.md
+      - crux upgrade: cli/upgrade.md
+      - crux init: cli/init.md
+      - crux install: cli/install.md
+      - crux uninstall: cli/uninstall.md
+      - crux sync: cli/sync.md
+      - crux status: cli/status.md
+      - crux secret: cli/secret.md
+      - crux run: cli/run.md
+      - crux version: cli/version.md
+  - API Reference:
+      - api/index.md
+      - Configuration: api/config.md
+      - Manifest: api/manifest.md
+      - Paths: api/paths.md
+      - Registry: api/registry.md
+      - Secrets: api/secrets.md
+      - Sync Engine: api/sync.md
+      - Sandbox: api/sandbox.md
+      - Health: api/health.md
+      - Preflight: api/preflight.md
+      - Validation: api/validation.md
+      - Projects: api/projects.md
+      - Version: api/version.md
+      - MCP Config: api/mcp_config.md
+      - Setup: api/setup.md

@@ -25,6 +25,7 @@ from crux_cli.paths import crux_home, secrets_path
 # Secrets index (tracks key names per MCP — not values)
 # ---------------------------------------------------------------------------
 
+
 def load_secrets_index() -> dict[str, list[str]]:
     """Load the secrets index from disk, returning empty dict if absent."""
     idx_path = secrets_path()
@@ -72,6 +73,7 @@ def _index_remove_key(mcp_name: str, key: str) -> None:
 # Protocol
 # ---------------------------------------------------------------------------
 
+
 @runtime_checkable
 class SecretsBackend(Protocol):
     """Protocol that all secrets backends must implement."""
@@ -82,25 +84,26 @@ class SecretsBackend(Protocol):
     def get(self, mcp_name: str, key: str) -> str | None:  # noqa: A003
         ...
 
-    def delete(self, mcp_name: str, key: str) -> None:
-        ...
+    def delete(self, mcp_name: str, key: str) -> None: ...
 
-    def list_keys(self, mcp_name: str | None = None) -> dict[str, list[str]]:
-        ...
+    def list_keys(self, mcp_name: str | None = None) -> dict[str, list[str]]: ...
 
 
 # ---------------------------------------------------------------------------
 # macOS Keychain backend
 # ---------------------------------------------------------------------------
 
+
 class MacOSKeychainBackend:
     """Secrets backend using macOS Keychain via the ``security`` CLI."""
 
     @staticmethod
     def _service(mcp_name: str) -> str:
+        """Return the Keychain service name for an MCP."""
         return f"crux.{mcp_name}"
 
     def set(self, mcp_name: str, key: str, value: str) -> None:  # noqa: A003
+        """Store a secret in macOS Keychain via ``security add-generic-password``."""
         service = self._service(mcp_name)
         cmd = ["security", "add-generic-password", "-s", service, "-a", key, "-w", "-U"]  # noqa: S607
         result = subprocess.run(cmd, input=value.encode(), capture_output=True)  # noqa: S603
@@ -111,6 +114,7 @@ class MacOSKeychainBackend:
         _index_add_key(mcp_name, key)
 
     def get(self, mcp_name: str, key: str) -> str | None:  # noqa: A003
+        """Retrieve a secret from macOS Keychain. Returns ``None`` if not found."""
         cmd = ["security", "find-generic-password", "-s", self._service(mcp_name), "-a", key, "-w"]  # noqa: S607
         result = subprocess.run(cmd, capture_output=True, text=True)  # noqa: S603
         if result.returncode == 0:
@@ -118,11 +122,13 @@ class MacOSKeychainBackend:
         return None
 
     def delete(self, mcp_name: str, key: str) -> None:
+        """Delete a secret from macOS Keychain."""
         cmd = ["security", "delete-generic-password", "-s", self._service(mcp_name), "-a", key]  # noqa: S607
         subprocess.run(cmd, capture_output=True)  # noqa: S603
         _index_remove_key(mcp_name, key)
 
     def list_keys(self, mcp_name: str | None = None) -> dict[str, list[str]]:
+        """List stored secret key names, optionally filtered by MCP."""
         index = load_secrets_index()
         if mcp_name:
             keys = index.get(mcp_name, [])
@@ -134,20 +140,24 @@ class MacOSKeychainBackend:
 # Linux Secret Service backend (D-Bus)
 # ---------------------------------------------------------------------------
 
+
 class LinuxSecretServiceBackend:
     """Secrets backend using freedesktop.org Secret Service (via secretstorage)."""
 
     def __init__(self) -> None:
+        """Initialize with lazy D-Bus connection."""
         self._connection: Any = None
         self._available: bool | None = None
 
     def _ensure_connection(self) -> Any:
+        """Lazily establish a D-Bus connection to Secret Service."""
         if self._available is False:
             return None
         if self._connection is not None:
             return self._connection
         try:
             import secretstorage  # noqa: S413
+
             self._connection = secretstorage.dbus_init()
             self._available = True
             return self._connection
@@ -156,16 +166,20 @@ class LinuxSecretServiceBackend:
             return None
 
     def _get_collection(self) -> Any:
+        """Get the default Secret Service collection, or ``None`` if unavailable."""
         conn = self._ensure_connection()
         if conn is None:
             return None
         import secretstorage
+
         return secretstorage.get_default_collection(conn)
 
     def _fallback(self) -> AgeEncryptedBackend:
+        """Return an age-encrypted fallback when Secret Service is unavailable."""
         return AgeEncryptedBackend()
 
     def set(self, mcp_name: str, key: str, value: str) -> None:  # noqa: A003
+        """Store a secret via Secret Service, falling back to age encryption."""
         collection = self._get_collection()
         if collection is None:
             self._fallback().set(mcp_name, key, value)
@@ -176,6 +190,7 @@ class LinuxSecretServiceBackend:
         _index_add_key(mcp_name, key)
 
     def get(self, mcp_name: str, key: str) -> str | None:  # noqa: A003
+        """Retrieve a secret from Secret Service. Returns ``None`` if not found."""
         collection = self._get_collection()
         if collection is None:
             return self._fallback().get(mcp_name, key)
@@ -186,6 +201,7 @@ class LinuxSecretServiceBackend:
         return None
 
     def delete(self, mcp_name: str, key: str) -> None:
+        """Delete a secret from Secret Service."""
         collection = self._get_collection()
         if collection is None:
             self._fallback().delete(mcp_name, key)
@@ -197,6 +213,7 @@ class LinuxSecretServiceBackend:
         _index_remove_key(mcp_name, key)
 
     def list_keys(self, mcp_name: str | None = None) -> dict[str, list[str]]:
+        """List stored secret key names, optionally filtered by MCP."""
         index = load_secrets_index()
         if mcp_name:
             keys = index.get(mcp_name, [])
@@ -208,16 +225,20 @@ class LinuxSecretServiceBackend:
 # Age encrypted file backend (headless Linux / fallback)
 # ---------------------------------------------------------------------------
 
+
 class AgeEncryptedBackend:
     """Secrets backend using age-encrypted JSON file."""
 
     def _identity_path(self) -> Path:
+        """Path to the age identity (private key) file."""
         return crux_home() / "identity"
 
     def _secrets_age_path(self) -> Path:
+        """Path to the age-encrypted secrets store."""
         return crux_home() / "secrets.age"
 
     def _ensure_identity(self) -> Path:
+        """Create an age identity if one doesn't exist, and return its path."""
         id_path = self._identity_path()
         if id_path.exists():
             return id_path
@@ -237,6 +258,7 @@ class AgeEncryptedBackend:
         return id_path
 
     def _recipient(self) -> str:
+        """Extract the age public key (recipient) from the identity file."""
         id_path = self._ensure_identity()
         for line in id_path.read_text().splitlines():
             if line.startswith("# public key:"):
@@ -246,6 +268,7 @@ class AgeEncryptedBackend:
         return result.stdout.strip()
 
     def _load_store(self) -> dict[str, dict[str, str]]:
+        """Decrypt and load the secrets store from disk."""
         age_path = self._secrets_age_path()
         if not age_path.exists():
             return {}
@@ -258,6 +281,7 @@ class AgeEncryptedBackend:
         return json.loads(result.stdout)
 
     def _save_store(self, store: dict[str, dict[str, str]]) -> None:
+        """Encrypt and atomically write the secrets store to disk."""
         age_path = self._secrets_age_path()
         age_path.parent.mkdir(parents=True, exist_ok=True)
         recipient = self._recipient()
@@ -276,6 +300,7 @@ class AgeEncryptedBackend:
             raise
 
     def set(self, mcp_name: str, key: str, value: str) -> None:  # noqa: A003
+        """Store a secret in the age-encrypted store."""
         self._ensure_identity()
         store = self._load_store()
         store.setdefault(mcp_name, {})
@@ -284,10 +309,12 @@ class AgeEncryptedBackend:
         _index_add_key(mcp_name, key)
 
     def get(self, mcp_name: str, key: str) -> str | None:  # noqa: A003
+        """Retrieve a secret from the age-encrypted store. Returns ``None`` if not found."""
         store = self._load_store()
         return store.get(mcp_name, {}).get(key)
 
     def delete(self, mcp_name: str, key: str) -> None:
+        """Delete a secret from the age-encrypted store."""
         store = self._load_store()
         if mcp_name in store:
             store[mcp_name].pop(key, None)
@@ -297,6 +324,7 @@ class AgeEncryptedBackend:
         _index_remove_key(mcp_name, key)
 
     def list_keys(self, mcp_name: str | None = None) -> dict[str, list[str]]:
+        """List stored secret key names, optionally filtered by MCP."""
         index = load_secrets_index()
         if mcp_name:
             keys = index.get(mcp_name, [])
@@ -319,6 +347,7 @@ def get_backend(config: dict[str, Any] | None = None) -> SecretsBackend:
     """Return the appropriate SecretsBackend based on configuration."""
     if config is None:
         from crux_cli.config import load_config
+
         config = load_config()
 
     name = config.get("secrets", {}).get("backend", "keychain")

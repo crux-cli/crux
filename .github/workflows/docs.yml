@@ -1,0 +1,55 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "src/crux_cli/**"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  deploy:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install \
+            mkdocs-material \
+            mkdocstrings[python] \
+            mike
+
+      - name: Configure git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy versioned docs (release)
+        if: github.event_name == 'release'
+        env:
+          TAG_REF: ${{ github.ref }}
+        run: |
+          VERSION=${TAG_REF#refs/tags/v}
+          mike deploy --push --update-aliases "$VERSION" latest
+
+      - name: Deploy dev docs (main branch)
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          mike deploy --push --update-aliases dev

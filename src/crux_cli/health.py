@@ -25,48 +25,65 @@ def probe_mcp_server(config: dict[str, Any]) -> tuple[str, str]:
 
 def probe_mcp_server_detailed(config: dict[str, Any]) -> dict[str, Any]:
     """Extended probe returning a dict with status, detail, tools_count, server_info."""
-    command = config.get('command', '')
-    args_list = config.get('args', [])
-    env_overrides = config.get('env', {})
-    auth = config.get('auth', {})
+    command = config.get("command", "")
+    args_list = config.get("args", [])
+    env_overrides = config.get("env", {})
+    auth = config.get("auth", {})
 
     if not shutil.which(command):
-        return {"status": "failed", "detail": f"command not found: '{command}'",
-                "tools_count": None, "server_info": None}
+        return {
+            "status": "failed",
+            "detail": f"command not found: '{command}'",
+            "tools_count": None,
+            "server_info": None,
+        }
 
-    if command.startswith('http://') or command.startswith('https://'):
-        return {"status": "! needs authentication", "detail": command,
-                "tools_count": None, "server_info": None}
+    if command.startswith("http://") or command.startswith("https://"):
+        return {"status": "! needs authentication", "detail": command, "tools_count": None, "server_info": None}
 
-    if auth.get('check_cmd'):
+    if auth.get("check_cmd"):
         try:
-            result = subprocess.run(auth['check_cmd'], capture_output=True, timeout=5)  # noqa: S603
+            result = subprocess.run(auth["check_cmd"], capture_output=True, timeout=5)  # noqa: S603
             if result.returncode != 0:
-                return {"status": "auth_required",
-                        "detail": auth.get('fix_description', 'authentication required'),
-                        "tools_count": None, "server_info": None}
+                return {
+                    "status": "auth_required",
+                    "detail": auth.get("fix_description", "authentication required"),
+                    "tools_count": None,
+                    "server_info": None,
+                }
         except Exception:
-            return {"status": "auth_required",
-                    "detail": auth.get('fix_description', 'authentication check failed'),
-                    "tools_count": None, "server_info": None}
+            return {
+                "status": "auth_required",
+                "detail": auth.get("fix_description", "authentication check failed"),
+                "tools_count": None,
+                "server_info": None,
+            }
 
     env = os.environ.copy()
     env.update(env_overrides)
     full_cmd = [command] + [str(a) for a in args_list]
 
     messages = (
-        json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
-            "protocolVersion": "2024-11-05",
-            "capabilities": {},
-            "clientInfo": {"name": "crux", "version": "0.1.0"}
-        }}) + "\n" +
-        json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}) + "\n"
+        json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "crux", "version": "0.1.0"},
+                },
+            }
+        )
+        + "\n"
+        + json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
+        + "\n"
     )
 
     try:
         proc = subprocess.Popen(  # noqa: S603
-            full_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, env=env
+            full_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
         )
         stdout, _ = proc.communicate(input=messages.encode(), timeout=10)
         lines = [line for line in stdout.decode().splitlines() if line.strip()]
@@ -88,30 +105,40 @@ def probe_mcp_server_detailed(config: dict[str, Any]) -> dict[str, Any]:
                     msg = resp["error"].get("message", "")
                     auth_keywords = ["auth", "login", "credential", "token", "unauthorized", "permission"]
                     if any(k in msg.lower() for k in auth_keywords):
-                        return {"status": "auth_required", "detail": msg,
-                                "tools_count": None, "server_info": server_info_detail}
-                    return {"status": "error", "detail": msg,
-                            "tools_count": None, "server_info": server_info_detail}
+                        return {
+                            "status": "auth_required",
+                            "detail": msg,
+                            "tools_count": None,
+                            "server_info": server_info_detail,
+                        }
+                    return {"status": "error", "detail": msg, "tools_count": None, "server_info": server_info_detail}
                 if "result" in resp:
                     tools = resp["result"].get("tools", [])
                     tools_count = len(tools)
-                    return {"status": "connected",
-                            "detail": server_info_detail or "connected",
-                            "tools_count": tools_count,
-                            "server_info": server_info_detail}
+                    return {
+                        "status": "connected",
+                        "detail": server_info_detail or "connected",
+                        "tools_count": tools_count,
+                        "server_info": server_info_detail,
+                    }
 
-        return {"status": "running",
-                "detail": server_info_detail or " ".join(full_cmd),
-                "tools_count": None, "server_info": server_info_detail}
+        return {
+            "status": "running",
+            "detail": server_info_detail or " ".join(full_cmd),
+            "tools_count": None,
+            "server_info": server_info_detail,
+        }
 
     except subprocess.TimeoutExpired:
         proc.kill()
-        return {"status": "timeout",
-                "detail": "server started but did not respond in time",
-                "tools_count": None, "server_info": None}
+        return {
+            "status": "timeout",
+            "detail": "server started but did not respond in time",
+            "tools_count": None,
+            "server_info": None,
+        }
     except Exception as e:
-        return {"status": "failed", "detail": str(e),
-                "tools_count": None, "server_info": None}
+        return {"status": "failed", "detail": str(e), "tools_count": None, "server_info": None}
 
 
 # ---------------------------------------------------------------------------
@@ -125,6 +152,14 @@ class CheckResult:
     __slots__ = ("label", "passed", "warning", "fix_hint")
 
     def __init__(self, label: str, *, passed: bool, warning: bool = False, fix_hint: str | None = None):
+        """Create a check result.
+
+        Args:
+            label: Human-readable description of what was checked.
+            passed: Whether the check passed.
+            warning: If ``True``, treat as a non-fatal warning instead of failure.
+            fix_hint: Actionable command or instruction to resolve the issue.
+        """
         self.label = label
         self.passed = passed
         self.warning = warning
@@ -140,8 +175,9 @@ def check_python_version(min_version: tuple[int, int] = (3, 11)) -> CheckResult:
     current = sys.version_info[:2]
     ok = current >= min_version
     label = f"Python >= {min_version[0]}.{min_version[1]} (found {current[0]}.{current[1]})"
-    return CheckResult(label, passed=ok,
-                       fix_hint=f"Install Python {min_version[0]}.{min_version[1]}+: https://python.org")
+    return CheckResult(
+        label, passed=ok, fix_hint=f"Install Python {min_version[0]}.{min_version[1]}+: https://python.org"
+    )
 
 
 def check_tool_installed(name: str, *, fix_hint: str | None = None) -> CheckResult:
@@ -162,26 +198,22 @@ def check_directory_structure(crux_root: Path) -> list[CheckResult]:
         (crux_root / "src", "src/ directory"),
     ]
     for path, label in expected:
-        checks.append(CheckResult(label, passed=path.is_dir(),
-                                  fix_hint=f"mkdir -p {path}"))
+        checks.append(CheckResult(label, passed=path.is_dir(), fix_hint=f"mkdir -p {path}"))
     return checks
 
 
 def check_registry_valid(registry_path: Path) -> CheckResult:
     """Verify the registry JSON is valid and parseable."""
     if not registry_path.exists():
-        return CheckResult("Registry JSON exists", passed=False,
-                           fix_hint=f"File not found: {registry_path}")
+        return CheckResult("Registry JSON exists", passed=False, fix_hint=f"File not found: {registry_path}")
     try:
         with open(registry_path) as f:
             data = json.load(f)
         if not isinstance(data, dict):
-            return CheckResult("Registry JSON valid", passed=False,
-                               fix_hint="Registry is not a JSON object")
+            return CheckResult("Registry JSON valid", passed=False, fix_hint="Registry is not a JSON object")
         return CheckResult("Registry JSON valid", passed=True)
     except (json.JSONDecodeError, OSError) as e:
-        return CheckResult("Registry JSON valid", passed=False,
-                           fix_hint=f"Parse error: {e}")
+        return CheckResult("Registry JSON valid", passed=False, fix_hint=f"Parse error: {e}")
 
 
 def check_mcp_sources_present(crux_root: Path, mcp_definitions: dict[str, Any]) -> list[CheckResult]:
@@ -191,11 +223,13 @@ def check_mcp_sources_present(crux_root: Path, mcp_definitions: dict[str, Any]) 
         source_dir = defn.get("source_dir")
         if source_dir:
             full = crux_root / source_dir
-            checks.append(CheckResult(
-                f"MCP source: {mcp_name} ({source_dir})",
-                passed=full.is_dir(),
-                fix_hint=f"Run: crux add {mcp_name}",
-            ))
+            checks.append(
+                CheckResult(
+                    f"MCP source: {mcp_name} ({source_dir})",
+                    passed=full.is_dir(),
+                    fix_hint=f"Run: crux add {mcp_name}",
+                )
+            )
     return checks
 
 
@@ -213,12 +247,14 @@ def check_build_artifacts(crux_root: Path, mcp_definitions: dict[str, Any]) -> l
                 or (src / ".venv").is_dir()
                 or (src / "build").is_dir()
             )
-            checks.append(CheckResult(
-                f"Build artifacts: {mcp_name}",
-                passed=has_artifacts,
-                warning=not has_artifacts,
-                fix_hint=f"Run: cd {src} && {build_cmd}",
-            ))
+            checks.append(
+                CheckResult(
+                    f"Build artifacts: {mcp_name}",
+                    passed=has_artifacts,
+                    warning=not has_artifacts,
+                    fix_hint=f"Run: cd {src} && {build_cmd}",
+                )
+            )
     return checks
 
 
@@ -236,24 +272,27 @@ def check_secrets_consistency(
         stored = secrets_index.get(mcp_name, [])
         missing = [v for v in env_vars if v not in stored]
         if missing:
-            checks.append(CheckResult(
-                f"Secrets for {mcp_name}: missing {', '.join(missing)}",
-                passed=False,
-                fix_hint=f"Run: crux secret set {mcp_name} <KEY> <VALUE>",
-            ))
+            checks.append(
+                CheckResult(
+                    f"Secrets for {mcp_name}: missing {', '.join(missing)}",
+                    passed=False,
+                    fix_hint=f"Run: crux secret set {mcp_name} <KEY> <VALUE>",
+                )
+            )
         else:
-            checks.append(CheckResult(
-                f"Secrets for {mcp_name}: all configured",
-                passed=True,
-            ))
+            checks.append(
+                CheckResult(
+                    f"Secrets for {mcp_name}: all configured",
+                    passed=True,
+                )
+            )
     return checks
 
 
 def check_crux_in_path() -> CheckResult:
     """Check that the crux binary is on PATH."""
     found = shutil.which("crux") is not None
-    return CheckResult("crux binary in PATH", passed=found,
-                       fix_hint='Add crux bin/ to PATH in ~/.zshrc')
+    return CheckResult("crux binary in PATH", passed=found, fix_hint="Add crux bin/ to PATH in ~/.zshrc")
 
 
 def run_doctor_checks(
@@ -270,7 +309,9 @@ def run_doctor_checks(
     results.append(check_tool_installed("git", fix_hint="Install git: https://git-scm.com"))
     results.append(check_tool_installed("node", fix_hint="Install Node.js: https://nodejs.org"))
     results.append(check_tool_installed("npm", fix_hint="Install Node.js (npm is bundled)"))
-    results.append(check_tool_installed("claude", fix_hint="Install Claude CLI: https://docs.anthropic.com/en/docs/claude-cli"))
+    results.append(
+        check_tool_installed("claude", fix_hint="Install Claude CLI: https://docs.anthropic.com/en/docs/claude-cli")
+    )
 
     results.extend(check_directory_structure(crux_root))
 
