@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+# Commit-msg hook — enforces Conventional Commits format.
+# Pattern: <type>[optional scope]: <description>
+# Types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert
+set -e
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "${COMMIT_MSG_FILE}")
+
+# Skip merge commits, fixup commits, and WIP
+case "${COMMIT_MSG}" in
+  Merge*|Revert*|fixup!*|squash!*|WIP*|wip*) exit 0 ;;
+esac
+
+# Conventional commit pattern
+PATTERN='^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([a-z0-9/-]+\))?(\!)?:\ .+'
+
+if ! echo "${COMMIT_MSG}" | grep -qE "${PATTERN}"; then
+  echo ""
+  echo "  commit-msg: message does not follow Conventional Commits format"
+  echo ""
+  echo "  Expected:  <type>[scope]: <description>"
+  echo "  Example:   feat(cli): add --json flag to list command"
+  echo ""
+  echo "  Types: feat fix docs style refactor perf test chore ci build revert"
+  echo ""
+  exit 1
+fi

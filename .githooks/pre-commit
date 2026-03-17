@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+# Pre-commit hook — runs ruff lint and format check on staged Python files.
+# Install: git config core.hooksPath .githooks  (done by scripts/install-hooks.sh)
+set -e
+
+# Only run if uv is available
+if ! command -v uv >/dev/null 2>&1; then
+  echo "pre-commit: uv not found, skipping checks"
+  exit 0
+fi
+
+# Collect staged .py files
+STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
+
+if [ -z "${STAGED}" ]; then
+  exit 0
+fi
+
+echo "pre-commit: running ruff on staged files..."
+
+# Lint
+if ! uv run ruff check ${STAGED}; then
+  echo ""
+  echo "  Fix with:  uv run ruff check --fix ${STAGED}"
+  exit 1
+fi
+
+# Format check
+if ! uv run ruff format --check ${STAGED}; then
+  echo ""
+  echo "  Fix with:  uv run ruff format ${STAGED}"
+  exit 1
+fi
+
+echo "pre-commit: all checks passed"
