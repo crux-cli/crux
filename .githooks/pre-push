@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+# Pre-push hook — runs the unit test suite before pushing.
+# Skipped automatically when pushing tags or to non-main branches if SKIP_TESTS=1.
+set -e
+
+# Allow opting out for emergency pushes
+if [ "${SKIP_TESTS}" = "1" ]; then
+  echo "pre-push: SKIP_TESTS=1 set, skipping test run"
+  exit 0
+fi
+
+# shellcheck source=.githooks/_ensure_uv.sh
+. "$(git rev-parse --show-toplevel)/.githooks/_ensure_uv.sh"
+_ensure_uv
+
+# Read push info from stdin (remote ref pairs)
+while read -r local_ref local_sha remote_ref _remote_sha; do
+  # Skip tag pushes
+  case "${local_ref}" in refs/tags/*) continue ;; esac
+
+  # Skip if pushing an empty/deleted ref
+  if [ "${local_sha}" = "0000000000000000000000000000000000000000" ]; then
+    continue
+  fi
+
+  echo "pre-push: running unit tests before push to ${remote_ref}..."
+  # Install project + dev deps into the project venv (idempotent, mirrors CI).
+  uv pip install -e ".[dev]" -q
+  if ! uv run pytest tests/unit/ -q --tb=short; then
+    echo ""
+    echo "  Unit tests failed. Fix them before pushing."
+    echo "  To bypass in an emergency: SKIP_TESTS=1 git push"
+    exit 1
+  fi
+  echo "pre-push: tests passed"
+done

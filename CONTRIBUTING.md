@@ -6,12 +6,15 @@
 git clone https://github.com/crux-cli/crux
 cd crux
 uv pip install -e ".[dev]"
+git config core.hooksPath .githooks
 ```
+
+The last command activates the repo's git hooks (pre-commit, commit-msg, pre-push). See [`.githooks/`](.githooks/) for what each one does.
 
 ## Running Tests
 
 ```bash
-uv run pytest tests/ -v --cov=lib          # Full suite with coverage
+uv run pytest tests/ -v --cov=crux_cli     # Full suite with coverage
 uv run pytest tests/unit/ -v               # Unit tests only
 uv run pytest tests/integration/ -v        # Integration tests only
 ```
@@ -21,7 +24,7 @@ Tests use `CRUX_TEST_ROOT` to isolate all file operations in temp directories â€
 ## Linting
 
 ```bash
-uv run ruff check lib/ crux_cli/ tests/
+uv run ruff check src/ tests/
 ```
 
 Ruff rules: E/F/W (pyflakes), I (isort), UP (pyupgrade), B (bugbear), SIM (simplify), S (bandit security).
@@ -36,7 +39,7 @@ Ruff rules: E/F/W (pyflakes), I (isort), UP (pyupgrade), B (bugbear), SIM (simpl
 
 ## Coverage Requirement
 
-PRs must maintain **>90% test coverage**. Run `pytest --cov=lib --cov-report=term-missing` to check.
+PRs must maintain **>90% test coverage**. Run `pytest --cov=crux_cli --cov-report=term-missing` to check.
 
 ## Pull Request Process
 
