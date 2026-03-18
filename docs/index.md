@@ -6,69 +6,135 @@ hide:
 
 # Crux
 
-## The package manager for AI agent tooling
+## Manage your MCP servers and skills like packages
 
----
+Crux is a CLI tool that brings package-management to your Claude Code workflows. You add MCP servers and skills to a local registry, declare which ones each project needs, and Crux generates the config — with credentials stored in your OS keychain, not in files.
 
-### Your research agent just called the trading API.
-
-You didn't mean for that to happen. But all 30 of your MCP servers are globally visible to every agent. The wiki bot has filesystem write access. The coding assistant sees your home automation MCPs. And the API key for your trading account? It's sitting in a `.env` file that was committed to git three weeks ago.
-
-**This is what MCP management looks like without Crux.**
-
-The ecosystem has 10,000+ MCP servers and 60,000+ skills. But there's no way to manage them. Every project gets the same 50 MCPs dumped into its context. Setting up a new project means copy-pasting `.mcp.json` by hand. Credentials leak. Agents hallucinate tool calls to services they shouldn't know exist.
-
----
-
-### Scenario 1: Set up a new project in 30 seconds
-
-You're building a homelab assistant. It needs wiki access and filesystem tools — nothing else.
+It runs on **your machine** (macOS or Linux), works with **Claude Code**, and installs in one command.
 
 ```bash
-# Add tools to your personal registry (you do this once, ever)
+curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
+```
+
+---
+
+## What Crux does for you
+
+### Stop editing `.mcp.json` by hand
+
+Every Claude Code project needs a `.mcp.json` listing its MCP servers. Without Crux, you maintain these files manually — copy-pasting entries between projects, updating each one when you add a new tool, hoping the JSON stays valid.
+
+With Crux, you build a personal registry of all your MCP servers and skills. Each project declares what it needs in a simple manifest. Crux generates the rest.
+
+```bash
+# Add tools to your registry once — use them in any project
 crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
+crux add mcp github --npx @modelcontextprotocol/server-github
 crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
 crux add skill autoresearch --github user/autoresearch-skill
 
-# Store the wiki API key in your OS keychain — not in a file
-crux secret set wikijs WIKIJS_API_KEY
-
-# Create the project — it gets exactly what it needs
-crux init homelab-assistant && cd homelab-assistant
-crux install wikijs filesystem autoresearch
+# Search the official MCP registry to discover new tools
+crux search "database"
 ```
 
-Done. Your project has a `crux.json` (committed to git) and a generated `.mcp.json` (gitignored). The wiki MCP launches via a script that fetches the API key from your keychain at runtime. No secret ever touches a file.
-
-When a teammate clones the repo, they run `crux install` and get the same setup — with their own credentials from their own keychain. Like `npm install`, but for AI tooling.
+Your registry lives at `~/.crux/registry.json` — one source of truth for every tool you use across all your projects.
 
 ---
 
-### Scenario 2: Run an agent with controlled access
+### Keep API keys out of your config files
 
-Your research agent should access the wiki and a research skill. Not the filesystem. Not GitHub. Definitely not the trading API.
+48% of MCP servers recommend storing API keys in plaintext config files. Keys end up in `.env` files, committed to git, leaked in logs.
+
+Crux stores every credential in your **OS keychain** — macOS Keychain, Linux Secret Service, or an age-encrypted vault. When an MCP server needs an API key, Crux generates a launcher script that fetches it from the keychain at runtime. The secret never exists in any file on disk.
 
 ```bash
-crux run "Find papers on MCP security and update the wiki" \
+# Store credentials securely — prompted, never echoed
+crux secret set wikijs WIKIJS_API_KEY
+crux secret set github GITHUB_TOKEN
+
+# See what's stored (values always masked)
+crux secret list
+```
+
+---
+
+### Give each project exactly the tools it needs
+
+A coding assistant doesn't need your home automation MCPs. A wiki bot doesn't need filesystem write access. But without scoping, every agent sees every tool — leading to worse outputs, hallucinated tool calls, and unnecessary security exposure.
+
+Crux lets each project declare its own subset of tools:
+
+```bash
+# Start a new project
+crux init homelab-assistant && cd homelab-assistant
+
+# Install only what this project needs
+crux install wikijs filesystem autoresearch
+
+# Check that everything is working
+crux status
+```
+
+This creates a `crux.json` — your project's tool manifest:
+
+```json
+{
+  "name": "homelab-assistant",
+  "mcps": ["wikijs", "filesystem"],
+  "skills": ["autoresearch"]
+}
+```
+
+Commit `crux.json` to git. The generated `.mcp.json` is gitignored — it's a local artifact that Crux rebuilds with `crux sync`.
+
+**Why this matters for quality:** an agent with 5 relevant tools consistently outperforms one with 50 irrelevant ones. Less noise in the context window means better outputs and fewer hallucinated tool calls.
+
+---
+
+### Run agents with controlled tool access
+
+Sometimes you want to run an agent with a specific, limited set of tools — without setting up a full project. Crux sandboxes let you do exactly that.
+
+```bash
+# This agent can only access wikijs — nothing else
+crux run "Summarize the latest MCP security research and update the wiki" \
   --mcps wikijs \
   --skills autoresearch
 ```
 
-Crux creates an isolated sandbox with only the declared tools. Before execution, it runs pre-flight checks — every MCP exists, every secret is stored, every source is built. If something's wrong, you get the exact command to fix it. No wasted agent time on mid-run failures.
+Before execution, Crux runs **pre-flight checks**: every MCP exists in your registry, every required secret is stored, every GitHub source is cloned and built. If something is missing, you get the exact command to fix it — before wasting agent time on a mid-run failure.
+
+Save run configurations as reusable manifests:
+
+```json title="tasks/weekly-research.json"
+{
+  "name": "weekly-research",
+  "task": "Search for latest MCP security papers and update the wiki",
+  "mcps": ["wikijs"],
+  "skills": ["autoresearch"],
+  "timeout_minutes": 30
+}
+```
+
+```bash
+crux run --file tasks/weekly-research.json
+```
 
 ---
 
-### Scenario 3: A teammate joins your project
+### Know when something is broken
 
-They clone the repo. They see `crux.json` listing the MCPs and skills the project needs. They run:
+MCP servers fail silently. A config typo, a missing dependency, an expired token — you don't find out until your agent fails mid-task.
 
 ```bash
-crux install
-crux secret set wikijs WIKIJS_API_KEY   # their own key
-crux status                              # verify everything works
+# Probe every MCP server in your project via JSON-RPC handshake
+crux status
+
+# Full environment health check with auto-fix
+crux doctor
 ```
 
-No Slack message asking "which MCPs does this project use?" No digging through config files. No 30-minute setup. The manifest is the documentation.
+`crux status` actually starts each MCP server, performs the protocol handshake, and reports whether it responded — along with its protocol version and available tools. `crux doctor` checks your entire Crux environment (directories, config, dependencies, registry integrity) and fixes what it can automatically.
 
 ---
 
@@ -110,28 +176,21 @@ graph LR
     SYN --> P3
 ```
 
-**Registry** — Add MCPs and skills once from npm, PyPI, GitHub, or local sources. One source of truth across all your projects. No more copy-pasting `.mcp.json`.
+---
 
-**Secrets** — API keys live in your OS keychain (macOS Keychain, Linux Secret Service, or age-encrypted vault). Generated launcher scripts fetch them at runtime. Nothing is ever written to disk.
+## Security
 
-**Sync engine** — `crux sync` reads your project's `crux.json` and generates the `.mcp.json` that Claude Code expects, with only the tools you declared. Each project gets its own scoped config.
+Crux takes an opinionated stance: **there is no insecure-but-easier path.**
+
+- Secrets never appear in any file on disk — only in your OS keystore
+- Launcher scripts contain keystore lookup commands, not credential values
+- Generated `.mcp.json` never contains secrets
+- Each sandbox gets only the MCPs explicitly declared for that run
+- Path traversal protections on all file operations
 
 ---
 
-## Why scoping matters
-
-**An agent with 5 relevant tools outperforms one drowning in 50.**
-
-This isn't just a security claim — it's a quality lever. When you reduce the tools in an agent's context window:
-
-- **Outputs improve** — the model focuses on tools that matter for the task
-- **Hallucinated tool calls drop** — no accidental calls to the trading API from your wiki bot
-- **Security tightens** — each agent's blast radius is limited to what it actually needs
-- **Execution speeds up** — smaller tool lists mean faster MCP initialization
-
----
-
-## Install
+## Get started
 
 ```bash
 curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
@@ -139,25 +198,11 @@ curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
 
 Or with uv: `uv tool install crux-cli && crux setup`
 
-[:octicons-arrow-right-24: Full installation guide](getting-started/installation.md)
-
----
-
-## The full lifecycle
-
-| What you do | How Crux helps | Command |
-|-------------|---------------|---------|
-| Find an MCP you want to use | Search the official registry, add from npm/PyPI/GitHub | `crux search`, `crux add` |
-| Start a new project | Declare which MCPs and skills it needs | `crux init`, `crux install` |
-| Store API keys securely | OS keychain — never in config files | `crux secret set` |
-| Run an agent with controlled access | Isolated sandbox with only declared tools | `crux run` |
-| Check if everything is healthy | Probe MCP servers, diagnose issues | `crux status`, `crux doctor` |
-
 <div class="grid cards" markdown>
 
--   [:octicons-arrow-right-24: Getting Started](getting-started/installation.md)
--   [:octicons-arrow-right-24: CLI Reference](cli/index.md)
--   [:octicons-arrow-right-24: Guides](guides/index.md)
--   [:octicons-arrow-right-24: API Reference](api/index.md)
+-   [:octicons-arrow-right-24: Installation guide](getting-started/installation.md)
+-   [:octicons-arrow-right-24: Quick start](getting-started/quickstart.md)
+-   [:octicons-arrow-right-24: CLI reference](cli/index.md)
+-   [:octicons-arrow-right-24: API reference](api/index.md)
 
 </div>
