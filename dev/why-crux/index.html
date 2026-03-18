@@ -534,10 +534,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-problem" class="md-nav__link">
+  <a href="#the-mcp-management-crisis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Problem
+        The MCP management crisis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#five-problems-that-compound" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Five problems that compound
       
     </span>
   </a>
@@ -548,7 +559,29 @@
   <a href="#scoping-is-a-quality-lever" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scoping Is a Quality Lever
+        Scoping is a quality lever
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-crux-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Crux does
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-crux-is-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Crux is NOT
       
     </span>
   </a>
@@ -559,7 +592,7 @@
   <a href="#why-not-just" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why Not Just...
+        Why not just...
       
     </span>
   </a>
@@ -567,21 +600,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#crux-is-the-full-lifecycle" class="md-nav__link">
+  <a href="#the-full-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Crux Is the Full Lifecycle
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#security-stance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Stance
+        The full lifecycle
       
     </span>
   </a>
@@ -2103,10 +2125,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-problem" class="md-nav__link">
+  <a href="#the-mcp-management-crisis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Problem
+        The MCP management crisis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#five-problems-that-compound" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Five problems that compound
       
     </span>
   </a>
@@ -2117,7 +2150,29 @@
   <a href="#scoping-is-a-quality-lever" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scoping Is a Quality Lever
+        Scoping is a quality lever
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-crux-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Crux does
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-crux-is-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Crux is NOT
       
     </span>
   </a>
@@ -2128,7 +2183,7 @@
   <a href="#why-not-just" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why Not Just...
+        Why not just...
       
     </span>
   </a>
@@ -2136,21 +2191,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#crux-is-the-full-lifecycle" class="md-nav__link">
+  <a href="#the-full-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Crux Is the Full Lifecycle
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#security-stance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Stance
+        The full lifecycle
       
     </span>
   </a>
@@ -2197,42 +2241,97 @@
 
 
 <h1 id="why-crux">Why Crux<a class="headerlink" href="#why-crux" title="Permanent link">&para;</a></h1>
-<p>The MCP ecosystem has exploded — 10,000+ servers, 60,000+ skills, and counting. But there's no way to manage them.</p>
-<h2 id="the-problem">The Problem<a class="headerlink" href="#the-problem" title="Permanent link">&para;</a></h2>
-<p>Without Crux, managing MCPs at scale looks like this:</p>
+<h2 id="the-mcp-management-crisis">The MCP management crisis<a class="headerlink" href="#the-mcp-management-crisis" title="Permanent link">&para;</a></h2>
+<p>The MCP ecosystem has exploded — 10,000+ servers, 60,000+ skills, and counting. But there's no way to manage them at scale.</p>
+<p>Meet Alex, a developer building multi-agent workflows. They have 30+ MCPs across 8 projects, API keys for 15 services scattered across config files, and a research agent that once accidentally called the trading API because all MCPs were globally visible. Setting up a new project means copying <code>.mcp.json</code> by hand, editing it for 30 minutes, and hoping nothing leaks.</p>
+<p>Alex's story isn't unusual. Every developer building with AI agents hits the same wall.</p>
+<h2 id="five-problems-that-compound">Five problems that compound<a class="headerlink" href="#five-problems-that-compound" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Pain</th>
-<th>What happens</th>
+<th>#</th>
+<th>Problem</th>
+<th>What happens at scale</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td>1</td>
 <td><strong>Configuration sprawl</strong></td>
 <td>20 projects x 50 MCPs = 20 hand-maintained <code>.mcp.json</code> files. Add a new MCP? Edit every project.</td>
 </tr>
 <tr>
+<td>2</td>
 <td><strong>Credential leakage</strong></td>
 <td>48% of MCP servers recommend storing API keys in plaintext. Keys end up committed to git, leaked in logs.</td>
 </tr>
 <tr>
+<td>3</td>
 <td><strong>No scoping</strong></td>
-<td>Every agent sees every tool. A coding assistant gets your home automation MCPs. A wiki bot gets filesystem write access. More tools = more noise = worse outputs.</td>
+<td>Every agent sees every tool. A coding assistant gets home automation MCPs. A wiki bot gets filesystem write access. More tools = more noise = worse outputs.</td>
 </tr>
 <tr>
+<td>4</td>
 <td><strong>No reproducibility</strong></td>
 <td>You can't <code>git clone</code> a project and get its MCP setup. There's no <code>npm install</code> for AI tooling.</td>
 </tr>
 <tr>
+<td>5</td>
 <td><strong>Skills are unmanaged</strong></td>
-<td>60,000+ Claude Code skills exist as files you manually copy between machines. No versioning. No scoping. No package management.</td>
+<td>60,000+ Claude Code skills exist as files you manually copy between machines. No versioning, no scoping, no package management.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="scoping-is-a-quality-lever">Scoping Is a Quality Lever<a class="headerlink" href="#scoping-is-a-quality-lever" title="Permanent link">&para;</a></h2>
-<p><strong>An agent with 5 relevant tools outperforms one drowning in 50 irrelevant ones.</strong> Less noise in the context window means better outputs, fewer hallucinated tool calls, and tighter security.</p>
-<h2 id="why-not-just">Why Not Just...<a class="headerlink" href="#why-not-just" title="Permanent link">&para;</a></h2>
+<h2 id="scoping-is-a-quality-lever">Scoping is a quality lever<a class="headerlink" href="#scoping-is-a-quality-lever" title="Permanent link">&para;</a></h2>
+<p>This is the core insight behind Crux: <strong>limiting what an agent can see makes it better at what it does.</strong></p>
+<p>An agent with 5 relevant tools consistently outperforms one with 50 irrelevant ones:</p>
+<ul>
+<li><strong>Better outputs</strong> — the model focuses on tools that matter for the task</li>
+<li><strong>Fewer hallucinated tool calls</strong> — no accidental calls to your trading API from a wiki bot</li>
+<li><strong>Tighter security</strong> — each agent's blast radius is limited to what it actually needs</li>
+<li><strong>Faster execution</strong> — smaller tool lists mean faster MCP initialization and less context overhead</li>
+</ul>
+<p>Scoping isn't a restriction. It's an optimization.</p>
+<h2 id="what-crux-does">What Crux does<a class="headerlink" href="#what-crux-does" title="Permanent link">&para;</a></h2>
+<p>Crux applies patterns you already know — <code>package.json</code>, <code>direnv</code>, Homebrew — to AI agent tooling:</p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Analogy</th>
+<th>What Crux does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tool registry</strong></td>
+<td>Homebrew / mise</td>
+<td>Install, upgrade, and manage MCPs and skills from any source</td>
+</tr>
+<tr>
+<td><strong>Project manifest</strong></td>
+<td>package.json + npm</td>
+<td>Per-project declarative config, git-versionable, reproducible</td>
+</tr>
+<tr>
+<td><strong>Secret binding</strong></td>
+<td>direnv + OS keystore</td>
+<td>Credentials bound to MCPs, never in files, resolved at runtime</td>
+</tr>
+<tr>
+<td><strong>Sandboxed execution</strong></td>
+<td><em>(new)</em></td>
+<td>Run an agent with exactly the MCPs it needs and nothing else</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-crux-is-not">What Crux is NOT<a class="headerlink" href="#what-crux-is-not" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Not a marketplace.</strong> There is no Crux-hosted registry. Use Smithery, PulseMCP, or the official MCP registry to <em>discover</em> tools. Crux manages what you've already chosen.</li>
+<li><strong>Not a cloud service.</strong> All configuration lives on your machine.</li>
+<li><strong>Not competing with MCP discovery platforms.</strong> Crux starts where discovery ends.</li>
+</ul>
+<h2 id="why-not-just">Why not just...<a class="headerlink" href="#why-not-just" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2247,7 +2346,7 @@
 </tr>
 <tr>
 <td>Smithery / PulseMCP</td>
-<td>Discovery platforms — they help you <em>find</em> MCPs, not <em>manage</em> them across projects</td>
+<td>Discovery platforms — they help you <em>find</em> MCPs, not <em>manage</em> them</td>
 </tr>
 <tr>
 <td>Docker MCP Gateway</td>
@@ -2259,24 +2358,15 @@
 </tr>
 </tbody>
 </table>
-<h2 id="crux-is-the-full-lifecycle">Crux Is the Full Lifecycle<a class="headerlink" href="#crux-is-the-full-lifecycle" title="Permanent link">&para;</a></h2>
-<p><strong>Curate → Scope → Secure → Execute → Monitor.</strong></p>
-<ul>
-<li><strong>Registry</strong>: Add MCPs and skills once from npm, PyPI, GitHub, or local sources. One source of truth across all projects.</li>
-<li><strong>Project scoping</strong>: Each project declares exactly which MCPs and skills it needs in <code>crux.json</code>. No ambient access.</li>
-<li><strong>Secrets</strong>: Credentials live in your OS keystore. Generated launcher scripts fetch them at runtime. Nothing is ever written to disk.</li>
-<li><strong>Sandboxed execution</strong>: <code>crux run</code> creates isolated environments where agents only see the MCPs you declare.</li>
-<li><strong>Health monitoring</strong>: <code>crux status</code> probes every MCP via JSON-RPC. <code>crux doctor</code> validates your entire environment.</li>
-</ul>
-<h2 id="security-stance">Security Stance<a class="headerlink" href="#security-stance" title="Permanent link">&para;</a></h2>
-<p>Crux takes an opinionated stance: <strong>there is no insecure-but-easier path.</strong></p>
-<ul>
-<li>Secrets never appear in any file on disk — only in your OS keystore</li>
-<li>Launcher scripts contain keystore lookup commands, not credential values</li>
-<li>Generated <code>.mcp.json</code> never contains secrets</li>
-<li>Each sandbox gets only the MCPs explicitly declared for that run</li>
-<li>Path traversal protections on all file operations</li>
-</ul>
+<h2 id="the-full-lifecycle">The full lifecycle<a class="headerlink" href="#the-full-lifecycle" title="Permanent link">&para;</a></h2>
+<p><strong>Curate → Scope → Secure → Execute → Monitor</strong></p>
+<ol>
+<li><strong>Curate</strong> — Build a personal registry of MCPs and skills. Add from npm, PyPI, GitHub, or local sources. One source of truth across all projects.</li>
+<li><strong>Scope</strong> — Each project declares exactly which MCPs and skills it needs in <code>crux.json</code>. Agents only see what's declared.</li>
+<li><strong>Secure</strong> — Credentials live in your OS keystore. Launcher scripts fetch them at runtime. Nothing is ever written to disk.</li>
+<li><strong>Execute</strong> — <code>crux run</code> creates sandboxes where agents only access declared MCPs. Pre-flight checks catch misconfigurations before execution.</li>
+<li><strong>Monitor</strong> — <code>crux status</code> probes every MCP via JSON-RPC. <code>crux doctor</code> validates your entire environment and auto-fixes what it can.</li>
+</ol>
 
 
 
