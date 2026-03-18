@@ -8,73 +8,74 @@ hide:
 
 ## The package manager for AI agent tooling
 
-Your agents use dozens of MCP servers and skills. Crux manages them the way `npm` manages packages — one manifest, scoped per project, credentials never in files.
+---
 
-<div class="grid cards" markdown>
+### Your research agent just called the trading API.
 
--   :material-package-variant:{ .lg .middle } __One registry, every project__
+You didn't mean for that to happen. But all 30 of your MCP servers are globally visible to every agent. The wiki bot has filesystem write access. The coding assistant sees your home automation MCPs. And the API key for your trading account? It's sitting in a `.env` file that was committed to git three weeks ago.
 
-    ---
+**This is what MCP management looks like without Crux.**
 
-    Add MCPs from npm, PyPI, or GitHub once. Every project draws from the same source of truth — no more copy-pasting `.mcp.json` between repos.
-
-    [:octicons-arrow-right-24: Registry](guides/registry.md)
-
--   :material-shield-lock:{ .lg .middle } __Secrets that never touch disk__
-
-    ---
-
-    API keys live in your OS keychain. Launcher scripts fetch them at runtime. Nothing is ever written to a config file.
-
-    [:octicons-arrow-right-24: Secrets](guides/secrets.md)
-
--   :material-file-document-check:{ .lg .middle } __Declarative project manifests__
-
-    ---
-
-    `crux.json` declares what each project needs. `crux sync` generates the rest. Clone, install, done — like `package.json` for AI tooling.
-
-    [:octicons-arrow-right-24: Projects](guides/projects.md)
-
--   :material-cube-outline:{ .lg .middle } __Scoped, sandboxed execution__
-
-    ---
-
-    Each agent sees only the tools it needs. Less noise in the context window means better outputs and fewer hallucinated tool calls.
-
-    [:octicons-arrow-right-24: Sandbox](guides/sandbox.md)
-
-</div>
+The ecosystem has 10,000+ MCP servers and 60,000+ skills. But there's no way to manage them. Every project gets the same 50 MCPs dumped into its context. Setting up a new project means copy-pasting `.mcp.json` by hand. Credentials leak. Agents hallucinate tool calls to services they shouldn't know exist.
 
 ---
 
-## The problem Crux solves
+### Scenario 1: Set up a new project in 30 seconds
 
-You have 30 MCP servers across 8 projects. Each project needs a different subset. Your research agent accidentally called the trading API because all MCPs were globally visible. API keys sit in `.env` files committed to git. Setting up a new project means 30 minutes of config editing.
-
-**Crux fixes this with one workflow:**
+You're building a homelab assistant. It needs wiki access and filesystem tools — nothing else.
 
 ```bash
-# Build your personal tool registry (once, ever)
+# Add tools to your personal registry (you do this once, ever)
 crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
 crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
 crux add skill autoresearch --github user/autoresearch-skill
 
-# Credentials go in your OS keychain — never in files
+# Store the wiki API key in your OS keychain — not in a file
 crux secret set wikijs WIKIJS_API_KEY
 
-# Each project declares exactly what it needs
+# Create the project — it gets exactly what it needs
 crux init homelab-assistant && cd homelab-assistant
 crux install wikijs filesystem autoresearch
 ```
 
-That's it. Your project has a `crux.json` (committed to git) and a generated `.mcp.json` (gitignored). When a teammate clones the repo, they run `crux install` and get the same setup — with their own credentials from their own keychain.
+Done. Your project has a `crux.json` (committed to git) and a generated `.mcp.json` (gitignored). The wiki MCP launches via a script that fetches the API key from your keychain at runtime. No secret ever touches a file.
+
+When a teammate clones the repo, they run `crux install` and get the same setup — with their own credentials from their own keychain. Like `npm install`, but for AI tooling.
 
 ---
 
-## Architecture
+### Scenario 2: Run an agent with controlled access
+
+Your research agent should access the wiki and a research skill. Not the filesystem. Not GitHub. Definitely not the trading API.
+
+```bash
+crux run "Find papers on MCP security and update the wiki" \
+  --mcps wikijs \
+  --skills autoresearch
+```
+
+Crux creates an isolated sandbox with only the declared tools. Before execution, it runs pre-flight checks — every MCP exists, every secret is stored, every source is built. If something's wrong, you get the exact command to fix it. No wasted agent time on mid-run failures.
+
+---
+
+### Scenario 3: A teammate joins your project
+
+They clone the repo. They see `crux.json` listing the MCPs and skills the project needs. They run:
+
+```bash
+crux install
+crux secret set wikijs WIKIJS_API_KEY   # their own key
+crux status                              # verify everything works
+```
+
+No Slack message asking "which MCPs does this project use?" No digging through config files. No 30-minute setup. The manifest is the documentation.
+
+---
+
+## How it works
 
 ``` mermaid
+%%{init: {'theme': 'neutral'}}%%
 graph LR
     subgraph Discovery["Discovery Sources"]
         direction TB
@@ -86,16 +87,16 @@ graph LR
 
     subgraph Crux["Crux Control Plane"]
         direction TB
-        REG["Registry<br/><code>~/.crux/registry.json</code><br/>MCPs + Skills"]
-        SEC["Secrets<br/>OS Keychain<br/><em>never in files</em>"]
-        SYN["Sync Engine<br/><code>crux sync</code><br/>Generates .mcp.json + launchers"]
+        REG["Registry\nMCPs + Skills"]
+        SEC["Secrets\nOS Keychain"]
+        SYN["Sync Engine\nGenerates .mcp.json"]
     end
 
     subgraph Projects["Your Projects"]
         direction TB
-        P1["<strong>Project A</strong><br/><code>crux.json</code>: wikijs, filesystem<br/>→ .mcp.json <em>(2 MCPs)</em>"]
-        P2["<strong>Project B</strong><br/><code>crux.json</code>: github, memory<br/>→ .mcp.json <em>(2 MCPs)</em>"]
-        P3["<strong>Sandbox Run</strong><br/><code>crux run --mcps ...</code><br/>→ scoped .mcp.json"]
+        P1["Project A\nwikijs, filesystem"]
+        P2["Project B\ngithub, memory"]
+        P3["Sandbox Run\nscoped access"]
     end
 
     S1 --> REG
@@ -107,34 +108,26 @@ graph LR
     SYN --> P1
     SYN --> P2
     SYN --> P3
-
-    style Discovery fill:#e8eaf6,stroke:#5c6bc0,color:#1a237e
-    style Crux fill:#f3e5f5,stroke:#8e24aa,color:#4a148c
-    style Projects fill:#e8f5e9,stroke:#43a047,color:#1b5e20
-    style REG fill:#ede7f6,stroke:#7e57c2,color:#311b92
-    style SEC fill:#fce4ec,stroke:#e53935,color:#b71c1c
-    style SYN fill:#ede7f6,stroke:#7e57c2,color:#311b92
-    style S1 fill:#e8eaf6,stroke:#5c6bc0,color:#1a237e
-    style S2 fill:#e8eaf6,stroke:#5c6bc0,color:#1a237e
-    style S3 fill:#e8eaf6,stroke:#5c6bc0,color:#1a237e
-    style S4 fill:#e8eaf6,stroke:#5c6bc0,color:#1a237e
-    style P1 fill:#e8f5e9,stroke:#43a047,color:#1b5e20
-    style P2 fill:#e8f5e9,stroke:#43a047,color:#1b5e20
-    style P3 fill:#e8f5e9,stroke:#43a047,color:#1b5e20
 ```
+
+**Registry** — Add MCPs and skills once from npm, PyPI, GitHub, or local sources. One source of truth across all your projects. No more copy-pasting `.mcp.json`.
+
+**Secrets** — API keys live in your OS keychain (macOS Keychain, Linux Secret Service, or age-encrypted vault). Generated launcher scripts fetch them at runtime. Nothing is ever written to disk.
+
+**Sync engine** — `crux sync` reads your project's `crux.json` and generates the `.mcp.json` that Claude Code expects, with only the tools you declared. Each project gets its own scoped config.
 
 ---
 
 ## Why scoping matters
 
-Scoping isn't just organization — it's a **quality lever**.
+**An agent with 5 relevant tools outperforms one drowning in 50.**
 
-An agent with 5 relevant tools consistently outperforms one drowning in 50 irrelevant ones. Less noise in the context window means:
+This isn't just a security claim — it's a quality lever. When you reduce the tools in an agent's context window:
 
-- **Better outputs** — the model focuses on relevant tools
-- **Fewer hallucinated tool calls** — no accidental calls to the trading API from your wiki bot
-- **Tighter security** — each agent's blast radius is limited to what it actually needs
-- **Faster execution** — smaller tool lists mean faster MCP initialization
+- **Outputs improve** — the model focuses on tools that matter for the task
+- **Hallucinated tool calls drop** — no accidental calls to the trading API from your wiki bot
+- **Security tightens** — each agent's blast radius is limited to what it actually needs
+- **Execution speeds up** — smaller tool lists mean faster MCP initialization
 
 ---
 
@@ -152,12 +145,19 @@ Or with uv: `uv tool install crux-cli && crux setup`
 
 ## The full lifecycle
 
-**Curate** :material-arrow-right: **Scope** :material-arrow-right: **Secure** :material-arrow-right: **Execute** :material-arrow-right: **Monitor**
+| What you do | How Crux helps | Command |
+|-------------|---------------|---------|
+| Find an MCP you want to use | Search the official registry, add from npm/PyPI/GitHub | `crux search`, `crux add` |
+| Start a new project | Declare which MCPs and skills it needs | `crux init`, `crux install` |
+| Store API keys securely | OS keychain — never in config files | `crux secret set` |
+| Run an agent with controlled access | Isolated sandbox with only declared tools | `crux run` |
+| Check if everything is healthy | Probe MCP servers, diagnose issues | `crux status`, `crux doctor` |
 
-| Stage | What Crux does | Command |
-|-------|---------------|---------|
-| **Curate** | Build a personal registry of MCPs and skills from any source | `crux add`, `crux search` |
-| **Scope** | Each project declares exactly what it needs in `crux.json` | `crux init`, `crux install` |
-| **Secure** | Credentials in OS keychain, fetched at runtime by launcher scripts | `crux secret set` |
-| **Execute** | Run agents in sandboxes with only the declared MCPs | `crux run` |
-| **Monitor** | Health-check MCP servers, diagnose and auto-fix issues | `crux status`, `crux doctor` |
+<div class="grid cards" markdown>
+
+-   [:octicons-arrow-right-24: Getting Started](getting-started/installation.md)
+-   [:octicons-arrow-right-24: CLI Reference](cli/index.md)
+-   [:octicons-arrow-right-24: Guides](guides/index.md)
+-   [:octicons-arrow-right-24: API Reference](api/index.md)
+
+</div>
