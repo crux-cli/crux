@@ -120,18 +120,12 @@ crux secret set github GITHUB_TOKEN</code></pre>
         <div class="crux-step">
           <div class="crux-step__num">3</div>
           <div class="crux-step__body">
-            <h3>Scope each project</h3>
-            <p>Declare what each project needs. Crux generates the <code>.mcp.json</code> that Claude Code expects.</p>
+            <h3>Use in a project or a one&#8209;off sandbox</h3>
+            <p><strong>Project mode</strong>&nbsp;&mdash;&nbsp;declare what each project needs in a <code>crux.json</code> manifest. Crux generates the <code>.mcp.json</code> that Claude Code expects.</p>
             <pre><code>crux init homelab-assistant && cd homelab-assistant
 crux install wikijs filesystem autoresearch
 crux status</code></pre>
-          </div>
-        </div>
-        <div class="crux-step">
-          <div class="crux-step__num">4</div>
-          <div class="crux-step__body">
-            <h3>Run with confidence</h3>
-            <p>Sandbox runs give agents only the tools you declare. Pre&#8209;flight checks catch problems before execution.</p>
+            <p style="margin-top: 1rem;"><strong>Sandbox mode</strong>&nbsp;&mdash;&nbsp;run an agent with a specific set of tools, without setting up a project. Pre&#8209;flight checks catch problems before execution.</p>
             <pre><code>crux run "Update the wiki with latest research" \
   --mcps wikijs --skills autoresearch</code></pre>
           </div>
