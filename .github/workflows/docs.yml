@@ -48,8 +48,13 @@ jobs:
         run: |
           VERSION=${TAG_REF#refs/tags/v}
           mike deploy --push --update-aliases "$VERSION" latest
+          mike set-default --push latest
 
       - name: Deploy dev docs (main branch)
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           mike deploy --push --update-aliases dev
+          # Set dev as default only until the first release creates 'latest'
+          if ! mike list | grep -q latest; then
+            mike set-default --push dev
+          fi
