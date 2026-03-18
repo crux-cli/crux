@@ -9,9 +9,109 @@
 
 ---
 
-Crux is a CLI tool that brings package-management to your [Claude Code](https://docs.anthropic.com/en/docs/claude-code) workflows. You add MCP servers and skills to a local registry, declare which ones each project needs, and Crux generates the config — with credentials stored in your OS keychain, not in files.
+Crux is a CLI tool for **macOS** and **Linux** that brings package-management to your **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** agentic workflows. Add MCP servers and skills to a local registry, declare which ones each project needs, and let Crux generate the config — with credentials in your OS keychain, never in files.
 
-It runs on your machine (macOS or Linux), works with Claude Code, and installs in one command.
+## Are you taking full advantage of Claude Code?
+
+The MCP ecosystem has 10,000+ servers and 60,000+ skills that can supercharge your agentic workflows. But managing them across projects is a chore — copy-pasting `.mcp.json`, manually dropping skill files into directories, no single place to manage it all.
+
+**Crux gives you a personal registry.** Add once, use in any project.
+
+```bash
+crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
+crux add mcp github --npx @modelcontextprotocol/server-github
+crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
+crux add skill autoresearch --github user/autoresearch-skill
+crux search "database"   # discover more from the official registry
+```
+
+## Overwhelmed managing MCPs, skills, and projects?
+
+20 projects, each needing a different combination of tools, each with a hand-edited `.mcp.json`. Add a new MCP and you're updating every project that needs it.
+
+**Crux scopes tools per project.** Declare what each project needs. Crux generates the rest.
+
+```bash
+crux init homelab-assistant && cd homelab-assistant
+crux install wikijs filesystem autoresearch
+crux status
+```
+
+Your `crux.json` — committed to git — is clean and declarative:
+
+```json
+{
+  "name": "homelab-assistant",
+  "mcps": ["wikijs", "filesystem"],
+  "skills": ["autoresearch"]
+}
+```
+
+## Afraid of the risk agentic AI poses if misconfigured?
+
+When every agent sees every tool, one misconfiguration can have outsized consequences. API keys in plaintext get committed to git. A research task accidentally writes to production.
+
+**Crux isolates and secures.** Credentials in your OS keychain. Sandboxed runs with only the tools you declare. Pre-flight checks before execution.
+
+```bash
+crux secret set wikijs WIKIJS_API_KEY
+crux run "Summarize MCP security research and update the wiki" \
+  --mcps wikijs --skills autoresearch
+crux doctor   # full environment health check
+```
+
+## Before and after
+
+### Without Crux
+
+```mermaid
+%%{init: {'theme': 'neutral'}}%%
+graph TB
+    subgraph Claude[Claude Code]
+        G[Global .mcp.json\nALL 30 MCPs visible to every agent]
+        PA[.mcp.json in Project A\nhand-edited, copy-pasted]
+        PB[.mcp.json in Project B\nhand-edited, copy-pasted]
+    end
+
+    subgraph Problems[What goes wrong]
+        X1[API keys in plaintext]
+        X2[Config drift across projects]
+        X3[No scoping - every agent sees every tool]
+        X4[Skills manually copied between machines]
+    end
+
+    G --- X1
+    G --- X3
+    PA --- X2
+    PB --- X2
+    G --- X4
+```
+
+### With Crux
+
+```mermaid
+%%{init: {'theme': 'neutral'}}%%
+graph TB
+    subgraph Crux[Crux Control Plane]
+        REG[Registry\nMCPs + Skills]
+        SEC[OS Keychain\nsecrets never in files]
+        SYN[Sync Engine]
+    end
+
+    subgraph Projects[Claude Code Projects]
+        PA[Project A\nwikijs, filesystem]
+        PB[Project B\ngithub, memory]
+        SB[Sandbox Run\nscoped access]
+    end
+
+    REG --> SYN
+    SEC --> SYN
+    SYN --> PA
+    SYN --> PB
+    SYN --> SB
+```
+
+Each project sees **only** its declared tools. Secrets fetched from the keychain at runtime. No config drift. No ambient access.
 
 ## Install
 
@@ -20,94 +120,6 @@ curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
 ```
 
 Or if you already have [uv](https://docs.astral.sh/uv/): `uv tool install crux-cli && crux setup`
-
-## Stop editing `.mcp.json` by hand
-
-Build a personal registry of MCP servers and skills. Each project declares what it needs. Crux generates the rest.
-
-```bash
-# Add tools to your registry once — use them in any project
-crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
-crux add mcp github --npx @modelcontextprotocol/server-github
-crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
-crux add skill autoresearch --github user/autoresearch-skill
-
-# Search the official MCP registry to discover new tools
-crux search "database"
-```
-
-## Keep API keys out of your config files
-
-Crux stores every credential in your **OS keychain** — macOS Keychain, Linux Secret Service, or an age-encrypted vault. Launcher scripts fetch secrets at runtime. Nothing is ever written to a config file.
-
-```bash
-crux secret set wikijs WIKIJS_API_KEY
-crux secret set github GITHUB_TOKEN
-```
-
-## Give each project exactly the tools it needs
-
-An agent with 5 relevant tools outperforms one with 50 irrelevant ones. Crux lets each project declare its own subset:
-
-```bash
-crux init homelab-assistant && cd homelab-assistant
-crux install wikijs filesystem autoresearch
-crux status
-```
-
-This creates a `crux.json` — your project's tool manifest. Commit it to git. The generated `.mcp.json` is gitignored and rebuilt by `crux sync`.
-
-## Run agents with controlled tool access
-
-```bash
-crux run "Summarize MCP security research and update the wiki" \
-  --mcps wikijs \
-  --skills autoresearch
-```
-
-Crux creates a sandbox with only the declared tools. Pre-flight checks verify everything is ready before execution starts.
-
-## Know when something is broken
-
-```bash
-crux status   # probe every MCP via JSON-RPC handshake
-crux doctor   # full environment check with auto-fix
-```
-
-## Architecture
-
-```mermaid
-%%{init: {'theme': 'neutral'}}%%
-graph LR
-    subgraph Discovery
-        S1[Official MCP Registry]
-        S2[npm / PyPI]
-        S3[GitHub Repos]
-        S4[Local Sources]
-    end
-
-    subgraph Crux[Crux Control Plane]
-        REG[Registry\nMCPs + Skills]
-        SEC[Secrets\nOS Keychain]
-        SYN[Sync Engine]
-    end
-
-    subgraph Projects
-        P1[Project A\nwikijs, filesystem]
-        P2[Project B\ngithub, memory]
-        P3[Sandbox Run\nscoped access]
-    end
-
-    S1 --> REG
-    S2 --> REG
-    S3 --> REG
-    S4 --> REG
-    REG --> SYN
-    SEC --> SYN
-    SYN --> P1
-    SYN --> P2
-    SYN --> P3
-```
 
 ## Commands
 
