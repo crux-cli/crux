@@ -1,6 +1,6 @@
 site_name: Crux
 site_url: https://crux-cli.github.io/crux
-site_description: "Crux — AI Agent Control Plane. Per-project MCP scoping, secure secrets, sandboxed execution."
+site_description: "Manage your MCP servers and skills like packages. Per-project scoping, secure secrets, sandboxed execution for Claude Code."
 site_author: Crux CLI
 repo_url: https://github.com/crux-cli/crux
 repo_name: crux-cli/crux
@@ -10,6 +10,7 @@ copyright: Copyright &copy; 2026 Crux CLI
 
 theme:
   name: material
+  custom_dir: docs/overrides
   logo: assets/logo.svg
   favicon: assets/logo.svg
   features:
