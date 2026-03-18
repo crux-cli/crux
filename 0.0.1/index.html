@@ -2003,22 +2003,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-package-manager-for-ai-agent-tooling" class="md-nav__link">
+  <a href="#manage-your-mcp-servers-and-skills-like-packages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The package manager for AI agent tooling
+        Manage your MCP servers and skills like packages
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The package manager for AI agent tooling">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-crux-does-for-you" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Crux does for you
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What Crux does for you">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#your-research-agent-just-called-the-trading-api" class="md-nav__link">
+  <a href="#stop-editing-mcpjson-by-hand" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Your research agent just called the trading API.
+        Stop editing .mcp.json by hand
       
     </span>
   </a>
@@ -2026,10 +2037,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#scenario-1-set-up-a-new-project-in-30-seconds" class="md-nav__link">
+  <a href="#keep-api-keys-out-of-your-config-files" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scenario 1: Set up a new project in 30 seconds
+        Keep API keys out of your config files
       
     </span>
   </a>
@@ -2037,10 +2048,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#scenario-2-run-an-agent-with-controlled-access" class="md-nav__link">
+  <a href="#give-each-project-exactly-the-tools-it-needs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scenario 2: Run an agent with controlled access
+        Give each project exactly the tools it needs
       
     </span>
   </a>
@@ -2048,10 +2059,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#scenario-3-a-teammate-joins-your-project" class="md-nav__link">
+  <a href="#run-agents-with-controlled-tool-access" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scenario 3: A teammate joins your project
+        Run agents with controlled tool access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#know-when-something-is-broken" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Know when something is broken
       
     </span>
   </a>
@@ -2075,10 +2097,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-scoping-matters" class="md-nav__link">
+  <a href="#security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why scoping matters
+        Security
       
     </span>
   </a>
@@ -2086,21 +2108,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install" class="md-nav__link">
+  <a href="#get-started" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Install
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-full-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The full lifecycle
+        Get started
       
     </span>
   </a>
@@ -2151,45 +2162,89 @@
 
 
 <h1 id="crux">Crux<a class="headerlink" href="#crux" title="Permanent link">&para;</a></h1>
-<h2 id="the-package-manager-for-ai-agent-tooling">The package manager for AI agent tooling<a class="headerlink" href="#the-package-manager-for-ai-agent-tooling" title="Permanent link">&para;</a></h2>
-<hr />
-<h3 id="your-research-agent-just-called-the-trading-api">Your research agent just called the trading API.<a class="headerlink" href="#your-research-agent-just-called-the-trading-api" title="Permanent link">&para;</a></h3>
-<p>You didn't mean for that to happen. But all 30 of your MCP servers are globally visible to every agent. The wiki bot has filesystem write access. The coding assistant sees your home automation MCPs. And the API key for your trading account? It's sitting in a <code>.env</code> file that was committed to git three weeks ago.</p>
-<p><strong>This is what MCP management looks like without Crux.</strong></p>
-<p>The ecosystem has 10,000+ MCP servers and 60,000+ skills. But there's no way to manage them. Every project gets the same 50 MCPs dumped into its context. Setting up a new project means copy-pasting <code>.mcp.json</code> by hand. Credentials leak. Agents hallucinate tool calls to services they shouldn't know exist.</p>
-<hr />
-<h3 id="scenario-1-set-up-a-new-project-in-30-seconds">Scenario 1: Set up a new project in 30 seconds<a class="headerlink" href="#scenario-1-set-up-a-new-project-in-30-seconds" title="Permanent link">&para;</a></h3>
-<p>You're building a homelab assistant. It needs wiki access and filesystem tools — nothing else.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Add tools to your personal registry (you do this once, ever)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>crux<span class="w"> </span>add<span class="w"> </span>mcp<span class="w"> </span>filesystem<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-filesystem
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>crux<span class="w"> </span>add<span class="w"> </span>mcp<span class="w"> </span>wikijs<span class="w"> </span>--github<span class="w"> </span>jaalbin24/wikijs-mcp-server
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>crux<span class="w"> </span>add<span class="w"> </span>skill<span class="w"> </span>autoresearch<span class="w"> </span>--github<span class="w"> </span>user/autoresearch-skill
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Store the wiki API key in your OS keychain — not in a file</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>crux<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>wikijs<span class="w"> </span>WIKIJS_API_KEY
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Create the project — it gets exactly what it needs</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>crux<span class="w"> </span>init<span class="w"> </span>homelab-assistant<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>homelab-assistant
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>crux<span class="w"> </span>install<span class="w"> </span>wikijs<span class="w"> </span>filesystem<span class="w"> </span>autoresearch
+<h2 id="manage-your-mcp-servers-and-skills-like-packages">Manage your MCP servers and skills like packages<a class="headerlink" href="#manage-your-mcp-servers-and-skills-like-packages" title="Permanent link">&para;</a></h2>
+<p>Crux is a CLI tool that brings package-management to your Claude Code workflows. You add MCP servers and skills to a local registry, declare which ones each project needs, and Crux generates the config — with credentials stored in your OS keychain, not in files.</p>
+<p>It runs on <strong>your machine</strong> (macOS or Linux), works with <strong>Claude Code</strong>, and installs in one command.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://raw.githubusercontent.com/crux-cli/crux/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
 </span></code></pre></div>
-<p>Done. Your project has a <code>crux.json</code> (committed to git) and a generated <code>.mcp.json</code> (gitignored). The wiki MCP launches via a script that fetches the API key from your keychain at runtime. No secret ever touches a file.</p>
-<p>When a teammate clones the repo, they run <code>crux install</code> and get the same setup — with their own credentials from their own keychain. Like <code>npm install</code>, but for AI tooling.</p>
 <hr />
-<h3 id="scenario-2-run-an-agent-with-controlled-access">Scenario 2: Run an agent with controlled access<a class="headerlink" href="#scenario-2-run-an-agent-with-controlled-access" title="Permanent link">&para;</a></h3>
-<p>Your research agent should access the wiki and a research skill. Not the filesystem. Not GitHub. Definitely not the trading API.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>crux<span class="w"> </span>run<span class="w"> </span><span class="s2">&quot;Find papers on MCP security and update the wiki&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--mcps<span class="w"> </span>wikijs<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--skills<span class="w"> </span>autoresearch
+<h2 id="what-crux-does-for-you">What Crux does for you<a class="headerlink" href="#what-crux-does-for-you" title="Permanent link">&para;</a></h2>
+<h3 id="stop-editing-mcpjson-by-hand">Stop editing <code>.mcp.json</code> by hand<a class="headerlink" href="#stop-editing-mcpjson-by-hand" title="Permanent link">&para;</a></h3>
+<p>Every Claude Code project needs a <code>.mcp.json</code> listing its MCP servers. Without Crux, you maintain these files manually — copy-pasting entries between projects, updating each one when you add a new tool, hoping the JSON stays valid.</p>
+<p>With Crux, you build a personal registry of all your MCP servers and skills. Each project declares what it needs in a simple manifest. Crux generates the rest.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Add tools to your registry once — use them in any project</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>crux<span class="w"> </span>add<span class="w"> </span>mcp<span class="w"> </span>filesystem<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-filesystem
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>crux<span class="w"> </span>add<span class="w"> </span>mcp<span class="w"> </span>github<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-github
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>crux<span class="w"> </span>add<span class="w"> </span>mcp<span class="w"> </span>wikijs<span class="w"> </span>--github<span class="w"> </span>jaalbin24/wikijs-mcp-server
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>crux<span class="w"> </span>add<span class="w"> </span>skill<span class="w"> </span>autoresearch<span class="w"> </span>--github<span class="w"> </span>user/autoresearch-skill
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Search the official MCP registry to discover new tools</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>crux<span class="w"> </span>search<span class="w"> </span><span class="s2">&quot;database&quot;</span>
 </span></code></pre></div>
-<p>Crux creates an isolated sandbox with only the declared tools. Before execution, it runs pre-flight checks — every MCP exists, every secret is stored, every source is built. If something's wrong, you get the exact command to fix it. No wasted agent time on mid-run failures.</p>
+<p>Your registry lives at <code>~/.crux/registry.json</code> — one source of truth for every tool you use across all your projects.</p>
 <hr />
-<h3 id="scenario-3-a-teammate-joins-your-project">Scenario 3: A teammate joins your project<a class="headerlink" href="#scenario-3-a-teammate-joins-your-project" title="Permanent link">&para;</a></h3>
-<p>They clone the repo. They see <code>crux.json</code> listing the MCPs and skills the project needs. They run:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>crux<span class="w"> </span>install
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>crux<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>wikijs<span class="w"> </span>WIKIJS_API_KEY<span class="w">   </span><span class="c1"># their own key</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>crux<span class="w"> </span>status<span class="w">                              </span><span class="c1"># verify everything works</span>
+<h3 id="keep-api-keys-out-of-your-config-files">Keep API keys out of your config files<a class="headerlink" href="#keep-api-keys-out-of-your-config-files" title="Permanent link">&para;</a></h3>
+<p>48% of MCP servers recommend storing API keys in plaintext config files. Keys end up in <code>.env</code> files, committed to git, leaked in logs.</p>
+<p>Crux stores every credential in your <strong>OS keychain</strong> — macOS Keychain, Linux Secret Service, or an age-encrypted vault. When an MCP server needs an API key, Crux generates a launcher script that fetches it from the keychain at runtime. The secret never exists in any file on disk.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Store credentials securely — prompted, never echoed</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>crux<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>wikijs<span class="w"> </span>WIKIJS_API_KEY
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>crux<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>github<span class="w"> </span>GITHUB_TOKEN
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># See what&#39;s stored (values always masked)</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>crux<span class="w"> </span>secret<span class="w"> </span>list
 </span></code></pre></div>
-<p>No Slack message asking "which MCPs does this project use?" No digging through config files. No 30-minute setup. The manifest is the documentation.</p>
+<hr />
+<h3 id="give-each-project-exactly-the-tools-it-needs">Give each project exactly the tools it needs<a class="headerlink" href="#give-each-project-exactly-the-tools-it-needs" title="Permanent link">&para;</a></h3>
+<p>A coding assistant doesn't need your home automation MCPs. A wiki bot doesn't need filesystem write access. But without scoping, every agent sees every tool — leading to worse outputs, hallucinated tool calls, and unnecessary security exposure.</p>
+<p>Crux lets each project declare its own subset of tools:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Start a new project</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>crux<span class="w"> </span>init<span class="w"> </span>homelab-assistant<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>homelab-assistant
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Install only what this project needs</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>crux<span class="w"> </span>install<span class="w"> </span>wikijs<span class="w"> </span>filesystem<span class="w"> </span>autoresearch
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Check that everything is working</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>crux<span class="w"> </span>status
+</span></code></pre></div>
+<p>This creates a <code>crux.json</code> — your project's tool manifest:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;homelab-assistant&quot;</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;mcps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;wikijs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;filesystem&quot;</span><span class="p">],</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">&quot;skills&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;autoresearch&quot;</span><span class="p">]</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Commit <code>crux.json</code> to git. The generated <code>.mcp.json</code> is gitignored — it's a local artifact that Crux rebuilds with <code>crux sync</code>.</p>
+<p><strong>Why this matters for quality:</strong> an agent with 5 relevant tools consistently outperforms one with 50 irrelevant ones. Less noise in the context window means better outputs and fewer hallucinated tool calls.</p>
+<hr />
+<h3 id="run-agents-with-controlled-tool-access">Run agents with controlled tool access<a class="headerlink" href="#run-agents-with-controlled-tool-access" title="Permanent link">&para;</a></h3>
+<p>Sometimes you want to run an agent with a specific, limited set of tools — without setting up a full project. Crux sandboxes let you do exactly that.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># This agent can only access wikijs — nothing else</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>crux<span class="w"> </span>run<span class="w"> </span><span class="s2">&quot;Summarize the latest MCP security research and update the wiki&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>--mcps<span class="w"> </span>wikijs<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span>--skills<span class="w"> </span>autoresearch
+</span></code></pre></div>
+<p>Before execution, Crux runs <strong>pre-flight checks</strong>: every MCP exists in your registry, every required secret is stored, every GitHub source is cloned and built. If something is missing, you get the exact command to fix it — before wasting agent time on a mid-run failure.</p>
+<p>Save run configurations as reusable manifests:</p>
+<div class="language-json highlight"><span class="filename">tasks/weekly-research.json</span><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;weekly-research&quot;</span><span class="p">,</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Search for latest MCP security papers and update the wiki&quot;</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;mcps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;wikijs&quot;</span><span class="p">],</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;skills&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;autoresearch&quot;</span><span class="p">],</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;timeout_minutes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>crux<span class="w"> </span>run<span class="w"> </span>--file<span class="w"> </span>tasks/weekly-research.json
+</span></code></pre></div>
+<hr />
+<h3 id="know-when-something-is-broken">Know when something is broken<a class="headerlink" href="#know-when-something-is-broken" title="Permanent link">&para;</a></h3>
+<p>MCP servers fail silently. A config typo, a missing dependency, an expired token — you don't find out until your agent fails mid-task.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Probe every MCP server in your project via JSON-RPC handshake</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>crux<span class="w"> </span>status
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Full environment health check with auto-fix</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>crux<span class="w"> </span>doctor
+</span></code></pre></div>
+<p><code>crux status</code> actually starts each MCP server, performs the protocol handshake, and reports whether it responded — along with its protocol version and available tools. <code>crux doctor</code> checks your entire Crux environment (directories, config, dependencies, registry integrity) and fixes what it can automatically.</p>
 <hr />
 <h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>%%{init: {'theme': 'neutral'}}%%
@@ -2225,69 +2280,27 @@ graph LR
     SYN --&gt; P1
     SYN --&gt; P2
     SYN --&gt; P3</code></pre>
-<p><strong>Registry</strong> — Add MCPs and skills once from npm, PyPI, GitHub, or local sources. One source of truth across all your projects. No more copy-pasting <code>.mcp.json</code>.</p>
-<p><strong>Secrets</strong> — API keys live in your OS keychain (macOS Keychain, Linux Secret Service, or age-encrypted vault). Generated launcher scripts fetch them at runtime. Nothing is ever written to disk.</p>
-<p><strong>Sync engine</strong> — <code>crux sync</code> reads your project's <code>crux.json</code> and generates the <code>.mcp.json</code> that Claude Code expects, with only the tools you declared. Each project gets its own scoped config.</p>
 <hr />
-<h2 id="why-scoping-matters">Why scoping matters<a class="headerlink" href="#why-scoping-matters" title="Permanent link">&para;</a></h2>
-<p><strong>An agent with 5 relevant tools outperforms one drowning in 50.</strong></p>
-<p>This isn't just a security claim — it's a quality lever. When you reduce the tools in an agent's context window:</p>
+<h2 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h2>
+<p>Crux takes an opinionated stance: <strong>there is no insecure-but-easier path.</strong></p>
 <ul>
-<li><strong>Outputs improve</strong> — the model focuses on tools that matter for the task</li>
-<li><strong>Hallucinated tool calls drop</strong> — no accidental calls to the trading API from your wiki bot</li>
-<li><strong>Security tightens</strong> — each agent's blast radius is limited to what it actually needs</li>
-<li><strong>Execution speeds up</strong> — smaller tool lists mean faster MCP initialization</li>
+<li>Secrets never appear in any file on disk — only in your OS keystore</li>
+<li>Launcher scripts contain keystore lookup commands, not credential values</li>
+<li>Generated <code>.mcp.json</code> never contains secrets</li>
+<li>Each sandbox gets only the MCPs explicitly declared for that run</li>
+<li>Path traversal protections on all file operations</li>
 </ul>
 <hr />
-<h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://raw.githubusercontent.com/crux-cli/crux/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+<h2 id="get-started">Get started<a class="headerlink" href="#get-started" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://raw.githubusercontent.com/crux-cli/crux/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
 </span></code></pre></div>
 <p>Or with uv: <code>uv tool install crux-cli &amp;&amp; crux setup</code></p>
-<p><a href="getting-started/installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Full installation guide</a></p>
-<hr />
-<h2 id="the-full-lifecycle">The full lifecycle<a class="headerlink" href="#the-full-lifecycle" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>What you do</th>
-<th>How Crux helps</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Find an MCP you want to use</td>
-<td>Search the official registry, add from npm/PyPI/GitHub</td>
-<td><code>crux search</code>, <code>crux add</code></td>
-</tr>
-<tr>
-<td>Start a new project</td>
-<td>Declare which MCPs and skills it needs</td>
-<td><code>crux init</code>, <code>crux install</code></td>
-</tr>
-<tr>
-<td>Store API keys securely</td>
-<td>OS keychain — never in config files</td>
-<td><code>crux secret set</code></td>
-</tr>
-<tr>
-<td>Run an agent with controlled access</td>
-<td>Isolated sandbox with only declared tools</td>
-<td><code>crux run</code></td>
-</tr>
-<tr>
-<td>Check if everything is healthy</td>
-<td>Probe MCP servers, diagnose issues</td>
-<td><code>crux status</code>, <code>crux doctor</code></td>
-</tr>
-</tbody>
-</table>
 <div class="grid cards">
 <ul>
-<li><a href="getting-started/installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Getting Started</a></li>
-<li><a href="cli/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> CLI Reference</a></li>
-<li><a href="guides/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Guides</a></li>
-<li><a href="api/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> API Reference</a></li>
+<li><a href="getting-started/installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Installation guide</a></li>
+<li><a href="getting-started/quickstart/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Quick start</a></li>
+<li><a href="cli/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> CLI reference</a></li>
+<li><a href="api/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> API reference</a></li>
 </ul>
 </div>
 
