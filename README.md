@@ -1,114 +1,79 @@
 # Crux
 
-**Your AI agents have access to 10,000+ MCP servers. They should only see five.**
+**The package manager for AI agent tooling.**
 
 [![CI](https://github.com/crux-cli/crux/actions/workflows/ci.yml/badge.svg)](https://github.com/crux-cli/crux/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/crux-cli)](https://pypi.org/project/crux-cli/)
+[![Docs](https://img.shields.io/badge/docs-crux--cli.github.io-blue)](https://crux-cli.github.io/crux)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
-The MCP ecosystem has exploded — 10,000+ servers, 60,000+ skills, and counting. But there's no way to manage them. API keys sit in plaintext config files. Every project gets the same 50 MCPs dumped into its context, whether it needs them or not. Your research agent can accidentally call your trading API. Setting up a new project means copy-pasting `.mcp.json` and praying nothing leaks.
+Your agents use dozens of MCP servers and skills. Crux manages them the way `npm` manages packages — one manifest, scoped per project, credentials never in files.
 
-**Crux is the control plane that sits between your MCP ecosystem and your AI agents.** One registry. Per-project scoping. Secrets in your OS keychain — never in files. Sandboxed execution. Full lifecycle management for every tool your agents touch.
+## The problem
 
-> Think `package.json` for AI tooling — declare what each project needs, and Crux handles the rest.
-
-## The Problem Crux Solves
-
-Without Crux, managing MCPs at scale looks like this:
+You have 30 MCP servers across 8 projects. Each project needs a different subset. Your research agent accidentally called the trading API because all MCPs were globally visible. API keys sit in `.env` files committed to git. Setting up a new project means 30 minutes of config editing instead of 30 seconds.
 
 | Pain | What happens |
 |------|-------------|
-| **Configuration sprawl** | 20 projects × 50 MCPs = 20 hand-maintained `.mcp.json` files. Add a new MCP? Edit every project. |
-| **Credential leakage** | 48% of MCP servers recommend storing API keys in plaintext. Keys end up committed to git, leaked in logs. |
-| **No scoping** | Every agent sees every tool. A coding assistant gets your home automation MCPs. A wiki bot gets filesystem write access. More tools = more noise = worse outputs. |
-| **No reproducibility** | You can't `git clone` a project and get its MCP setup. There's no `npm install` for AI tooling. |
-| **Skills are unmanaged** | 60,000+ Claude Code skills exist as files you manually copy between machines. No versioning. No scoping. No package management. |
+| **Configuration sprawl** | 20 projects x 50 MCPs = 20 hand-maintained `.mcp.json` files |
+| **Credential leakage** | 48% of MCP servers recommend storing API keys in plaintext |
+| **No scoping** | Every agent sees every tool — more noise, worse outputs, security risk |
+| **No reproducibility** | No `npm install` equivalent for AI tooling |
+| **Skills are unmanaged** | 60,000+ skills as files you manually copy between machines |
 
-**Scoping isn't just organization — it's a quality lever.** An agent with 5 relevant tools outperforms one drowning in 50 irrelevant ones. Less noise in the context window means better outputs, fewer hallucinated tool calls, and tighter security.
-## Install
-
-```bash
-curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
-```
-
-The installer checks for [uv](https://docs.astral.sh/uv/), installs it if missing, pulls `crux-cli` from PyPI, initialises `~/.crux/`, and tells you exactly what to do next (PATH fix, skill install).
-
-**Alternatively**, if you already have uv:
+## The solution
 
 ```bash
-uv tool install crux-cli
-crux setup
-```
-
-## Workflow: Set Up a Project in 30 Seconds
-
-You have a homelab assistant that needs wiki access and filesystem tools — nothing else.
-
-```bash
-# Add MCPs to your personal registry (once, ever)
+# Build your personal tool registry (once, ever)
 crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
 crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
+crux add skill autoresearch --github user/autoresearch-skill
 
-# Store credentials in your OS keychain — not in files
+# Credentials go in your OS keychain — never in files
 crux secret set wikijs WIKIJS_API_KEY
-# → prompts securely, stores in macOS Keychain / Linux Secret Service
 
-# Create a project — it gets exactly what it needs
+# Each project declares exactly what it needs
 crux init homelab-assistant && cd homelab-assistant
-crux install wikijs filesystem
+crux install wikijs filesystem autoresearch
 crux status
 ```
 
-That's it. Your project now has a `crux.json` (committed to git) and a generated `.mcp.json` (gitignored) ready for Claude Code. The wiki MCP launches via a generated script that fetches your API key from the keychain at runtime. No secrets ever touch a file.
+Your project now has a `crux.json` (committed to git) and a generated `.mcp.json` (gitignored). When a teammate clones the repo, they run `crux install` and get the same setup — with their own credentials from their own keychain.
 
-## Workflow: Run an Agent in a Sandbox
+## Architecture
 
-Your research agent should only access the wiki and a research skill — no filesystem, no GitHub, no trading APIs.
+```mermaid
+graph LR
+    subgraph Discovery
+        S1[Official MCP Registry]
+        S2[npm / PyPI]
+        S3[GitHub Repos]
+        S4[Local Sources]
+    end
 
-```bash
-# Ad-hoc sandboxed run
-crux run "Find papers on MCP security and update the wiki" \
-  --mcps wikijs filesystem \
-  --skills autoresearch
+    subgraph Crux[Crux Control Plane]
+        REG[Registry\nMCPs + Skills]
+        SEC[Secrets\nOS Keychain]
+        SYN[Sync Engine]
+    end
 
-# Or save it as a reusable manifest (committed to git)
-cat > tasks/weekly-research.json << 'EOF'
-{
-  "name": "weekly-research",
-  "task": "Search for latest MCP security papers, summarize, update wiki",
-  "mcps": ["wikijs", "filesystem"],
-  "skills": ["autoresearch"],
-  "timeout_minutes": 30
-}
-EOF
+    subgraph Projects
+        P1[Project A\nwikijs, filesystem]
+        P2[Project B\ngithub, memory]
+        P3[Sandbox Run\nscoped access]
+    end
 
-crux run --file tasks/weekly-research.json
-```
-
-Before execution, Crux runs pre-flight checks — every MCP exists, every secret is stored, every source is built. If something's missing, you get the exact command to fix it. No wasted agent time on mid-run failures.
-
-## How It Works
-
-```
-  You discover MCPs           Crux manages them             Your agents use them
-┌──────────────────┐    ┌───────────────────────┐    ┌──────────────────────┐
-│  Smithery        │    │  crux add             │    │                      │
-│  Official Reg.   │───▶│  ┌─ registry.json ──┐ │    │  Project A           │
-│  GitHub          │    │  │ wikijs, github,   │ │    │  crux.json:          │
-│  npm / PyPI      │    │  │ filesystem, slack │ │    │    wikijs, filesystem │
-└──────────────────┘    │  │ memory, trading   │ │    │  → .mcp.json (2 MCPs)│
-                        │  └───────────────────┘ │    │                      │
-                        │                        │    │  Project B           │
-                        │  crux secret set       │    │  crux.json:          │
-                        │  ┌─ OS Keychain ─────┐ │    │    github, memory    │
-                        │  │ API keys, tokens  │ │    │  → .mcp.json (2 MCPs)│
-                        │  │ (never in files)  │ │    │                      │
-                        │  └───────────────────┘ │    │  Sandbox Run         │
-                        │                        │    │  crux run --mcps ... │
-                        │  crux sync / crux run  │    │  → scoped .mcp.json  │
-                        └───────────────────────┘    └──────────────────────┘
+    S1 --> REG
+    S2 --> REG
+    S3 --> REG
+    S4 --> REG
+    REG --> SYN
+    SEC --> SYN
+    SYN --> P1
+    SYN --> P2
+    SYN --> P3
 ```
 
 **Registry** — Add MCPs and skills once from npm, PyPI, GitHub, or local sources. One source of truth across all projects.
@@ -120,6 +85,37 @@ Before execution, Crux runs pre-flight checks — every MCP exists, every secret
 **Sandboxed execution** — `crux run` creates isolated environments where agents only see the MCPs you declare. Pre-flight validation catches misconfigurations before execution starts.
 
 **Health monitoring** — `crux status` probes every MCP via JSON-RPC handshake. `crux doctor` validates your entire environment and auto-fixes what it can.
+
+## Why scoping matters
+
+**An agent with 5 relevant tools outperforms one drowning in 50 irrelevant ones.** Less noise in the context window means better outputs, fewer hallucinated tool calls, and tighter security. Scoping isn't just organization — it's a quality lever.
+
+## Install
+
+```bash
+curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
+```
+
+The installer checks for [uv](https://docs.astral.sh/uv/), installs it if missing, pulls `crux-cli` from PyPI, initialises `~/.crux/`, and tells you exactly what to do next.
+
+**Alternatively**, if you already have uv:
+
+```bash
+uv tool install crux-cli
+crux setup
+```
+
+## Run an agent in a sandbox
+
+Your research agent should only access the wiki and a research skill — no filesystem, no GitHub, no trading APIs.
+
+```bash
+crux run "Find papers on MCP security and update the wiki" \
+  --mcps wikijs \
+  --skills autoresearch
+```
+
+Before execution, Crux runs pre-flight checks — every MCP exists, every secret is stored, every source is built. If something's missing, you get the exact command to fix it.
 
 ## Commands
 
@@ -163,21 +159,23 @@ Crux takes an opinionated stance: **there is no insecure-but-easier path.**
 - Launcher scripts contain keystore lookup commands, not credential values
 - Generated `.mcp.json` never contains secrets
 - Each sandbox gets only the MCPs explicitly declared for that run
-- `crux doctor` warns if it detects plaintext credentials anywhere in your config
 - Path traversal protections on all file operations
 
-In an ecosystem where [48% of MCP servers recommend plaintext credential storage](https://www.stackone.com/blog/mcp-security-risks), Crux makes secure-by-default the only option.
-
-## Why Not Just...
+## Why not just...
 
 | Alternative | What's missing |
 |------------|---------------|
-| Edit `.mcp.json` by hand | No scoping, no secrets management, config drift across projects, no reproducibility |
-| Smithery / PulseMCP | Discovery platforms — they help you *find* MCPs, not *manage* them across projects |
-| Docker MCP Gateway | Container isolation only — no registry, no per-project scoping, no credential management |
-| MCPM | Profile-based — no project-level manifest, no keystore secrets, no sandboxed execution |
+| Edit `.mcp.json` by hand | No scoping, no secrets management, config drift, no reproducibility |
+| Smithery / PulseMCP | Discovery platforms — they help you *find* MCPs, not *manage* them |
+| Docker MCP Gateway | Container isolation only — no registry, no scoping, no credentials |
+| MCPM | Profile-based — no project manifests, no keystore secrets, no sandbox |
 
 Crux is the full lifecycle: **curate → scope → secure → execute → monitor.**
+
+## Documentation
+
+Full docs, guides, and API reference at [crux-cli.github.io/crux](https://crux-cli.github.io/crux).
+
 ## Development
 
 ```bash
@@ -187,10 +185,6 @@ uv sync --extra dev
 uv run pytest tests/ -v
 uv run ruff check src/crux_cli/ tests/
 ```
-
-## Documentation
-
-Full docs, guides, and API reference at [docs.crux.dev](https://docs.crux.dev) *(coming soon)*.
 
 ## License
 
