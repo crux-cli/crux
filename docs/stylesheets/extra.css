@@ -17,12 +17,22 @@
 /* ── Hero section ── */
 
 .crux-hero {
-  padding: 4rem 0 3rem;
+  padding: 4rem 1rem 3rem;
   background: var(--md-default-bg-color);
 }
 
 .crux-hero__inner {
   max-width: 42rem;
+}
+
+/* ── Mobile padding for all homepage sections ── */
+
+@media screen and (max-width: 44.9375em) {
+  .crux-hero { padding: 2rem 1rem; }
+  .crux-features { padding: 2rem 1rem; }
+  .crux-how { padding: 2rem 1rem; }
+  .crux-replaces { padding: 2rem 1rem 3rem; }
+  .crux-hero__install code { font-size: 0.75rem; word-break: break-all; }
 }
 
 .crux-hero h1 {

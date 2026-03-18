@@ -44,12 +44,4 @@ In-depth guides for each Crux feature.
 
     [:octicons-arrow-right-24: Health](health.md)
 
--   :material-cog-sync:{ .lg .middle } __CI/CD Integration__
-
-    ---
-
-    Automate Crux in your pipelines.
-
-    [:octicons-arrow-right-24: CI/CD](ci-cd.md)
-
 </div>
