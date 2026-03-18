@@ -12,3 +12,8 @@
   --md-primary-fg-color--light: #b39ddb;
   --md-primary-fg-color--dark: #7e57c2;
 }
+
+/* Mermaid dark mode: use neutral theme and override backgrounds */
+[data-md-color-scheme="slate"] .mermaid {
+  --md-mermaid-font-family: var(--md-text-font-family);
+}
