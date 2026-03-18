@@ -97,10 +97,11 @@ jobs:
       - name: Generate changelog from commits
         env:
           GH_REPO: ${{ github.repository }}
+          TAG_REF: ${{ github.ref }}
         run: |
           # Get the previous tag
           PREV_TAG=$(git tag --sort=-creatordate | head -2 | tail -1)
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          CURRENT_TAG=${TAG_REF#refs/tags/}
 
           if [ -z "$PREV_TAG" ] || [ "$PREV_TAG" = "$CURRENT_TAG" ]; then
             # First release — use all commits
