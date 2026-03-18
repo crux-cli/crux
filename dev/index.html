@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Crux — AI Agent Control Plane. Per-project MCP scoping, secure secrets, sandboxed execution.">
+        <meta name="description" content="Manage your MCP servers and skills like packages. Per-project scoping, secure secrets, sandboxed execution for Claude Code.">
       
       
         <meta name="author" content="Crux CLI">
@@ -27,7 +27,7 @@
     
     
       
-        <title>Crux - Crux</title>
+        <title>Crux — Manage your MCP servers and skills like packages - Crux</title>
       
     
     
@@ -81,11 +81,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#crux" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -121,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Crux
+              Crux — Manage your MCP servers and skills like packages
             
           </span>
         </div>
@@ -349,8 +344,173 @@
     <div class="md-container" data-md-component="container">
       
       
+  
         
       
+  <style>
+    .md-header { position: initial; }
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+    @media screen and (min-width: 76.25em) {
+      .md-sidebar--primary { display: none; }
+    }
+  </style>
+
+  <!-- Hero -->
+  <section class="crux-hero">
+    <div class="md-grid md-typeset">
+      <div class="crux-hero__inner">
+        <h1>Crux</h1>
+        <p class="crux-hero__tagline">
+          Manage your MCP servers and skills like packages
+        </p>
+        <p class="crux-hero__sub">
+          A CLI tool for <strong>macOS</strong> and <strong>Linux</strong> that brings package&#8209;management to your <strong>Claude&nbsp;Code</strong> agentic workflows.
+          Add MCP servers and skills to a local registry, scope them per project, and keep credentials in your OS&nbsp;keychain&nbsp;&mdash;&nbsp;never&nbsp;in&nbsp;files.
+        </p>
+        <div class="crux-hero__cta">
+          <a href="getting-started/quickstart/" class="md-button md-button--primary">
+            Get started
+          </a>
+          <a href="getting-started/installation/" class="md-button">
+            Install
+          </a>
+        </div>
+        <div class="crux-hero__install">
+          <code>curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Value props -->
+  <section class="crux-features">
+    <div class="md-grid md-typeset">
+
+      <div class="crux-features__grid">
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 10.96a.985.985 0 0 1-.37-1.37L3.13 7c.11-.2.28-.34.47-.42l7.83-4.4c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.19.1.35.26.44.46l1.45 2.52c.28.48.11 1.09-.36 1.36l-1 .58v4.96c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.99.99 0 0 1 3 16.5v-5.54c-.3.17-.68.18-1 0m10-6.81v6.7l5.96-3.35zM5 15.91l6 3.38v-6.71L5 9.21zm14 0v-3.22l-5 2.9c-.33.18-.7.17-1 .01v3.69zm-5.15-2.55 6.28-3.63-.58-1.01-6.28 3.63z"/></svg></span>
+          </div>
+          <h3>One registry, every project</h3>
+          <p>Add MCP servers and skills once&nbsp;&mdash;&nbsp;from npm, PyPI, GitHub, or local&nbsp;sources. Use them across all your projects without copy&#8209;pasting config&nbsp;files.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5zm0 6c1.4 0 2.8 1.1 2.8 2.5V11c.6 0 1.2.6 1.2 1.3v3.5c0 .6-.6 1.2-1.3 1.2H9.2c-.6 0-1.2-.6-1.2-1.3v-3.5c0-.6.6-1.2 1.2-1.2V9.5C9.2 8.1 10.6 7 12 7m0 1.2c-.8 0-1.5.5-1.5 1.3V11h3V9.5c0-.8-.7-1.3-1.5-1.3"/></svg></span>
+          </div>
+          <h3>Secrets in your keychain</h3>
+          <p>API keys live in macOS Keychain, Linux Secret&nbsp;Service, or an age&#8209;encrypted vault. Launcher scripts fetch them at runtime. Nothing touches disk.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m23.5 17-5 5-3.5-3.5 1.5-1.5 2 2 3.5-3.5zM6 2c-1.11 0-2 .89-2 2v16c0 1.11.89 2 2 2h7.81c-.53-.91-.81-1.95-.81-3 0-.33.03-.67.08-1H6v-2h7.81c.46-.8 1.1-1.5 1.87-2H6v-2h12v1.08c.33-.05.67-.08 1-.08.34 0 .67.03 1 .08V8l-6-6m-1 1.5L18.5 9H13Z"/></svg></span>
+          </div>
+          <h3>Scoped per project</h3>
+          <p>Each project declares its tools in <code>crux.json</code>. Agents see only what&rsquo;s declared&nbsp;&mdash;&nbsp;fewer tools means better outputs and tighter security.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.99.99 0 0 1 3 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.32.17.53.5.53.88zM12 4.15 6.04 7.5 12 10.85l5.96-3.35zM5 15.91l6 3.38v-6.71L5 9.21zm14 0v-6.7l-6 3.37v6.71z"/></svg></span>
+          </div>
+          <h3>Sandboxed execution</h3>
+          <p><code>crux&nbsp;run</code> creates isolated environments with pre&#8209;flight validation. Misconfigurations are caught before your agent starts.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.5 4A5.5 5.5 0 0 0 2 9.5c0 .5.09 1 .22 1.5H6.3l1.27-3.37c.3-.8 1.48-.88 1.86 0L11.5 13l.59-1.42c.13-.33.48-.58.91-.58h8.78c.13-.5.22-1 .22-1.5A5.5 5.5 0 0 0 16.5 4c-1.86 0-3.5.93-4.5 2.34C11 4.93 9.36 4 7.5 4M3 12.5a1 1 0 0 0-1 1 1 1 0 0 0 1 1h2.44L11 20c1 .9 1 .9 2 0l5.56-5.5H21a1 1 0 0 0 1-1 1 1 0 0 0-1-1h-7.6l-.93 2.3c-.4 1.01-1.55.87-1.92.03L8.5 9.5l-.96 2.33c-.15.38-.49.67-.94.67z"/></svg></span>
+          </div>
+          <h3>Health monitoring</h3>
+          <p><code>crux&nbsp;status</code> probes every MCP via JSON&#8209;RPC. <code>crux&nbsp;doctor</code> validates your environment and auto&#8209;fixes what it&nbsp;can.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg></span>
+          </div>
+          <h3>Discover &amp; search</h3>
+          <p>Search the official MCP registry directly from your terminal. Find servers, get suggested install commands, add with one&nbsp;line.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="crux-how">
+    <div class="md-grid md-typeset">
+      <h2>How it works</h2>
+      <div class="crux-how__steps">
+        <div class="crux-step">
+          <div class="crux-step__num">1</div>
+          <div class="crux-step__body">
+            <h3>Build your registry</h3>
+            <p>Add MCP servers and skills from any source. You do this once&nbsp;&mdash;&nbsp;they&rsquo;re available to every project.</p>
+            <pre><code>crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
+crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
+crux add skill autoresearch --github user/autoresearch-skill</code></pre>
+          </div>
+        </div>
+        <div class="crux-step">
+          <div class="crux-step__num">2</div>
+          <div class="crux-step__body">
+            <h3>Store credentials securely</h3>
+            <p>API keys go in your OS keychain. Crux generates launcher scripts that fetch them at runtime.</p>
+            <pre><code>crux secret set wikijs WIKIJS_API_KEY
+crux secret set github GITHUB_TOKEN</code></pre>
+          </div>
+        </div>
+        <div class="crux-step">
+          <div class="crux-step__num">3</div>
+          <div class="crux-step__body">
+            <h3>Scope each project</h3>
+            <p>Declare what each project needs. Crux generates the <code>.mcp.json</code> that Claude Code expects.</p>
+            <pre><code>crux init homelab-assistant && cd homelab-assistant
+crux install wikijs filesystem autoresearch
+crux status</code></pre>
+          </div>
+        </div>
+        <div class="crux-step">
+          <div class="crux-step__num">4</div>
+          <div class="crux-step__body">
+            <h3>Run with confidence</h3>
+            <p>Sandbox runs give agents only the tools you declare. Pre&#8209;flight checks catch problems before execution.</p>
+            <pre><code>crux run "Update the wiki with latest research" \
+  --mcps wikijs --skills autoresearch</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Replaces -->
+  <section class="crux-replaces">
+    <div class="md-grid md-typeset">
+      <h2>Replaces manual management of</h2>
+      <div class="crux-replaces__grid">
+        <div class="crux-replaces__item">
+          <strong>.mcp.json files</strong>
+          <span>Hand-edited per project</span>
+        </div>
+        <div class="crux-replaces__item">
+          <strong>.env / plaintext secrets</strong>
+          <span>Committed to git, leaked in logs</span>
+        </div>
+        <div class="crux-replaces__item">
+          <strong>Global MCP configs</strong>
+          <span>Every agent sees every tool</span>
+        </div>
+        <div class="crux-replaces__item">
+          <strong>Manual skill management</strong>
+          <span>Files copied between machines</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
       <main class="md-main" data-md-component="main">
         <div class="md-main__inner md-grid">
           
@@ -1993,127 +2153,6 @@
   
   
   
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#manage-your-mcp-servers-and-skills-like-packages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Manage your MCP servers and skills like packages
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Manage your MCP servers and skills like packages">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#do-you-feel-youre-not-taking-full-advantage-of-claude-code" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Do you feel you're not taking full advantage of Claude Code?
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#do-you-feel-overwhelmed-managing-mcp-servers-skills-and-projects" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Do you feel overwhelmed managing MCP servers, skills, and projects?
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#do-you-feel-afraid-of-exploring-ideas-due-to-the-risk-agentic-ai-poses-if-misconfigured" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Do you feel afraid of exploring ideas due to the risk agentic AI poses if misconfigured?
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#before-and-after" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Before and after
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Before and after">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#without-crux" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Without Crux
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#with-crux" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        With Crux
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it works
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#get-started" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get started
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -2134,194 +2173,6 @@
               
               <article class="md-content__inner md-typeset">
                 
-                  
-  
-
-
-
-  
-    <a href="https://github.com/crux-cli/crux/edit/main/docs/index.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
-    </a>
-  
-  
-    
-      
-    
-    <a href="https://github.com/crux-cli/crux/raw/main/docs/index.md" title="View source of this page" class="md-content__button md-icon">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
-    </a>
-  
-
-
-<h1 id="crux">Crux<a class="headerlink" href="#crux" title="Permanent link">&para;</a></h1>
-<h2 id="manage-your-mcp-servers-and-skills-like-packages">Manage your MCP servers and skills like packages<a class="headerlink" href="#manage-your-mcp-servers-and-skills-like-packages" title="Permanent link">&para;</a></h2>
-<p>Crux is a CLI tool for <strong>macOS</strong> and <strong>Linux</strong> that brings package-management to your <strong>Claude Code</strong> agentic workflows. Add MCP servers and skills to a local registry, declare which ones each project needs, and let Crux generate the config — with credentials in your OS keychain, never in files.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://raw.githubusercontent.com/crux-cli/crux/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
-</span></code></pre></div>
-<hr />
-<h3 id="do-you-feel-youre-not-taking-full-advantage-of-claude-code">Do you feel you're not taking full advantage of Claude Code?<a class="headerlink" href="#do-you-feel-youre-not-taking-full-advantage-of-claude-code" title="Permanent link">&para;</a></h3>
-<p>The MCP ecosystem has 10,000+ servers and 60,000+ skills that can supercharge your agentic workflows. But discovering, configuring, and managing them across projects is a chore. You add one MCP, it works — then you need it in another project, and another, and you're copy-pasting JSON between repos. Skills are files you manually drop into directories. There's no <code>install</code>, no <code>upgrade</code>, no single place to manage it all.</p>
-<p><strong>Crux gives you a personal registry.</strong> Add an MCP or skill once — from npm, PyPI, GitHub, or a local path — and it's available to every project on your machine.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>crux<span class="w"> </span>add<span class="w"> </span>mcp<span class="w"> </span>filesystem<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-filesystem
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>crux<span class="w"> </span>add<span class="w"> </span>mcp<span class="w"> </span>github<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-github
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>crux<span class="w"> </span>add<span class="w"> </span>mcp<span class="w"> </span>wikijs<span class="w"> </span>--github<span class="w"> </span>jaalbin24/wikijs-mcp-server
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>crux<span class="w"> </span>add<span class="w"> </span>skill<span class="w"> </span>autoresearch<span class="w"> </span>--github<span class="w"> </span>user/autoresearch-skill
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>crux<span class="w"> </span>search<span class="w"> </span><span class="s2">&quot;database&quot;</span><span class="w">   </span><span class="c1"># discover more from the official registry</span>
-</span></code></pre></div>
-<hr />
-<h3 id="do-you-feel-overwhelmed-managing-mcp-servers-skills-and-projects">Do you feel overwhelmed managing MCP servers, skills, and projects?<a class="headerlink" href="#do-you-feel-overwhelmed-managing-mcp-servers-skills-and-projects" title="Permanent link">&para;</a></h3>
-<p>You have 20 projects. Each one needs a different combination of MCPs and skills. Maintaining 20 hand-edited <code>.mcp.json</code> files is unsustainable — and when you add a new tool to your workflow, you have to update every project that needs it.</p>
-<p><strong>Crux scopes tools per project.</strong> Each project gets a <code>crux.json</code> manifest declaring exactly what it needs. <code>crux sync</code> generates the <code>.mcp.json</code> Claude Code expects. Add a tool to one project without touching the others.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>crux<span class="w"> </span>init<span class="w"> </span>homelab-assistant<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>homelab-assistant
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>crux<span class="w"> </span>install<span class="w"> </span>wikijs<span class="w"> </span>filesystem<span class="w"> </span>autoresearch
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>crux<span class="w"> </span>status<span class="w">   </span><span class="c1"># verify every MCP is healthy</span>
-</span></code></pre></div>
-<p>Your <code>crux.json</code> is clean and declarative:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;homelab-assistant&quot;</span><span class="p">,</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;mcps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;wikijs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;filesystem&quot;</span><span class="p">],</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;skills&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;autoresearch&quot;</span><span class="p">]</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>Commit it to git. The generated <code>.mcp.json</code> is gitignored — Crux rebuilds it from the manifest.</p>
-<hr />
-<h3 id="do-you-feel-afraid-of-exploring-ideas-due-to-the-risk-agentic-ai-poses-if-misconfigured">Do you feel afraid of exploring ideas due to the risk agentic AI poses if misconfigured?<a class="headerlink" href="#do-you-feel-afraid-of-exploring-ideas-due-to-the-risk-agentic-ai-poses-if-misconfigured" title="Permanent link">&para;</a></h3>
-<p>When every agent can see every tool, one misconfiguration can have outsized consequences. A research task accidentally triggers a write to production. An agent meant for your wiki has access to your cloud infrastructure. API keys sitting in plaintext <code>.env</code> files get committed to git.</p>
-<p><strong>Crux isolates and secures.</strong> Credentials live in your OS keychain — never in config files. Sandboxed runs give agents access to only the tools you explicitly declare. Pre-flight checks catch misconfigurations before execution starts.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Secrets go in your OS keychain — macOS Keychain, Linux Secret Service, or age-encrypted vault</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>crux<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>wikijs<span class="w"> </span>WIKIJS_API_KEY
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>crux<span class="w"> </span>secret<span class="w"> </span><span class="nb">set</span><span class="w"> </span>github<span class="w"> </span>GITHUB_TOKEN
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Run an agent with only the tools it needs — nothing else</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>crux<span class="w"> </span>run<span class="w"> </span><span class="s2">&quot;Summarize MCP security research and update the wiki&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span>--mcps<span class="w"> </span>wikijs<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span>--skills<span class="w"> </span>autoresearch
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># Full environment health check</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>crux<span class="w"> </span>doctor
-</span></code></pre></div>
-<hr />
-<h2 id="before-and-after">Before and after<a class="headerlink" href="#before-and-after" title="Permanent link">&para;</a></h2>
-<h3 id="without-crux">Without Crux<a class="headerlink" href="#without-crux" title="Permanent link">&para;</a></h3>
-<pre class="mermaid"><code>%%{init: {'theme': 'neutral'}}%%
-graph TB
-    subgraph Claude["Claude Code"]
-        direction TB
-        G["Global .mcp.json\n&lt;em&gt;ALL 30 MCPs visible to every agent&lt;/em&gt;"]
-        PA[".mcp.json in Project A\n&lt;em&gt;hand-edited, copy-pasted&lt;/em&gt;"]
-        PB[".mcp.json in Project B\n&lt;em&gt;hand-edited, copy-pasted&lt;/em&gt;"]
-    end
-
-    subgraph Problems["What goes wrong"]
-        direction TB
-        X1["🔓 API keys in plaintext\n.env files committed to git"]
-        X2["📋 Config drift\neach project diverges over time"]
-        X3["🎯 No scoping\nevery agent sees every tool"]
-        X4["📁 Skills unmanaged\nfiles manually copied between machines"]
-    end
-
-    G --- X1
-    G --- X3
-    PA --- X2
-    PB --- X2
-    G --- X4</code></pre>
-<h3 id="with-crux">With Crux<a class="headerlink" href="#with-crux" title="Permanent link">&para;</a></h3>
-<pre class="mermaid"><code>%%{init: {'theme': 'neutral'}}%%
-graph TB
-    subgraph Crux["Crux Control Plane"]
-        direction TB
-        REG["Registry\none source of truth\nMCPs + Skills"]
-        SEC["OS Keychain\nsecrets never in files"]
-        SYN["Sync Engine\ngenerates scoped .mcp.json"]
-    end
-
-    subgraph Projects["Claude Code Projects"]
-        direction TB
-        PA["Project A\ncrux.json: wikijs, filesystem\n→ scoped .mcp.json &lt;em&gt;(2 MCPs)&lt;/em&gt;"]
-        PB["Project B\ncrux.json: github, memory\n→ scoped .mcp.json &lt;em&gt;(2 MCPs)&lt;/em&gt;"]
-        SB["Sandbox Run\ncrux run --mcps wikijs\n→ isolated .mcp.json &lt;em&gt;(1 MCP)&lt;/em&gt;"]
-    end
-
-    REG --&gt; SYN
-    SEC --&gt; SYN
-    SYN --&gt; PA
-    SYN --&gt; PB
-    SYN --&gt; SB</code></pre>
-<p>Each project sees <strong>only</strong> its declared tools. Secrets are fetched from the keychain at runtime. No config drift. No ambient access.</p>
-<hr />
-<h2 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>%%{init: {'theme': 'neutral'}}%%
-graph LR
-    subgraph Discovery["Discovery Sources"]
-        direction TB
-        S1["Official MCP Registry"]
-        S2["npm / PyPI"]
-        S3["GitHub Repos"]
-        S4["Local Sources"]
-    end
-
-    subgraph Crux["Crux Control Plane"]
-        direction TB
-        REG["Registry\nMCPs + Skills"]
-        SEC["Secrets\nOS Keychain"]
-        SYN["Sync Engine\nGenerates .mcp.json"]
-    end
-
-    subgraph Projects["Your Projects"]
-        direction TB
-        P1["Project A\nwikijs, filesystem"]
-        P2["Project B\ngithub, memory"]
-        P3["Sandbox Run\nscoped access"]
-    end
-
-    S1 --&gt; REG
-    S2 --&gt; REG
-    S3 --&gt; REG
-    S4 --&gt; REG
-    REG --&gt; SYN
-    SEC --&gt; SYN
-    SYN --&gt; P1
-    SYN --&gt; P2
-    SYN --&gt; P3</code></pre>
-<p><strong>Registry</strong> — Add MCPs and skills once from npm, PyPI, GitHub, or local sources. One source of truth across all your projects.</p>
-<p><strong>Secrets</strong> — API keys live in your OS keychain (macOS Keychain, Linux Secret Service, or age-encrypted vault). Launcher scripts fetch them at runtime. Nothing is written to disk.</p>
-<p><strong>Sync engine</strong> — <code>crux sync</code> reads your project's <code>crux.json</code> and generates the <code>.mcp.json</code> that Claude Code expects, with only the tools you declared.</p>
-<p><strong>Sandboxed execution</strong> — <code>crux run</code> creates isolated environments where agents only see the MCPs you declare. Pre-flight validation catches misconfigurations before execution starts.</p>
-<p><strong>Health monitoring</strong> — <code>crux status</code> probes every MCP via JSON-RPC handshake. <code>crux doctor</code> validates your entire environment and auto-fixes what it can.</p>
-<hr />
-<h2 id="get-started">Get started<a class="headerlink" href="#get-started" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>curl<span class="w"> </span>-LsSf<span class="w"> </span>https://raw.githubusercontent.com/crux-cli/crux/main/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
-</span></code></pre></div>
-<p>Or with uv: <code>uv tool install crux-cli &amp;&amp; crux setup</code></p>
-<div class="grid cards">
-<ul>
-<li><a href="getting-started/installation/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Installation guide</a></li>
-<li><a href="getting-started/quickstart/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Quick start</a></li>
-<li><a href="cli/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> CLI reference</a></li>
-<li><a href="api/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> API reference</a></li>
-</ul>
-</div>
-
-
-
-
-
-
-
-  
-  
-
-
-
-
-  
-
-
-
-                
               </article>
             </div>
           
@@ -2339,6 +2190,7 @@ graph LR
         
       </main>
       
+  
         <footer class="md-footer">
   
   <div class="md-footer-meta md-typeset">
@@ -2388,6 +2240,7 @@ graph LR
   </div>
 </footer>
       
+
     </div>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
