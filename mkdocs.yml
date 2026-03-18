@@ -149,7 +149,6 @@ nav:
       - Secrets Management: guides/secrets.md
       - Sandboxed Execution: guides/sandbox.md
       - Health Monitoring: guides/health.md
-      - CI/CD Integration: guides/ci-cd.md
   - CLI Reference:
       - cli/index.md
       - crux setup: cli/setup.md

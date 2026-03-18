@@ -28,7 +28,7 @@ curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
 
 Or if you already have [uv](https://docs.astral.sh/uv/): `uv tool install crux-cli && crux setup`
 
-## Get started in four steps
+## Get started in three steps
 
 **1. Build your registry** — add MCP servers and skills from any source:
 
@@ -45,7 +45,9 @@ crux secret set wikijs WIKIJS_API_KEY
 crux secret set github GITHUB_TOKEN
 ```
 
-**3. Scope each project** — declare what each project needs:
+**3. Use in a project or a one-off sandbox:**
+
+*Project mode* — declare what each project needs in a `crux.json` manifest:
 
 ```bash
 crux init homelab-assistant && cd homelab-assistant
@@ -53,7 +55,7 @@ crux install wikijs filesystem autoresearch
 crux status
 ```
 
-**4. Run with confidence** — sandboxed execution with pre-flight checks:
+*Sandbox mode* — run an agent with a specific set of tools, without a full project:
 
 ```bash
 crux run "Update the wiki with latest research" \
