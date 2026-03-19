@@ -477,6 +477,50 @@ def cmd_mcp_status(args: argparse.Namespace) -> None:
 
 
 def cmd_mcp_auth(args: argparse.Namespace) -> None:
-    """crux mcp auth — placeholder for MCP authentication."""
-    print("crux mcp auth is not yet implemented. Use 'crux secret set' temporarily.")
-    sys.exit(0)
+    """crux mcp auth — authenticate MCP servers."""
+    from crux_cli.auth import auth_all, auth_single, auth_status
+
+    name = getattr(args, "name", None)
+    do_all = getattr(args, "all", False)
+
+    if name:
+        auth_single(name)
+    elif do_all:
+        auth_all()
+    else:
+        # Show auth status table
+        from rich import box
+        from rich.console import Console
+        from rich.table import Table
+
+        statuses = auth_status()
+        if not statuses:
+            print("No MCPs have authentication configured.")
+            return
+
+        console = Console()
+        table = Table(title="MCP Authentication Status", box=box.SIMPLE_HEAVY, show_lines=False)
+        table.add_column("Name", style="bold cyan", no_wrap=True)
+        table.add_column("Auth Type", style="dim")
+        table.add_column("Status")
+
+        status_styles = {
+            "Authenticated": "[green]Authenticated[/]",
+            "Not authenticated": "[bold red]Not authenticated[/]",
+            "Token not set": "[bold red]Token not set[/]",
+            "Expired": "[bold red]Expired[/]",
+            "Refresh needed": "[yellow]Refresh needed[/]",
+            "Check failed": "[red]Check failed[/]",
+        }
+
+        for s in statuses:
+            styled = status_styles.get(s["status"], s["status"])
+            if s["status"].startswith("Missing:"):
+                styled = f"[red]{s['status']}[/]"
+            elif s["status"].startswith("Expires in"):
+                styled = f"[yellow]{s['status']}[/]"
+            table.add_row(s["name"], s["auth_type"], styled)
+
+        console.print(table)
+        print("\nRun: crux mcp auth <name>  to authenticate")
+        print("     crux mcp auth --all   to authenticate all")
