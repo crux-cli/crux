@@ -1,6 +1,6 @@
 # Crux
 
-**Manage your MCP servers and skills like packages.**
+**Agentic Tool Manager for Claude Code.**
 
 [![CI](https://github.com/crux-cli/crux/actions/workflows/ci.yml/badge.svg)](https://github.com/crux-cli/crux/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/crux-cli)](https://pypi.org/project/crux-cli/)
