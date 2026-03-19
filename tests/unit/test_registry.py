@@ -19,6 +19,7 @@ from crux_cli.registry import (
 
 # --- Fixtures ---
 
+
 def _make_response(payload):
     """Return a mock urlopen response with the given payload dict."""
     body = json.dumps(payload).encode()
@@ -40,9 +41,7 @@ NPM_SERVER = {
     "name": "io.example/npm-server",
     "title": "NPM Server",
     "description": "An npm-based MCP",
-    "packages": [
-        {"registry_name": "npm", "name": "@example/npm-server", "version": "1.0.0"}
-    ],
+    "packages": [{"registry_name": "npm", "name": "@example/npm-server", "version": "1.0.0"}],
 }
 
 REMOTE_SERVER = {
@@ -57,6 +56,7 @@ MINIMAL_SERVER = {
 
 
 # --- search_servers ---
+
 
 class TestSearchServers:
     def test_unwraps_server_key(self):
@@ -93,9 +93,11 @@ class TestSearchServers:
     def test_query_included_in_url(self):
         payload = {"servers": []}
         captured = {}
+
         def fake_urlopen(req, timeout=None):
             captured["url"] = req.full_url
             return _make_response(payload)
+
         with patch("urllib.request.urlopen", side_effect=fake_urlopen):
             search_servers(query="alpaca", limit=5)
         assert "q=alpaca" in captured["url"]
@@ -103,6 +105,7 @@ class TestSearchServers:
 
 
 # --- get_server ---
+
 
 class TestGetServer:
     def test_unwraps_server_key(self):
@@ -119,6 +122,7 @@ class TestGetServer:
 
 # --- display_name ---
 
+
 class TestDisplayName:
     def test_prefers_title(self):
         assert display_name({"title": "My Title", "name": "io.x/y"}) == "My Title"
@@ -131,6 +135,7 @@ class TestDisplayName:
 
 
 # --- github_slug ---
+
 
 class TestGithubSlug:
     def test_extracts_owner_repo(self):
@@ -157,6 +162,7 @@ class TestGithubSlug:
 
 
 # --- best_package ---
+
 
 class TestBestPackage:
     def test_prefers_npm(self):
@@ -191,6 +197,7 @@ class TestBestPackage:
 
 # --- remote_url ---
 
+
 class TestRemoteUrl:
     def test_returns_first_remote_url(self):
         assert remote_url(REMOTE_SERVER) == "https://mcp.example.com/mcp"
@@ -204,14 +211,15 @@ class TestRemoteUrl:
 
 # --- suggest_crux_add ---
 
+
 class TestSuggestCruxAdd:
     def test_npm_package(self):
         cmd = suggest_crux_add("npm-server", NPM_SERVER)
-        assert cmd == "crux add mcp npm-server --npx @example/npm-server"
+        assert cmd == "crux mcp add npm-server --npx @example/npm-server"
 
     def test_github_fallback(self):
         cmd = suggest_crux_add("my-server", GITHUB_SERVER)
-        assert cmd == "crux add mcp my-server --github example/my-server"
+        assert cmd == "crux mcp add my-server --github example/my-server"
 
     def test_remote_only_returns_none(self):
         assert suggest_crux_add("remote-server", REMOTE_SERVER) is None

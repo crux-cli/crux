@@ -63,6 +63,9 @@ target-version = "py311"
 line-length = 120
 src = ["src", "tests"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["crux_cli"]
+
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "S"]
 
