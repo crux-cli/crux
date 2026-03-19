@@ -110,10 +110,10 @@ If it didn't auto-trigger:
 gh workflow run docs.yml
 ```
 
-## Step 8: Final Verification
+## Step 8: Final Verification — Remote
 
 ```bash
-# PyPI package
+# PyPI package available
 pip index versions crux-cli
 
 # GitHub release page
@@ -122,6 +122,56 @@ gh release view v<VERSION>
 # Docs site
 open https://crux-cli.github.io/crux/
 ```
+
+## Step 9: Smoke Test — Fresh Install
+
+Verify the release works end-to-end by reinstalling from scratch on this system.
+
+### 9a. Uninstall current crux
+
+```bash
+uv tool uninstall crux-cli
+```
+
+Do NOT remove `~/.crux/` — we want to verify the new version works with existing data.
+
+### 9b. Reinstall from PyPI via the install script
+
+```bash
+curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
+```
+
+### 9c. Verify version number matches the release
+
+```bash
+crux version
+```
+
+Expected output should contain `<VERSION>`. If it shows an older version, the PyPI publish may not have propagated yet — wait 1-2 minutes and retry:
+```bash
+uv tool upgrade crux-cli
+crux version
+```
+
+### 9d. Test a change that shipped with this release
+
+Pick one user-facing change from the release and verify it works. Examples:
+- If a new command was added: run it and check output
+- If a command was renamed: verify old name fails and new name works
+- If auth was changed: run `crux mcp auth` and check the output
+
+```bash
+# Example: verify the CLI restructuring shipped
+crux mcp --help          # should show add/remove/list/search/upgrade/auth/status
+crux project --help      # should show create/install/uninstall/sync/status
+crux task --help         # should show run/init/list/clean
+
+# Example: verify a specific feature
+crux mcp auth            # should show auth status table (not "not implemented")
+crux doctor              # should NOT mention secrets
+```
+
+If the smoke test fails, investigate whether it's a packaging issue (wrong files included) or a code issue (bug in the release).
 
 ## Rollback
 
