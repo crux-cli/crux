@@ -96,18 +96,20 @@ Wait for completion. If it fails:
 - Build failure: check `uv build` / `twine check` output
 - PyPI publish failure: check trusted publisher config in repo settings
 
-## Step 7: Verify Docs Deployment
+## Step 7: Deploy Versioned Docs
 
-The docs pipeline auto-triggers on push to main. Verify:
+The docs pipeline does NOT auto-trigger from releases created by GitHub Actions. You must manually dispatch with the version number:
 
+```bash
+gh workflow run docs.yml -f version=<VERSION>
+```
+
+This deploys the docs as version `<VERSION>` and sets it as the `latest` alias.
+
+Verify:
 ```bash
 gh run list --workflow=docs.yml --limit=1
 gh run watch
-```
-
-If it didn't auto-trigger:
-```bash
-gh workflow run docs.yml
 ```
 
 ## Step 8: Final Verification — Remote

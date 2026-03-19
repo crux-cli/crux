@@ -10,6 +10,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy (e.g., 1.0.1). If set, deploys as this version + latest. If empty, deploys as dev."
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -50,8 +55,16 @@ jobs:
           mike deploy --push --update-aliases "$VERSION" latest
           mike set-default --push latest
 
+      - name: Deploy versioned docs (workflow_dispatch with version)
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          mike deploy --push --update-aliases "$VERSION" latest
+          mike set-default --push latest
+
       - name: Deploy dev docs (main branch)
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.version == '')
         run: |
           mike deploy --push --update-aliases dev
           # Set dev as default only until the first release creates 'latest'
