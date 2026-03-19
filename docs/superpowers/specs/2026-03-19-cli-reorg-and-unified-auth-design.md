@@ -610,6 +610,45 @@ Integration tests invoke the CLI as subprocesses with actual command strings. Ev
 | `test_oauth.py` | PKCE generation, token exchange request building, token refresh, discovery URL resolution |
 | `test_bridge.py` | Stdio-to-HTTP proxy: request forwarding, header injection, error handling, SSE translation |
 | `test_tokens.py` | Token metadata file I/O, expiry checks, refresh token presence detection |
+| `test_no_secret_leaks.py` | **Security invariant tests** (see Section 6.3) |
+
+### 6.3 Security Invariant Tests — No Auth Leaks (`test_no_secret_leaks.py`)
+
+A dedicated test file that enforces the "secrets NEVER in the filesystem" principle. These tests act as guardrails against future regressions. Every test uses a known sentinel secret value (e.g., `"SENTINEL_SECRET_VALUE_12345"`) and asserts it never appears in any generated file.
+
+**Launcher script tests:**
+- `test_launcher_never_contains_literal_secrets` — Generate a launcher for a keychain-authed MCP with known env vars. Read the launcher file contents. Assert the sentinel secret value does NOT appear in the file. Assert only `$(security find-generic-password ...)` or `$(secret-tool lookup ...)` patterns are present.
+- `test_http_bridge_launcher_never_contains_secrets` — Generate a launcher for an HTTP-transport MCP. Read contents. Assert no token values, URLs with credentials, or Bearer tokens appear as literals. Assert only `CRUX_BRIDGE_*` env var exports and `exec python3 -m crux_cli.bridge` (with zero arguments) are present.
+- `test_launcher_has_no_cli_arguments_with_secrets` — Parse the `exec` line of HTTP bridge launchers. Assert the `exec` command has zero arguments beyond the module name (all config via env vars).
+
+**`.mcp.json` tests:**
+- `test_mcp_json_never_contains_secrets` — Run `sync_project()` for a project with keychain-authed MCPs. Read the generated `.mcp.json`. Assert no secret values appear. Assert authed MCPs only have `command` pointing to a launcher path.
+- `test_mcp_json_no_auth_headers` — Run `sync_project()` for a project with HTTP-transport MCPs. Assert `.mcp.json` contains no `headers`, `Authorization`, `Bearer`, or token-like strings.
+- `test_mcp_json_no_env_secret_values` — Run `sync_project()` for a project with env vars configured. Assert no `env` block in `.mcp.json` contains values matching any stored secret.
+
+**`registry.json` tests:**
+- `test_registry_never_contains_client_secret` — Register an MCP with OAuth auth type. Assert `registry.json` does not contain `client_secret` as a key at any level.
+- `test_registry_auth_metadata_has_no_values` — For all auth types, register MCPs and assert the `auth` block contains only structural metadata (type, env_var names, URLs, scopes) and never actual credential values.
+- `test_add_mcp_rejects_secret_in_registry_fields` — Attempt to set fields that look like secrets in registry metadata. Assert crux validates and rejects them.
+
+**`tokens.json` tests:**
+- `test_tokens_json_contains_only_metadata` — Write token metadata for an OAuth-authed MCP. Read `tokens.json`. Assert it contains only `expires_at`, `scopes`, `token_url`, `client_id`, `keychain_account_access`, `keychain_account_refresh`. Assert no field value matches a known token string.
+- `test_tokens_json_has_restricted_permissions` — Write token metadata. Assert file permissions are `0o600`.
+
+**Bridge module tests:**
+- `test_bridge_reads_config_from_env_only` — Instantiate the bridge with env vars set. Assert it reads URL and auth from `os.environ`, not from `sys.argv`.
+- `test_bridge_never_logs_token_values` — Run the bridge with a known token in env. Capture any stderr/stdout output. Assert the token value never appears in output.
+- `test_bridge_auth_header_constructed_from_env` — Set `CRUX_BRIDGE_AUTH_ENV=MY_TOKEN` and `MY_TOKEN=secret123`. Assert the bridge constructs the header `Authorization: Bearer secret123` internally without it ever being a CLI argument.
+
+**Process visibility tests:**
+- `test_bridge_process_cmdline_has_no_secrets` — Start the bridge as a subprocess (via launcher). Read `/proc/<pid>/cmdline` (Linux) or parse `ps` output (macOS). Assert no secret values appear in the command line.
+
+**`secrets.json` index tests:**
+- `test_secrets_index_contains_only_key_names` — Store several secrets via the backend. Read `secrets.json`. Assert every value is a list of strings (key names). Assert no value matches any stored secret.
+
+**Cross-cutting regression tests:**
+- `test_full_sync_cycle_no_secret_leaks` — End-to-end: register MCP with keychain auth, store secrets, create project, install MCP, sync. Read ALL generated files (`registry.json`, `secrets.json`, `.mcp.json`, launcher scripts). Assert the sentinel secret value appears in NONE of them.
+- `test_full_http_sync_cycle_no_secret_leaks` — Same as above but for HTTP-transport MCP with OAuth auth. Assert zero secret leakage across all files.
 
 ---
 
