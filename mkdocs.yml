@@ -1,4 +1,4 @@
-site_name: Crux — Package Manager for Claude Code Agent Tools
+site_name: Crux — Agentic Tool Manager for Claude Code
 site_url: https://crux-cli.github.io/crux/
 site_description: "Manage your MCP servers and skills like packages. Per-project scoping, secure secrets, sandboxed execution for Claude Code."
 site_author: Crux CLI
