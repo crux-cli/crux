@@ -72,14 +72,14 @@
             <span class="twemoji">{% include ".icons/material/cube-outline.svg" %}</span>
           </div>
           <h3>Sandboxed execution</h3>
-          <p><code>crux&nbsp;run</code> creates isolated environments with pre&#8209;flight validation. Misconfigurations are caught before your agent starts.</p>
+          <p><code>crux&nbsp;task&nbsp;run</code> creates isolated environments with pre&#8209;flight validation. Misconfigurations are caught before your agent starts.</p>
         </div>
         <div class="crux-feature">
           <div class="crux-feature__icon">
             <span class="twemoji">{% include ".icons/material/heart-pulse.svg" %}</span>
           </div>
           <h3>Health monitoring</h3>
-          <p><code>crux&nbsp;status</code> probes every MCP via JSON&#8209;RPC. <code>crux&nbsp;doctor</code> validates your environment and auto&#8209;fixes what it&nbsp;can.</p>
+          <p><code>crux&nbsp;project&nbsp;status</code> probes every MCP via JSON&#8209;RPC. <code>crux&nbsp;doctor</code> validates your environment and auto&#8209;fixes what it&nbsp;can.</p>
         </div>
         <div class="crux-feature">
           <div class="crux-feature__icon">
@@ -103,18 +103,18 @@
           <div class="crux-step__body">
             <h3>Build your registry</h3>
             <p>Add MCP servers and skills from any source. You do this once&nbsp;&mdash;&nbsp;they&rsquo;re available to every project.</p>
-            <pre><code>crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
-crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
-crux add skill autoresearch --github user/autoresearch-skill</code></pre>
+            <pre><code>crux mcp add filesystem --npx @modelcontextprotocol/server-filesystem
+crux mcp add wikijs --github jaalbin24/wikijs-mcp-server
+crux skill add autoresearch --github user/autoresearch-skill</code></pre>
           </div>
         </div>
         <div class="crux-step">
           <div class="crux-step__num">2</div>
           <div class="crux-step__body">
-            <h3>Store credentials securely</h3>
+            <h3>Authenticate your MCPs</h3>
             <p>API keys go in your OS keychain. Crux generates launcher scripts that fetch them at runtime.</p>
-            <pre><code>crux secret set wikijs WIKIJS_API_KEY
-crux secret set github GITHUB_TOKEN</code></pre>
+            <pre><code>crux mcp auth wikijs
+crux mcp auth github</code></pre>
           </div>
         </div>
         <div class="crux-step">
@@ -122,11 +122,11 @@ crux secret set github GITHUB_TOKEN</code></pre>
           <div class="crux-step__body">
             <h3>Use in a project or a one&#8209;off sandbox</h3>
             <p><strong>Project mode</strong>&nbsp;&mdash;&nbsp;declare what each project needs in a <code>crux.json</code> manifest. Crux generates the <code>.mcp.json</code> that Claude Code expects.</p>
-            <pre><code>crux init homelab-assistant && cd homelab-assistant
-crux install wikijs filesystem autoresearch
-crux status</code></pre>
+            <pre><code>crux project create homelab-assistant && cd homelab-assistant
+crux project install wikijs filesystem autoresearch
+crux project status</code></pre>
             <p style="margin-top: 1rem;"><strong>Sandbox mode</strong>&nbsp;&mdash;&nbsp;run an agent with a specific set of tools, without setting up a project. Pre&#8209;flight checks catch problems before execution.</p>
-            <pre><code>crux run "Update the wiki with latest research" \
+            <pre><code>crux task run "Update the wiki with latest research" \
   --mcps wikijs --skills autoresearch</code></pre>
           </div>
         </div>

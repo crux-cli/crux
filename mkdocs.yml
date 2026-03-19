@@ -149,26 +149,38 @@ nav:
       - guides/index.md
       - Registry Management: guides/registry.md
       - Project Scoping: guides/projects.md
-      - Secrets Management: guides/secrets.md
+      - Authentication: guides/authentication.md
       - Sandboxed Execution: guides/sandbox.md
       - Health Monitoring: guides/health.md
   - CLI Reference:
       - cli/index.md
-      - crux setup: cli/setup.md
-      - crux doctor: cli/doctor.md
-      - crux add: cli/add.md
-      - crux remove: cli/remove.md
-      - crux list: cli/list.md
-      - crux search: cli/search.md
-      - crux upgrade: cli/upgrade.md
-      - crux init: cli/init.md
-      - crux install: cli/install.md
-      - crux uninstall: cli/uninstall.md
-      - crux sync: cli/sync.md
-      - crux status: cli/status.md
-      - crux secret: cli/secret.md
-      - crux run: cli/run.md
-      - crux version: cli/version.md
+      - System:
+          - crux init: cli/init.md
+          - crux doctor: cli/doctor.md
+          - crux version: cli/version.md
+      - MCP Servers:
+          - crux mcp add: cli/mcp-add.md
+          - crux mcp remove: cli/mcp-remove.md
+          - crux mcp list: cli/mcp-list.md
+          - crux mcp search: cli/mcp-search.md
+          - crux mcp upgrade: cli/mcp-upgrade.md
+          - crux mcp auth: cli/mcp-auth.md
+          - crux mcp status: cli/mcp-status.md
+      - Skills:
+          - crux skill add: cli/skill-add.md
+          - crux skill remove: cli/skill-remove.md
+          - crux skill list: cli/skill-list.md
+      - Projects:
+          - crux project create: cli/project-create.md
+          - crux project install: cli/project-install.md
+          - crux project uninstall: cli/project-uninstall.md
+          - crux project sync: cli/project-sync.md
+          - crux project status: cli/project-status.md
+      - Tasks:
+          - crux task run: cli/task-run.md
+          - crux task init: cli/task-init.md
+          - crux task list: cli/task-list.md
+          - crux task clean: cli/task-clean.md
   - API Reference:
       - api/index.md
       - Configuration: api/config.md
@@ -176,6 +188,9 @@ nav:
       - Paths: api/paths.md
       - Registry: api/registry.md
       - Secrets: api/secrets.md
+      - Auth: api/auth.md
+      - OAuth: api/oauth.md
+      - Bridge: api/bridge.md
       - Sync Engine: api/sync.md
       - Sandbox: api/sandbox.md
       - Health: api/health.md
