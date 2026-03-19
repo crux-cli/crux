@@ -20,13 +20,13 @@ In-depth guides for each Crux feature.
 
     [:octicons-arrow-right-24: Projects](projects.md)
 
--   :material-key:{ .lg .middle } __Secrets Management__
+-   :material-key:{ .lg .middle } __Authentication__
 
     ---
 
-    Store and retrieve credentials via OS keystore.
+    Store and manage credentials via OS keystore.
 
-    [:octicons-arrow-right-24: Secrets](secrets.md)
+    [:octicons-arrow-right-24: Authentication](authentication.md)
 
 -   :material-cube-outline:{ .lg .middle } __Sandboxed Execution__
 

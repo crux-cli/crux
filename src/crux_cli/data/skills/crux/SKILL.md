@@ -1,25 +1,46 @@
-# Crux — AI Agent Control Plane
+# Crux — Agentic Tool Manager for Claude Code
 
-Crux is a CLI tool for managing MCP servers, skills, and agent sandboxes.
+Crux is a CLI tool for managing MCP servers, skills, and agent tasks.
 
 ## Available Commands
 
-- `crux search <query>` — Search the marketplace for MCPs and skills
-- `crux add <name>` — Install an MCP or skill from the marketplace
-- `crux remove <name>` — Uninstall an MCP or skill
-- `crux sync` — Synchronise installed MCPs into `.mcp.json` for Claude Code
-- `crux doctor` — Run health checks on all installed MCPs
-- `crux run <task>` — Execute a task in an isolated sandbox with selected MCPs
-- `crux secret set <mcp> <key> <value>` — Store an API key securely
-- `crux secret get <mcp> <key>` — Retrieve a stored secret
-- `crux setup` — Initialise or migrate the Crux home directory
+### MCP Servers
+- `crux mcp search <query>` — Search the MCP Registry
+- `crux mcp add <name> --npx <pkg>` — Register an MCP server
+- `crux mcp remove <name>` — Unregister an MCP server
+- `crux mcp list` — List registered MCP servers
+- `crux mcp upgrade` — Update cloned MCP repos
+- `crux mcp auth <name>` — Authenticate an MCP server
+- `crux mcp auth` — Show authentication status for all MCPs
+- `crux mcp status` — Probe all registered MCP servers
+
+### Skills
+- `crux skill add <name> --github <repo>` — Register a skill
+- `crux skill remove <name>` — Unregister a skill
+- `crux skill list` — List registered skills
+
+### Projects
+- `crux project create [name]` — Create a new project with crux.json
+- `crux project install <name>` — Add MCPs/skills to current project
+- `crux project uninstall <name>` — Remove MCPs/skills from project
+- `crux project sync` — Generate .mcp.json from crux.json
+- `crux project status` — Show project health (MCPs, skills, auth)
+
+### Tasks
+- `crux task run <prompt>` — Execute a task in an isolated sandbox
+- `crux task init` — Scaffold a run.json template
+- `crux task list` — Show past/active runs
+- `crux task clean` — Remove completed sandboxes
+
+### System
+- `crux init` — Initialize the crux environment
+- `crux doctor` — Check crux environment health
 - `crux version` — Show version and check for updates
-- `crux upgrade` — Update installed MCPs and skills to latest versions
 
 ## Usage Notes
 
-- Run `crux setup` first to initialise the `~/.crux/` directory.
-- Use `crux search` to discover MCPs, then `crux add` to install them.
-- After adding MCPs, run `crux sync` to update your Claude Code configuration.
-- Use `crux doctor` to diagnose connectivity or authentication issues.
+- Run `crux init` first to set up the `~/.crux/` directory.
+- Use `crux mcp search` to discover MCPs, then `crux mcp add` to register them.
+- Use `crux mcp auth <name>` to authenticate any MCP that needs credentials.
+- Use `crux project create` to start a project, then `crux project install` to add MCPs.
 - Secrets are stored in the system keychain (macOS) or secret-service (Linux).

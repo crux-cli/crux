@@ -1,7 +1,5 @@
 """Unit tests for crux_cli.preflight — pre-flight validation."""
 
-from __future__ import annotations
-
 import json
 from unittest.mock import MagicMock
 
@@ -91,7 +89,7 @@ class TestPreflightMissingMcp:
         result = run_preflight(["nonexistent"], [], registry=base_registry)
         assert not result.ok
         assert any("nonexistent" in e and "not found" in e for e in result.errors)
-        assert any("crux add mcp" in e for e in result.errors)
+        assert any("crux mcp add" in e for e in result.errors)
 
 
 class TestPreflightMissingAuth:
@@ -100,7 +98,7 @@ class TestPreflightMissingAuth:
         result = run_preflight(["wikijs-mcp"], [], registry=base_registry)
         assert not result.ok
         assert any("WIKIJS_URL" in e for e in result.errors)
-        assert any("crux secret set" in e for e in result.errors)
+        assert any("crux mcp auth" in e for e in result.errors)
 
 
 class TestPreflightAuthCheckFails:
@@ -133,7 +131,7 @@ class TestPreflightMissingSkill:
         result = run_preflight([], ["nonexistent-skill"], registry=base_registry)
         assert not result.ok
         assert any("nonexistent-skill" in e and "not found" in e for e in result.errors)
-        assert any("crux add skill" in e for e in result.errors)
+        assert any("crux skill add" in e for e in result.errors)
 
     def test_preflight_skill_source_missing(self, base_registry, tmp_path):
         """Skill in registry but source dir missing triggers an error."""
@@ -166,15 +164,11 @@ class TestPreflightAllPass:
         assert result.ok
         assert result.errors == []
 
-    def test_preflight_all_pass_with_auth(
-        self, base_registry, _patch_secrets_index, tmp_path
-    ):
+    def test_preflight_all_pass_with_auth(self, base_registry, _patch_secrets_index, tmp_path):
         """All checks pass when secrets are stored for authed MCP."""
         # Write secrets index with the required keys
         secrets_file = tmp_path / "secrets.json"
-        secrets_file.write_text(
-            json.dumps({"wikijs-mcp": ["WIKIJS_URL", "WIKIJS_API_KEY"]})
-        )
+        secrets_file.write_text(json.dumps({"wikijs-mcp": ["WIKIJS_URL", "WIKIJS_API_KEY"]}))
 
         result = run_preflight(["wikijs-mcp"], [], registry=base_registry)
         assert result.ok

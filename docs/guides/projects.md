@@ -5,14 +5,14 @@ Projects are Crux's core abstraction for per-directory MCP management. Each proj
 ## Creating a Project
 
 ```bash
-crux init my-project
+crux project create my-project
 cd my-project
 ```
 
 Or initialize in the current directory:
 
 ```bash
-crux init
+crux project create
 ```
 
 This creates a `crux.json`:
@@ -30,19 +30,19 @@ Commit `crux.json` to git. It's your project's MCP manifest.
 ## Installing MCPs
 
 ```bash
-crux install wikijs filesystem
+crux project install wikijs filesystem
 ```
 
 This:
 
 1. Adds the names to `crux.json`
-2. Runs `crux sync` to generate `.mcp.json`
+2. Runs `crux project sync` to generate `.mcp.json`
 3. Creates launcher scripts for MCPs that need authentication
 
 ## Uninstalling MCPs
 
 ```bash
-crux uninstall wikijs
+crux project uninstall wikijs
 ```
 
 Removes from `crux.json` and re-syncs.
@@ -52,16 +52,16 @@ Removes from `crux.json` and re-syncs.
 If you edit `crux.json` manually, regenerate the Claude Code config:
 
 ```bash
-crux sync
+crux project sync
 ```
 
 Sync all tracked projects at once:
 
 ```bash
-crux sync --all
+crux project sync --all
 ```
 
-## What `crux sync` Generates
+## What `crux project sync` Generates
 
 Given this `crux.json`:
 
@@ -107,15 +107,15 @@ When a teammate clones your repo:
 ```bash
 git clone https://github.com/you/homelab.git
 cd homelab
-crux install  # reads crux.json, syncs everything
-crux secret set wikijs WIKIJS_API_KEY  # enter their own key
-crux status  # verify everything works
+crux project install  # reads crux.json, syncs everything
+crux mcp auth wikijs WIKIJS_API_KEY  # enter their own key
+crux project status  # verify everything works
 ```
 
 The `crux.json` is the source of truth. The generated `.mcp.json` and launcher scripts are local artifacts.
 
 ## Project Tracking
 
-Crux tracks all initialized projects in `~/.crux/projects.json`. This enables `crux sync --all` and `crux status --all`.
+Crux tracks all initialized projects in `~/.crux/projects.json`. This enables `crux project sync --all` and `crux project status --all`.
 
 Stale projects (deleted directories) are detected and cleaned up automatically.

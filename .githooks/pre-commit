@@ -14,6 +14,10 @@ TMPDIR="$(mktemp -d)"
 trap 'rm -rf "${TMPDIR}"' EXIT INT TERM
 LIST="${TMPDIR}/.files"   # NUL-delimited list of extracted temp paths
 
+# Copy pyproject.toml so ruff can find per-file-ignores and other settings.
+ROOT="$(git rev-parse --show-toplevel)"
+cp "${ROOT}/pyproject.toml" "${TMPDIR}/pyproject.toml"
+
 # Write each staged .py file's index content to TMPDIR and record its temp
 # path NUL-delimited into LIST.  tr '\0' '\n' converts git's -z output to
 # newlines (safe: git disallows NUL bytes in filenames).

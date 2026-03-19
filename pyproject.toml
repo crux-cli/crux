@@ -1,6 +1,6 @@
 [project]
 name = "crux-cli"
-version = "0.0.1"
+version = "1.0.1"
 description = "Crux OS — Agentic AI control plane"
 requires-python = ">=3.11"
 dependencies = [
@@ -46,6 +46,7 @@ markers = [
     "integration: integration tests that invoke the CLI",
     "unit: pure unit tests",
     "macos: requires macOS security framework",
+    "e2e: end-to-end tests with real auth flows and fixture MCP server",
 ]
 
 [tool.coverage.run]
@@ -63,11 +64,15 @@ target-version = "py311"
 line-length = 120
 src = ["src", "tests"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["crux_cli"]
+
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "S"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "S108"]  # assert and /tmp paths are expected in tests
 "tests/**/conftest.py" = ["S101", "S603"]  # subprocess in test helpers
-"src/crux_cli/cli/commands/registry.py" = ["S602", "S603", "S606", "S607"]  # subprocess calls with git/crux
+"src/crux_cli/cli/commands/mcp.py" = ["S602", "S603", "S606", "S607"]  # subprocess calls with git/crux
+"src/crux_cli/cli/commands/skill.py" = ["S603", "S607"]  # subprocess calls with git
 "src/crux_cli/cli/commands/doctor.py" = ["S603"]  # subprocess for setup_cmd

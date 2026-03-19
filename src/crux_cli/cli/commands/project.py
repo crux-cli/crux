@@ -1,4 +1,4 @@
-"""CLI commands: init, install, uninstall, sync, status."""
+"""CLI commands: project create, install, uninstall, sync, status."""
 
 from __future__ import annotations
 
@@ -16,8 +16,8 @@ from crux_cli.projects import list_projects, register_project
 from crux_cli.sync import sync_project
 
 
-def cmd_init(args: argparse.Namespace) -> None:
-    """crux init [name] — scaffold a new project."""
+def cmd_project_create(args: argparse.Namespace) -> None:
+    """crux project create [name] — scaffold a new project."""
     name = getattr(args, "name", None)
 
     if name:
@@ -37,6 +37,14 @@ def cmd_init(args: argparse.Namespace) -> None:
         "mcps": [],
         "skills": [],
     }
+
+    mcps_arg = getattr(args, "mcps", None)
+    skills_arg = getattr(args, "skills", None)
+    if mcps_arg:
+        crux_json["mcps"] = [m.strip() for m in mcps_arg.split(",")]
+    if skills_arg:
+        crux_json["skills"] = [s.strip() for s in skills_arg.split(",")]
+
     save_crux_json(project_dir, crux_json)
 
     gitignore_path = project_dir / ".gitignore"
@@ -52,25 +60,25 @@ def cmd_init(args: argparse.Namespace) -> None:
 
     print(f"\u2705 Created project '{name}' at {project_dir}")
     print(f"   Edit {project_dir}/crux.json to declare MCPs and skills")
-    print("   Then run: crux sync")
+    print("   Then run: crux project sync")
 
 
-def cmd_sync(args: argparse.Namespace) -> None:
-    """crux sync [--all] — generate .mcp.json for the current project or all tracked projects."""
+def cmd_project_sync(args: argparse.Namespace) -> None:
+    """crux project sync [--all] — generate .mcp.json for the current project or all tracked projects."""
     reg = load_registry()
 
     combined_registry = {
         "version": reg.get("version", "1.0.0"),
-        "mcp_definitions": dict(reg.get('mcp_definitions', {})),
-        "skill_definitions": dict(reg.get('skill_definitions', {})),
+        "mcp_definitions": dict(reg.get("mcp_definitions", {})),
+        "skill_definitions": dict(reg.get("skill_definitions", {})),
     }
 
-    sync_all = getattr(args, 'all', False)
+    sync_all = getattr(args, "all", False)
 
     if sync_all:
         projects = list_projects()
         if not projects:
-            print("No tracked projects. Run 'crux init' in a project directory.")
+            print("No tracked projects. Run 'crux project create' in a project directory.")
             return
 
         print(f"\nSyncing {len(projects)} tracked project(s)...\n")
@@ -105,23 +113,26 @@ def cmd_sync(args: argparse.Namespace) -> None:
                     print(f"Error: {issue}")
                 sys.exit(1)
             crux_json = load_crux_json(target_dir)
-            mcps_count = len(crux_json.get('mcps', [])) if crux_json else 0
-            skills_count = len(crux_json.get('skills', [])) if crux_json else 0
+            mcps_count = len(crux_json.get("mcps", [])) if crux_json else 0
+            skills_count = len(crux_json.get("skills", [])) if crux_json else 0
             print(f"Synced {target_dir.name} \u2014 {mcps_count} MCP(s), {skills_count} skill(s)")
         else:
             print("No crux.json in current directory.")
-            print("Run 'crux init' to create a project, or 'crux sync --all' to sync all tracked projects.")
+            print(
+                "Run 'crux project create' to create a project, "
+                "or 'crux project sync --all' to sync all tracked projects."
+            )
             sys.exit(1)
 
 
-def cmd_install(args: argparse.Namespace) -> None:
-    """crux install <name> [name ...] — add MCPs/skills to the current project and sync."""
+def cmd_project_install(args: argparse.Namespace) -> None:
+    """crux project install <name> [name ...] — add MCPs/skills to the current project and sync."""
     reg = load_registry()
     names = args.names
     target_dir = Path.cwd()
 
-    mcp_defs = dict(reg.get('mcp_definitions', {}))
-    skill_defs = dict(reg.get('skill_definitions', {}))
+    mcp_defs = dict(reg.get("mcp_definitions", {}))
+    skill_defs = dict(reg.get("skill_definitions", {}))
 
     crux_json = load_crux_json(target_dir)
     if crux_json is None:
@@ -140,22 +151,22 @@ def cmd_install(args: argparse.Namespace) -> None:
             continue
 
         if name in mcp_defs:
-            if name in crux_json.setdefault('mcps', []):
+            if name in crux_json.setdefault("mcps", []):
                 print(f"Skipped: MCP '{name}' already installed")
                 continue
-            crux_json['mcps'].append(name)
+            crux_json["mcps"].append(name)
             print(f"Added MCP '{name}' to crux.json")
             any_changed = True
         else:
-            if name in crux_json.setdefault('skills', []):
+            if name in crux_json.setdefault("skills", []):
                 print(f"Skipped: skill '{name}' already installed")
                 continue
-            crux_json['skills'].append(name)
+            crux_json["skills"].append(name)
 
             skill_data = skill_defs[name]
-            source_dir = skill_data.get('source_dir', '')
-            source_path = Path(source_dir) if source_dir and Path(source_dir).is_absolute() else (
-                v1_skills_dir_fn() / name
+            source_dir = skill_data.get("source_dir", "")
+            source_path = (
+                Path(source_dir) if source_dir and Path(source_dir).is_absolute() else (v1_skills_dir_fn() / name)
             )
             dest_path = target_dir / ".claude" / "skills" / name
             if source_path.exists():
@@ -187,8 +198,8 @@ def cmd_install(args: argparse.Namespace) -> None:
         print(f"Synced {target_dir.name}")
 
 
-def cmd_uninstall(args: argparse.Namespace) -> None:
-    """crux uninstall <name> [name ...] — remove MCPs/skills from current project and sync."""
+def cmd_project_uninstall(args: argparse.Namespace) -> None:
+    """crux project uninstall <name> [name ...] — remove MCPs/skills from current project and sync."""
     reg = load_registry()
     names = args.names
     target_dir = Path.cwd()
@@ -198,15 +209,15 @@ def cmd_uninstall(args: argparse.Namespace) -> None:
         print(f"Error: No crux.json found in {target_dir}")
         sys.exit(1)
 
-    mcp_defs = dict(reg.get('mcp_definitions', {}))
-    skill_defs = dict(reg.get('skill_definitions', {}))
+    mcp_defs = dict(reg.get("mcp_definitions", {}))
+    skill_defs = dict(reg.get("skill_definitions", {}))
 
     any_changed = False
     has_errors = False
 
     for name in names:
-        in_mcps = name in crux_json.get('mcps', [])
-        in_skills = name in crux_json.get('skills', [])
+        in_mcps = name in crux_json.get("mcps", [])
+        in_skills = name in crux_json.get("skills", [])
 
         if not in_mcps and not in_skills:
             print(f"Error: '{name}' is not installed in this project")
@@ -214,12 +225,12 @@ def cmd_uninstall(args: argparse.Namespace) -> None:
             continue
 
         if in_mcps:
-            crux_json['mcps'].remove(name)
+            crux_json["mcps"].remove(name)
             print(f"Removed MCP '{name}' from crux.json")
             any_changed = True
 
         if in_skills:
-            crux_json['skills'].remove(name)
+            crux_json["skills"].remove(name)
             safe_name = Path(name).name
             skills_parent = target_dir / ".claude" / "skills"
             skill_dir = skills_parent / safe_name
@@ -276,17 +287,17 @@ def _status_table(title: str, rows: list[dict]) -> None:
     console.print(table)
 
 
-def cmd_status(args: argparse.Namespace) -> None:
-    """crux status — show MCP server health for current project or all projects."""
+def cmd_project_status(args: argparse.Namespace) -> None:
+    """crux project status — show MCP server health for current project or all projects."""
 
     print("\nChecking MCP server health...\n")
     reg = load_registry()
-    mcp_registry = reg.get('mcp_definitions', {})
+    mcp_registry = reg.get("mcp_definitions", {})
 
     if args.all:
         tracked = list_projects()
         if not tracked:
-            print("No tracked projects. Run 'crux init' in a project directory.")
+            print("No tracked projects. Run 'crux project create' in a project directory.")
             return
 
         found_any = False
@@ -297,13 +308,13 @@ def cmd_status(args: argparse.Namespace) -> None:
                 print()
                 continue
             crux_json = load_crux_json(project)
-            label = crux_json.get('name', project.name) if crux_json else entry['name']
-            declared = crux_json.get('mcps', []) if crux_json else []
+            label = crux_json.get("name", project.name) if crux_json else entry["name"]
+            declared = crux_json.get("mcps", []) if crux_json else []
             has_mcp_file = (project / ".mcp.json").exists()
 
             if crux_json or has_mcp_file:
                 if declared and not has_mcp_file:
-                    print(f"  {label}: Declares MCPs but no .mcp.json \u2014 run: crux sync\n")
+                    print(f"  {label}: Declares MCPs but no .mcp.json \u2014 run: crux project sync\n")
                 else:
                     rows = _probe_project_servers(project, mcp_registry)
                     if rows:
@@ -313,29 +324,34 @@ def cmd_status(args: argparse.Namespace) -> None:
                 found_any = True
 
         if not found_any:
-            print("No projects found. Run: crux init <name>")
+            print("No projects found. Run: crux project create <name>")
     else:
         target_dir = Path.cwd()
         mcp_file = target_dir / ".mcp.json"
         crux_json = load_crux_json(target_dir)
 
         if crux_json and not mcp_file.exists():
-            print("crux.json found but no .mcp.json \u2014 run: crux sync")
+            print("crux.json found but no .mcp.json \u2014 run: crux project sync")
             return
 
         if not mcp_file.exists():
-            print(f"No .mcp.json in {target_dir.name}/ \u2014 run: crux install <name>")
+            print(f"No .mcp.json in {target_dir.name}/ \u2014 run: crux project install <name>")
             return
 
         with open(mcp_file) as f:
             mcp_config = json.load(f)
-        servers = mcp_config.get('mcpServers', {})
+        servers = mcp_config.get("mcpServers", {})
         rows = []
         for name, config in enrich_with_marketplace(servers, mcp_registry).items():
             result = probe_mcp_server_detailed(config)
-            rows.append({"name": name, "status": result["status"],
-                          "tools_count": result["tools_count"],
-                          "detail": result["detail"]})
+            rows.append(
+                {
+                    "name": name,
+                    "status": result["status"],
+                    "tools_count": result["tools_count"],
+                    "detail": result["detail"],
+                }
+            )
         if rows:
             _status_table(target_dir.name, rows)
     print()
@@ -348,13 +364,13 @@ def _probe_project_servers(project_dir: Path, mcp_registry: dict) -> list[dict]:
         return []
     with open(mcp_file) as f:
         mcp_config = json.load(f)
-    servers = mcp_config.get('mcpServers', {})
+    servers = mcp_config.get("mcpServers", {})
     if not servers:
         return []
     rows = []
     for name, config in enrich_with_marketplace(servers, mcp_registry).items():
         result = probe_mcp_server_detailed(config)
-        rows.append({"name": name, "status": result["status"],
-                      "tools_count": result["tools_count"],
-                      "detail": result["detail"]})
+        rows.append(
+            {"name": name, "status": result["status"], "tools_count": result["tools_count"], "detail": result["detail"]}
+        )
     return rows

@@ -9,32 +9,32 @@ Register MCP servers from different sources:
 === "npm (npx)"
 
     ```bash
-    crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
-    crux add mcp github --npx @modelcontextprotocol/server-github
+    crux mcp add filesystem --npx @modelcontextprotocol/server-filesystem
+    crux mcp add github --npx @modelcontextprotocol/server-github
     ```
 
 === "PyPI (uvx)"
 
     ```bash
-    crux add mcp my-tool --uvx my-mcp-package
+    crux mcp add my-tool --uvx my-mcp-package
     ```
 
 === "GitHub"
 
     ```bash
-    crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
+    crux mcp add wikijs --github jaalbin24/wikijs-mcp-server
     ```
 
     GitHub sources are cloned to `~/.crux/mcps/`. If the MCP needs a build step:
 
     ```bash
-    crux add mcp wikijs --github jaalbin24/wikijs-mcp-server --build-cmd "npm install && npm run build"
+    crux mcp add wikijs --github jaalbin24/wikijs-mcp-server --build-cmd "npm install && npm run build"
     ```
 
 === "Local"
 
     ```bash
-    crux add mcp my-local-mcp --local /path/to/mcp-server
+    crux mcp add my-local-mcp --local /path/to/mcp-server
     ```
 
 ### Adding with Authentication
@@ -42,38 +42,38 @@ Register MCP servers from different sources:
 If the MCP requires API keys, declare them with `--keychain`:
 
 ```bash
-crux add mcp wikijs --github jaalbin24/wikijs-mcp-server --keychain WIKIJS_API_KEY
+crux mcp add wikijs --github jaalbin24/wikijs-mcp-server --keychain WIKIJS_API_KEY
 ```
 
-This tells Crux that `wikijs` expects the `WIKIJS_API_KEY` environment variable. The actual value is stored separately via `crux secret set`.
+This tells Crux that `wikijs` expects the `WIKIJS_API_KEY` environment variable. The actual value is stored separately via `crux mcp auth`.
 
 ### Adding with Tags
 
 Organize your MCPs with tags:
 
 ```bash
-crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem --tags "core,filesystem"
+crux mcp add filesystem --npx @modelcontextprotocol/server-filesystem --tags "core,filesystem"
 ```
 
 ## Adding Skills
 
 ```bash
-crux add skill my-skill --local /path/to/skill
-crux add skill shared-skill --github user/skill-repo
+crux skill add my-skill --local /path/to/skill
+crux skill add shared-skill --github user/skill-repo
 ```
 
 ## Listing the Registry
 
 ```bash
 # List everything
-crux list
+crux mcp list
 
 # JSON output (for scripts)
-crux list --json
+crux mcp list --json
 
 # Filter by type
-crux list --type mcp
-crux list --type skill
+crux mcp list --type mcp
+crux mcp list --type skill
 ```
 
 ## Searching the Official Registry
@@ -81,12 +81,12 @@ crux list --type skill
 Search the official MCP Registry at registry.modelcontextprotocol.io:
 
 ```bash
-crux search github
-crux search "file system"
-crux search slack --limit 5
+crux mcp search github
+crux mcp search "file system"
+crux mcp search slack --limit 5
 ```
 
-Results include suggested `crux add` commands you can copy-paste.
+Results include suggested `crux mcp add` commands you can copy-paste.
 
 ## Upgrading Sources
 
@@ -94,20 +94,21 @@ Update GitHub-cloned MCPs to their latest version:
 
 ```bash
 # Upgrade all cloned sources
-crux upgrade
+crux mcp upgrade
 
 # Upgrade specific MCPs
-crux upgrade wikijs github
+crux mcp upgrade wikijs github
 
 # Preview without making changes
-crux upgrade --dry-run
+crux mcp upgrade --dry-run
 ```
 
 ## Removing Entries
 
 ```bash
-crux remove wikijs
+crux mcp remove wikijs
+crux skill remove my-skill
 ```
 
 !!! warning
-    Removing an MCP from the registry doesn't remove it from projects that reference it. Run `crux sync` in those projects afterward.
+    Removing an MCP from the registry doesn't remove it from projects that reference it. Run `crux project sync` in those projects afterward.

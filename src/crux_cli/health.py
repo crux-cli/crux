@@ -227,7 +227,7 @@ def check_mcp_sources_present(crux_root: Path, mcp_definitions: dict[str, Any]) 
                 CheckResult(
                     f"MCP source: {mcp_name} ({source_dir})",
                     passed=full.is_dir(),
-                    fix_hint=f"Run: crux add {mcp_name}",
+                    fix_hint=f"Run: crux mcp add {mcp_name}",
                 )
             )
     return checks
@@ -258,37 +258,6 @@ def check_build_artifacts(crux_root: Path, mcp_definitions: dict[str, Any]) -> l
     return checks
 
 
-def check_secrets_consistency(
-    secrets_index: dict[str, Any],
-    mcp_definitions: dict[str, Any],
-) -> list[CheckResult]:
-    """Check that MCPs requiring auth have corresponding secrets configured."""
-    checks = []
-    for mcp_name, defn in mcp_definitions.items():
-        auth = defn.get("auth", {})
-        env_vars = auth.get("env_vars", [])
-        if not env_vars:
-            continue
-        stored = secrets_index.get(mcp_name, [])
-        missing = [v for v in env_vars if v not in stored]
-        if missing:
-            checks.append(
-                CheckResult(
-                    f"Secrets for {mcp_name}: missing {', '.join(missing)}",
-                    passed=False,
-                    fix_hint=f"Run: crux secret set {mcp_name} <KEY> <VALUE>",
-                )
-            )
-        else:
-            checks.append(
-                CheckResult(
-                    f"Secrets for {mcp_name}: all configured",
-                    passed=True,
-                )
-            )
-    return checks
-
-
 def check_crux_in_path() -> CheckResult:
     """Check that the crux binary is on PATH."""
     found = shutil.which("crux") is not None
@@ -299,7 +268,6 @@ def run_doctor_checks(
     crux_root: Path,
     registry_path: Path | None = None,
     mcp_definitions: dict[str, Any] | None = None,
-    secrets_index: dict[str, Any] | None = None,
 ) -> list[CheckResult]:
     """Run all doctor checks and return a flat list of results."""
     results: list[CheckResult] = []
@@ -321,9 +289,6 @@ def run_doctor_checks(
     if mcp_definitions:
         results.extend(check_mcp_sources_present(crux_root, mcp_definitions))
         results.extend(check_build_artifacts(crux_root, mcp_definitions))
-
-    if mcp_definitions and secrets_index is not None:
-        results.extend(check_secrets_consistency(secrets_index, mcp_definitions))
 
     results.append(check_crux_in_path())
 

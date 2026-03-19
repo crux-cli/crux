@@ -1,29 +1,28 @@
 # crux init
 
-Create a new project with a `crux.json` manifest.
+Initialize the `~/.crux/` environment for first-time use.
 
 ## Usage
 
 ```bash
-crux init [name]
+crux init
 ```
-
-## Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `name` | Project name (defaults to current directory name) |
 
 ## Description
 
-Creates a `crux.json` file in the current directory and registers the project in `~/.crux/projects.json` for tracking.
+Sets up the `~/.crux/` directory structure and creates empty registry files if they do not already exist. Safe to re-run — existing registries are not overwritten.
+
+Files created:
+
+- `~/.crux/mcps.json` — global MCP registry
+- `~/.crux/skills.json` — global skill registry
+- `~/.crux/projects.json` — tracked projects list
+
+Run this once after installing crux-cli. All other commands depend on this structure being present.
 
 ## Examples
 
 ```bash
-# Initialize with explicit name
-crux init homelab-assistant
-
-# Initialize using current directory name
+# First-time setup
 crux init
 ```
