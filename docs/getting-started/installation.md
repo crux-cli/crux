@@ -28,14 +28,14 @@ If you already have uv installed:
 
 ```bash
 uv tool install crux-cli
-crux setup
+crux init
 ```
 
 ## Alternative: pip
 
 ```bash
 pip install crux-cli
-crux setup
+crux init
 ```
 
 ## Verify Installation
