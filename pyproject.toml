@@ -46,6 +46,7 @@ markers = [
     "integration: integration tests that invoke the CLI",
     "unit: pure unit tests",
     "macos: requires macOS security framework",
+    "e2e: end-to-end tests with real auth flows and fixture MCP server",
 ]
 
 [tool.coverage.run]
