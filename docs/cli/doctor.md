@@ -18,7 +18,6 @@ Runs a comprehensive set of environment checks and auto-fixes what it can. Check
 - Registry JSON integrity
 - MCP source directories
 - Build artifacts for compiled MCPs
-- Secrets consistency
 - `crux` binary on PATH
 
 ## Output
@@ -31,7 +30,7 @@ Each check shows a pass/fail/warning status:
 ✓ node found
 ✓ npx found
 ✗ MCP 'wikijs' source not found at ~/.crux/mcps/wikijs
-  Fix: crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
+  Fix: crux mcp add wikijs --github jaalbin24/wikijs-mcp-server
 ```
 
 ## Examples
