@@ -99,7 +99,7 @@ fi
 
 # Initialise ~/.crux/ (idempotent)
 info "Initialising ~/.crux/ home directory..."
-"${CRUX_BIN_DIR}/crux" setup >/dev/null 2>&1 && success "~/.crux/ ready" || true
+"${CRUX_BIN_DIR}/crux" init >/dev/null 2>&1 && success "~/.crux/ ready" || true
 
 # ---------------------------------------------------------------------------
 # Step 3 — PATH & skill
@@ -142,7 +142,7 @@ if [ -f "${SKILL_DEST}" ]; then
   success "Crux skill already installed for Claude Code"
 else
   printf "  Install the Crux skill so Claude Code knows how to use it:\n\n"
-  printf "  ${CYAN}crux setup${RESET}\n"
+  printf "  ${CYAN}crux init${RESET}\n"
   dim "Installs SKILL.md → ~/.claude/skills/crux/"
   printf "\n"
 fi
@@ -155,13 +155,16 @@ printf "\n  ${BOLD}Quick start:${RESET}\n\n"
 printf "  ${CYAN}crux doctor${RESET}\n"
 dim "verify environment and dependencies"
 printf "\n"
-printf "  ${CYAN}crux search <query>${RESET}\n"
-dim "browse the MCP marketplace"
+printf "  ${CYAN}crux mcp search <query>${RESET}\n"
+dim "browse the MCP registry"
 printf "\n"
-printf "  ${CYAN}crux add mcp <name>${RESET}\n"
-dim "install an MCP server"
+printf "  ${CYAN}crux mcp add <name> --npx <package>${RESET}\n"
+dim "register an MCP server"
 printf "\n"
-printf "  ${CYAN}crux sync${RESET}\n"
-dim "write installed MCPs into .mcp.json for Claude Code"
+printf "  ${CYAN}crux mcp auth <name>${RESET}\n"
+dim "authenticate an MCP server"
+printf "\n"
+printf "  ${CYAN}crux project create${RESET}\n"
+dim "create a project with crux.json"
 printf "\n"
 printf "  ${DIM}docs  →  https://github.com/crux-cli/crux${RESET}\n\n"
