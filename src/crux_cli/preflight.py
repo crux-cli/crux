@@ -61,9 +61,7 @@ def _check_mcp_exists(name: str, mcp_defs: dict[str, Any], errors: list[str]) ->
     if name not in mcp_defs:
         available = ", ".join(sorted(mcp_defs.keys())) or "(none)"
         errors.append(
-            f"MCP '{name}' not found in registry. "
-            f"Available: {available}. "
-            f"Fix: crux add mcp {name} --npx <package>"
+            f"MCP '{name}' not found in registry. Available: {available}. Fix: crux mcp add {name} --npx <package>"
         )
 
 
@@ -81,10 +79,7 @@ def _check_mcp_source(name: str, mcp_data: dict[str, Any], errors: list[str]) ->
         source_path = crux_home().parent / source_dir
 
     if not source_path.exists():
-        errors.append(
-            f"MCP '{name}' source directory missing: {source_path}. "
-            f"Fix: crux add mcp {name} --github <repo>"
-        )
+        errors.append(f"MCP '{name}' source directory missing: {source_path}. Fix: crux add mcp {name} --github <repo>")
 
 
 def _check_auth_secrets(name: str, mcp_data: dict[str, Any], errors: list[str]) -> None:
@@ -98,10 +93,7 @@ def _check_auth_secrets(name: str, mcp_data: dict[str, Any], errors: list[str]) 
 
     for var in env_vars:
         if var not in stored_keys:
-            errors.append(
-                f"MCP '{name}' missing secret '{var}'. "
-                f"Fix: crux secret set {name} {var} <value>"
-            )
+            errors.append(f"MCP '{name}' missing secret '{var}'. Fix: crux mcp auth {name}")
 
 
 def _check_auth_preflight(name: str, mcp_data: dict[str, Any], errors: list[str]) -> None:
@@ -114,16 +106,10 @@ def _check_auth_preflight(name: str, mcp_data: dict[str, Any], errors: list[str]
         result = subprocess.run(check_cmd, capture_output=True, timeout=10)  # noqa: S603
         if result.returncode != 0:
             fix_desc = auth.get("fix_description", f"Run: {' '.join(auth.get('fix_cmd', []))}")
-            errors.append(
-                f"MCP '{name}' auth check failed (exit {result.returncode}). "
-                f"Fix: {fix_desc}"
-            )
+            errors.append(f"MCP '{name}' auth check failed (exit {result.returncode}). Fix: {fix_desc}")
     except FileNotFoundError:
         fix_desc = auth.get("fix_description", f"Install {check_cmd[0]}")
-        errors.append(
-            f"MCP '{name}' auth check command not found: {check_cmd[0]}. "
-            f"Fix: {fix_desc}"
-        )
+        errors.append(f"MCP '{name}' auth check command not found: {check_cmd[0]}. Fix: {fix_desc}")
     except subprocess.TimeoutExpired:
         errors.append(f"MCP '{name}' auth check timed out after 10s.")
 
@@ -132,9 +118,7 @@ def _check_skill(name: str, skill_defs: dict[str, Any], errors: list[str]) -> No
     if name not in skill_defs:
         available = ", ".join(sorted(skill_defs.keys())) or "(none)"
         errors.append(
-            f"Skill '{name}' not found in registry. "
-            f"Available: {available}. "
-            f"Fix: crux add skill {name} --github <repo>"
+            f"Skill '{name}' not found in registry. Available: {available}. Fix: crux skill add {name} --github <repo>"
         )
         return
 
@@ -148,10 +132,7 @@ def _check_skill(name: str, skill_defs: dict[str, Any], errors: list[str]) -> No
                 candidate = crux_home().parent / source_dir
             source_path = candidate
         if not source_path.exists():
-            errors.append(
-                f"Skill '{name}' source missing at {source_path}. "
-                f"Fix: crux add skill {name} --github <repo>"
-            )
+            errors.append(f"Skill '{name}' source missing at {source_path}. Fix: crux skill add {name} --github <repo>")
 
 
 def _check_build_artifacts(name: str, mcp_data: dict[str, Any], errors: list[str]) -> None:
@@ -172,8 +153,7 @@ def _check_build_artifacts(name: str, mcp_data: dict[str, Any], errors: list[str
 
     if source_path.exists() and not has_artifacts:
         errors.append(
-            f"MCP '{name}' appears unbuilt (no build artifacts in {source_path}). "
-            f"Fix: cd {source_path} && {build_cmd}"
+            f"MCP '{name}' appears unbuilt (no build artifacts in {source_path}). Fix: cd {source_path} && {build_cmd}"
         )
 
 

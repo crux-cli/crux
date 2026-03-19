@@ -78,11 +78,11 @@ def remote_url(server: dict[str, Any]) -> str | None:
 
 
 def suggest_crux_add(safe_name: str, server: dict[str, Any]) -> str | None:
-    """Return the best `crux add mcp` command string for a registry server, or None."""
+    """Return the best `crux mcp add` command string for a registry server, or None."""
     reg, pkg = best_package(server)
     if reg == "npm":
-        return f"crux add mcp {safe_name} --npx {pkg}"
+        return f"crux mcp add {safe_name} --npx {pkg}"
     slug = github_slug(server)
     if slug:
-        return f"crux add mcp {safe_name} --github {slug}"
+        return f"crux mcp add {safe_name} --github {slug}"
     return None
