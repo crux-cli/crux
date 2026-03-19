@@ -36,18 +36,25 @@ crux version [--check]  # Show version / check for updates
 ### 1.2 `crux mcp` — MCP Server Management
 
 ```
-crux mcp add <name> [--npx|--uvx|--github|--local <src>]
+crux mcp add <name> [--npx|--uvx|--github|--local|--url <src>]
                      [--command <cmd>] [--args <args>] [--tags <tags>]
                      [--build-cmd <cmd>] [--setup-cmd <cmd>]
                      [--keychain <var1,var2>]
+# --keychain sets auth.type="keychain" and auth.env_vars=["var1","var2"] automatically
+# --url <endpoint> sets type="streamable-http" for HTTP-transport MCPs
 crux mcp remove <name>
 crux mcp list [--json]
 crux mcp search <query> [--limit N] [--add]
 crux mcp upgrade [names...] [--dry-run]
 crux mcp auth <name>        # Detect auth method, run appropriate flow
+crux mcp auth <name> --refresh  # Refresh OAuth token without re-opening browser
 crux mcp auth [--all]       # No name = show MCPs needing auth; --all = auth everything
-crux mcp status             # Registry-wide: probe all registered MCPs
+crux mcp status             # Probe all registered MCPs (regardless of project)
 ```
+
+**`crux mcp status` vs `crux project status` distinction:**
+- `crux mcp status` probes **every MCP in the global registry** — useful for checking if all your registered MCPs are healthy, even ones not installed in any project. It spawns each MCP and runs the JSON-RPC handshake.
+- `crux project status` shows **only MCPs/skills declared in the current project's crux.json** (or all projects with `--all`), plus their auth state. It reads `.mcp.json` and probes only those servers.
 
 ### 1.3 `crux skill` — Skill Management
 
@@ -96,6 +103,7 @@ crux task clean [--force]       # Cleanup sandboxes
 | `crux secret set/get/list/delete` | `crux mcp auth` | Unified auth surface |
 | `crux run` | `crux task run` | Under task namespace |
 | `crux run init/list/clean` | `crux task init/list/clean` | Under task namespace |
+| `crux version` | `crux version` | Unchanged |
 
 ---
 
@@ -173,14 +181,18 @@ Fields are conditional on `type` — only relevant fields are present for each a
 - Used by HTTP transport: injected as `auth.header_prefix <token>` in `auth.header_name` header
 
 **`oauth`:**
-- Discover authorization server (via `discovery_url` or `auth.authorization_url` + `auth.token_url`)
-- Generate PKCE code verifier + challenge (S256)
+- Discover authorization server via fallback chain: (1) `auth.discovery_url` if provided, (2) `<resource_url>/.well-known/oauth-protected-resource` (RFC 9728), (3) `<issuer>/.well-known/oauth-authorization-server` (RFC 8414), (4) `<issuer>/.well-known/openid-configuration` (OIDC Discovery). Fall back to explicit `auth.authorization_url` + `auth.token_url` if discovery fails.
+- Generate PKCE code verifier (`secrets.token_urlsafe(32)`) + challenge (SHA256, S256 method)
+- Generate cryptographic `state` parameter (`secrets.token_urlsafe(16)`) for CSRF protection
 - Start local HTTP server on ephemeral port for redirect
-- Open browser to authorization URL with `response_type=code`, `client_id`, `redirect_uri`, `scope`, `code_challenge`, `resource` parameters
-- Receive authorization code at redirect
+- Open browser to authorization URL with `response_type=code`, `client_id`, `redirect_uri`, `scope`, `code_challenge`, `code_challenge_method=S256`, `state`, `resource` parameters
+- Receive authorization code at redirect; **validate `state` parameter matches** before proceeding
 - Exchange code for access token + refresh token at token URL
 - Store tokens in keychain: `crux.<mcp-name>/access_token`, `crux.<mcp-name>/refresh_token`
 - Store token metadata (expiry, scopes, issuer) in `~/.crux/tokens.json`
+- **Timeout**: local redirect server times out after 120 seconds; user sees "Authentication timed out" message
+- **Headless/SSH fallback**: if no browser can be opened (detected via `webbrowser.open` return value), print the authorization URL and instruct the user to open it manually, then wait for redirect
+- **Port conflicts**: bind to port 0 (OS-assigned ephemeral port) to avoid conflicts
 
 **`oauth-client-credentials`:**
 - Read `client_id` and prompt for `client_secret` (or read from keychain if already stored)
@@ -220,16 +232,16 @@ Iterate all MCPs needing auth, run the appropriate flow for each sequentially. S
 
 For `oauth` and `oauth-client-credentials` auth types:
 
-- **Automatic refresh at runtime**: When `crux project sync` generates launcher scripts for HTTP-transport MCPs, the launcher includes a token-refresh check. If the access token is expired but a refresh token exists, it exchanges the refresh token for a new access token before starting the MCP.
-- **Manual refresh**: `crux mcp auth <name>` detects expired tokens and re-runs the appropriate flow.
+- **Automatic refresh at sync time**: When `crux project sync` generates `.mcp.json` for HTTP-transport MCPs, it checks `tokens.json` for token expiry. If the access token is expired but a refresh token exists, sync automatically exchanges the refresh token for a new access token before embedding it in `.mcp.json` headers. Note: if the token expires *after* sync but before the MCP client reads `.mcp.json`, the request will fail — the user should re-run `crux project sync` or `crux mcp auth <name> --refresh`. Launcher scripts (stdio MCPs) are unaffected since they look up secrets from keychain at runtime, not at sync time.
+- **Manual refresh**: `crux mcp auth <name>` detects expired tokens and re-runs the appropriate flow. Use `crux mcp auth <name> --refresh` to only attempt a refresh token exchange without re-opening the browser (fails if no refresh token is stored).
 - **Token metadata** stored in `~/.crux/tokens.json`:
 
 ```json
 {
   "slack-mcp": {
     "auth_type": "oauth",
-    "access_token_key": "access_token",
-    "refresh_token_key": "refresh_token",
+    "keychain_account_access": "access_token",
+    "keychain_account_refresh": "refresh_token",
     "expires_at": "2026-03-19T14:30:00Z",
     "scopes": ["read", "write"],
     "token_url": "https://slack.com/api/oauth.v2.access",
@@ -238,7 +250,7 @@ For `oauth` and `oauth-client-credentials` auth types:
 }
 ```
 
-Token values stay in the OS keychain — `tokens.json` only stores metadata (expiry, scopes, URLs for refresh).
+Token values stay in the OS keychain — `tokens.json` only stores metadata (expiry, scopes, URLs for refresh). The `tokens.json` file is created with `0o600` permissions (user-only read/write). The `keychain_account_access` and `keychain_account_refresh` fields are the keychain account names used to look up the actual token values (e.g., `"access_token"` means the token is stored with account name `"access_token"` under service `crux.<mcp-name>`).
 
 ### 2.5 HTTP Transport Support
 
@@ -420,6 +432,7 @@ Extract skill-specific logic from old `registry.py`:
 **`health.py`** — Changes:
 - Remove `check_secrets_consistency` function
 - Remove secrets-related logic from `run_doctor_checks`
+- Update stale fix hints in `check_mcp_sources_present`: `"Run: crux add {mcp_name}"` → `"Run: crux mcp add {mcp_name}"`
 - Keep all other checks (python version, tools, directories, registry, sources, build artifacts)
 
 **`preflight.py`** — Update fix hint messages:
@@ -451,6 +464,21 @@ Extract skill-specific logic from old `registry.py`:
 
 **`paths.py`** — Add new path:
 - `tokens_path()` → `~/.crux/tokens.json`
+
+**`registry.py`** (core module, not CLI) — Update command strings:
+- `suggest_crux_add()` outputs `"crux add mcp ..."` → change to `"crux mcp add ..."`
+- Any hardcoded `os.execvp("crux", ["crux", "add", "mcp", ...])` calls in CLI's `_search_add` → change to `["crux", "mcp", "add", ...]`
+
+**`validation.py`** — Add new MCP type:
+- Add `"streamable-http"` to `_VALID_MCP_TYPES` set for HTTP-transport MCPs
+
+**Unchanged core modules** (no modifications needed):
+- `manifest.py` — `load_registry`, `save_registry`, `load_crux_json`, `save_crux_json` — unchanged, still used by all commands
+- `mcp_config.py` — `enrich_with_marketplace` — unchanged, used by status commands
+- `config.py` — secrets backend detection — unchanged
+- `setup_crux.py` — `run_setup` — unchanged, now called from `cmd_init` instead of `cmd_setup`
+- `sandbox.py` (core module) — sandbox lifecycle — unchanged, imported by `commands/task.py`
+- `projects.py` — project tracking — unchanged
 
 ### 5.4 New Files Summary
 
@@ -518,6 +546,17 @@ Integration tests invoke the CLI as subprocesses with actual command strings. Ev
 | `test_setup.py` | Unchanged (tests `run_setup` core logic, not CLI command name) |
 | `test_sandbox.py` | Unchanged (tests core sandbox logic, not CLI) |
 | `test_sandbox_extended.py` | Unchanged |
+| `test_init.py` | Unchanged (tests project init core logic) |
+| `test_install.py` | Unchanged (tests install core logic) |
+| `test_config.py` | Unchanged (tests secrets backend detection) |
+| `test_manifest.py` | Unchanged (tests load/save registry/crux.json) |
+| `test_mcp_config.py` | Unchanged (tests enrich_with_marketplace) |
+| `test_paths.py` | Add test for new `tokens_path()` function |
+| `test_projects.py` | Unchanged (tests project tracking) |
+| `test_registry.py` | Update expected `suggest_crux_add` output strings: `"crux add mcp"` → `"crux mcp add"` |
+| `test_secrets_backends.py` | Unchanged (tests SecretsBackend implementations) |
+| `test_validation.py` | Add `"streamable-http"` to valid MCP types tests |
+| `test_version.py` | Unchanged |
 
 **New unit tests:**
 | File | Tests |
@@ -668,6 +707,8 @@ If new dependencies are added (e.g., `authlib` for OAuth), update `pyproject.tom
 | Pure Python implementation | OAuth 2.1 PKCE + token exchange | No external dep; use `urllib`, `hashlib`, `secrets`, `http.server` |
 
 **Recommendation:** Implement OAuth 2.1 with pure Python stdlib. The OAuth flows needed (authorization code + PKCE, client credentials, token refresh) are straightforward HTTP requests. PKCE is just `secrets.token_urlsafe(32)` + SHA256. The redirect server is a minimal `http.server` handler. This avoids adding a dependency and keeps crux lightweight.
+
+**TLS note:** All OAuth HTTP requests use `urllib.request.urlopen` which relies on the system's CA certificate bundle by default. This works on macOS (uses Security framework) and most Linux distributions. For corporate environments with custom CAs or proxies, the `SSL_CERT_FILE` and `REQUESTS_CA_BUNDLE` environment variables are respected by Python's ssl module. No special handling needed.
 
 ---
 
