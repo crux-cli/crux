@@ -5,7 +5,7 @@ Run agents in isolated environments with exactly the MCPs they need — nothing 
 ## Ad-hoc Runs
 
 ```bash
-crux run "Find papers on MCP security and update the wiki" \
+crux task run "Find papers on MCP security and update the wiki" \
   --mcps wikijs filesystem
 ```
 
@@ -34,7 +34,7 @@ Save reusable run configurations as JSON files:
 Execute:
 
 ```bash
-crux run --file tasks/weekly-research.json
+crux task run --file tasks/weekly-research.json
 ```
 
 Commit manifests to git for reproducible, shared run definitions.
@@ -57,15 +57,23 @@ If any check fails, you get the exact command to fix it:
 ```
 Pre-flight failed:
   ✗ Secret 'WIKIJS_API_KEY' not found for MCP 'wikijs'
-    Fix: crux secret set wikijs WIKIJS_API_KEY
+    Fix: crux mcp auth wikijs WIKIJS_API_KEY
 ```
 
 ## Managing Runs
 
+### Initialize a Task
+
+```bash
+crux task init weekly-research
+```
+
+Creates a manifest template you can fill in and reuse.
+
 ### List Recent Runs
 
 ```bash
-crux run list
+crux task list
 ```
 
 Shows run ID, status, task, MCPs, and timestamps.
@@ -73,7 +81,7 @@ Shows run ID, status, task, MCPs, and timestamps.
 ### Keep Sandbox for Debugging
 
 ```bash
-crux run "debug this" --mcps filesystem --keep
+crux task run "debug this" --mcps filesystem --keep
 ```
 
 The `--keep` flag preserves the sandbox directory after completion for inspection.
@@ -82,10 +90,10 @@ The `--keep` flag preserves the sandbox directory after completion for inspectio
 
 ```bash
 # Remove completed sandboxes
-crux run clean
+crux task clean
 
 # Force clean without confirmation
-crux run clean --force
+crux task clean --force
 ```
 
 ## Options

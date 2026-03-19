@@ -5,7 +5,7 @@ Crux provides two levels of health checking: per-MCP probing and full environmen
 ## MCP Server Status
 
 ```bash
-crux status
+crux project status
 ```
 
 Probes each MCP in the current project via JSON-RPC handshake. For each server, Crux:
@@ -18,7 +18,7 @@ Probes each MCP in the current project via JSON-RPC handshake. For each server, 
 ### Status Across All Projects
 
 ```bash
-crux status --all
+crux project status --all
 ```
 
 Probes MCPs across all tracked projects.
@@ -39,7 +39,16 @@ Runs a comprehensive set of checks:
 | **Registry integrity** | `registry.json` is valid and parseable |
 | **MCP sources** | Cloned repos exist on disk |
 | **Build artifacts** | MCPs with build commands have their outputs |
-| **Secrets consistency** | MCPs requiring auth have corresponding secrets |
 | **Crux on PATH** | The `crux` binary is accessible |
 
 `crux doctor` auto-fixes what it can — creating missing directories, installing the bundled skill, and reporting actionable fix commands for everything else.
+
+## Initial Setup
+
+If you are setting up Crux for the first time or re-initializing your environment:
+
+```bash
+crux init
+```
+
+This bootstraps the `~/.crux/` directory structure, installs the bundled skill, and verifies all external dependencies are in place.
