@@ -1,6 +1,6 @@
 ---
 template: home.html
-title: Crux — Manage your MCP servers and skills like packages
+title: Crux — Agentic Tool Manager for Claude Code
 hide:
   - navigation
   - toc
