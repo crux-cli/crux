@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any
 
 from crux_cli.paths import crux_home, registry_path, skills_dir
-from crux_cli.secrets import load_secrets_index
 
 _CLONED_TYPES = {"github", "git-submodule", "local"}
 
@@ -88,6 +87,10 @@ def _check_auth_secrets(name: str, mcp_data: dict[str, Any], errors: list[str]) 
     if not env_vars:
         return
 
+    try:
+        from crux_cli.secrets import load_secrets_index  # noqa: PLC0415
+    except ImportError:
+        return
     secrets_index = load_secrets_index()
     stored_keys = secrets_index.get(name, [])
 

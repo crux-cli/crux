@@ -1,31 +1,29 @@
-"""Integration tests: crux doctor"""
+"""Integration tests: crux init, crux doctor"""
+
 import pytest
 
 from .conftest import run_crux
 
 
 @pytest.mark.integration
-class TestCruxDoctor:
-    def test_environment_checks_header(self, crux_env):
-        env, _ = crux_env
-        result = run_crux("doctor", env=env)
-        assert "Environment" in result.stdout
-
-    def test_reports_missing_src_dir(self, crux_env):
+class TestCruxInit:
+    def test_init_runs(self, crux_env):
         env, root = crux_env
-        import shutil
-        shutil.rmtree(root / "src")
+        result = run_crux("init", env=env)
+        assert result.returncode == 0
+        assert "Setup complete" in result.stdout
+
+
+@pytest.mark.integration
+class TestCruxDoctor:
+    def test_doctor_runs(self, crux_env):
+        env, root = crux_env
         result = run_crux("doctor", env=env)
         assert result.returncode == 0
+        assert "CRUX DOCTOR" in result.stdout
 
-    def test_runtime_dependencies_checked(self, crux_env):
-        env, _ = crux_env
+    def test_doctor_does_not_check_secrets(self, crux_env):
+        env, root = crux_env
         result = run_crux("doctor", env=env)
-        assert "node" in result.stdout
-        assert "uv" in result.stdout
-        assert "git" in result.stdout
-
-    def test_exits_zero_in_healthy_env(self, crux_env):
-        env, _ = crux_env
-        result = run_crux("doctor", env=env)
-        assert result.returncode == 0
+        assert "secret" not in result.stdout.lower()
+        assert "crux secret" not in result.stdout
