@@ -723,7 +723,73 @@ Summary of schema additions:
 
 ---
 
-## 12. Execution Order
+## 12. Website SEO & Metadata
+
+The documentation site needs industry-standard SEO metadata. Google Search Console has indexed the homepage but displays an incorrect title ("Github Pages Documentation").
+
+### 12.1 Changes Required
+
+**`mkdocs.yml`:**
+- Update `site_name` to include a descriptive tagline (e.g., "Crux — Agentic AI Control Plane")
+- Ensure `site_url` has trailing slash for correct canonical URLs
+- Add `exclude_docs: superpowers/` to prevent spec documents from appearing on the public website
+
+**`docs/overrides/main.html`:**
+- Add Open Graph meta tags (`og:site_name`, `og:type`, `og:title`, `og:description`, `og:url`, `og:image`)
+- Add Twitter Card meta tags (`twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`)
+- Add canonical `<link>` tag
+- Add JSON-LD structured data: `WebSite` schema (homepage only) with name, alternateName, description, url
+- Add JSON-LD structured data: `SoftwareApplication` schema (homepage only) with applicationCategory, operatingSystem, offers
+
+**`docs/overrides/home.html`:**
+- Update command examples to use new CLI syntax (e.g., `crux mcp add`, `crux mcp auth`, `crux project create`)
+
+**`docs/index.md`:**
+- Update frontmatter `title` to match new tagline
+
+### 12.2 Nav & CLI Reference Updates
+
+The `nav` section in `mkdocs.yml` needs a complete rewrite to match the new command tree. The CLI Reference section should be restructured from flat commands to namespaced groups:
+
+```yaml
+nav:
+  - CLI Reference:
+    - cli/index.md
+    - MCP:
+      - crux mcp add: cli/mcp-add.md
+      - crux mcp remove: cli/mcp-remove.md
+      - crux mcp list: cli/mcp-list.md
+      - crux mcp search: cli/mcp-search.md
+      - crux mcp upgrade: cli/mcp-upgrade.md
+      - crux mcp auth: cli/mcp-auth.md
+      - crux mcp status: cli/mcp-status.md
+    - Skill:
+      - crux skill add: cli/skill-add.md
+      - crux skill remove: cli/skill-remove.md
+      - crux skill list: cli/skill-list.md
+    - Project:
+      - crux project create: cli/project-create.md
+      - crux project install: cli/project-install.md
+      - crux project uninstall: cli/project-uninstall.md
+      - crux project sync: cli/project-sync.md
+      - crux project status: cli/project-status.md
+    - Task:
+      - crux task run: cli/task-run.md
+      - crux task init: cli/task-init.md
+      - crux task list: cli/task-list.md
+      - crux task clean: cli/task-clean.md
+    - System:
+      - crux init: cli/init.md
+      - crux doctor: cli/doctor.md
+      - crux version: cli/version.md
+```
+
+The Guides nav should also be updated:
+- "Secrets Management" → "Authentication" (`guides/authentication.md`)
+
+---
+
+## 13. Execution Order
 
 The implementation should proceed in this order:
 
@@ -736,4 +802,5 @@ The implementation should proceed in this order:
 7. **Project status enhancement** — add auth state + skills to project status.
 8. **Tests** — update all integration and unit tests for new commands; add new test files.
 9. **Documentation** — rewrite CLI reference, guides, skill file.
-10. **CI verification** — ensure all tests pass in CI.
+10. **Website SEO & metadata** — update main.html, mkdocs.yml, home.html with proper metadata and new command examples.
+11. **CI verification** — ensure all tests pass in CI.

@@ -1,5 +1,5 @@
-site_name: Crux
-site_url: https://crux-cli.github.io/crux
+site_name: Crux — MCP Package Manager for Claude Code
+site_url: https://crux-cli.github.io/crux/
 site_description: "Manage your MCP servers and skills like packages. Per-project scoping, secure secrets, sandboxed execution for Claude Code."
 site_author: Crux CLI
 repo_url: https://github.com/crux-cli/crux
@@ -7,6 +7,9 @@ repo_name: crux-cli/crux
 edit_uri: edit/main/docs/
 
 copyright: Copyright &copy; 2026 Crux CLI
+
+exclude_docs: |
+  superpowers/
 
 theme:
   name: material
