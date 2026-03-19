@@ -1,4 +1,5 @@
 """Extended unit tests for lib/health.py — probe_mcp_server_detailed + doctor checks."""
+
 import json
 import subprocess
 from unittest.mock import MagicMock
@@ -8,6 +9,7 @@ import crux_cli.health as h
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_proc(stdout_lines: list[dict], returncode: int = 0):
     """Build a mock Popen process that returns the given JSON-RPC response lines."""
@@ -73,7 +75,8 @@ class TestStatusAuthRequired:
         mocker.patch("crux_cli.health.shutil.which", return_value="/usr/bin/cmd")
         mocker.patch("crux_cli.health.subprocess.run", return_value=MagicMock(returncode=1))
         config = {
-            "command": "cmd", "args": [],
+            "command": "cmd",
+            "args": [],
             "auth": {"check_cmd": ["gh", "auth", "status"], "fix_description": "run gh auth login"},
         }
         result = h.probe_mcp_server_detailed(config)
@@ -193,7 +196,7 @@ class TestDoctorMissingPython:
         mocker.patch("crux_cli.health.shutil.which", return_value="/usr/bin/thing")
         mocker.patch("crux_cli.health.sys.version_info", (3, 9, 1, "final", 0))
 
-        results = h.run_doctor_checks(crux_root=tmp_path, mcp_definitions={}, secrets_index={})
+        results = h.run_doctor_checks(crux_root=tmp_path, mcp_definitions={})
         python_check = [c for c in results if "Python" in c.label][0]
         assert not python_check.passed
         assert "3.9" in python_check.label
@@ -215,7 +218,7 @@ class TestDoctorMissingUv:
 
         mocker.patch("crux_cli.health.shutil.which", side_effect=fake_which)
 
-        results = h.run_doctor_checks(crux_root=tmp_path, mcp_definitions={}, secrets_index={})
+        results = h.run_doctor_checks(crux_root=tmp_path, mcp_definitions={})
         uv_check = [c for c in results if "uv" in c.label][0]
         assert not uv_check.passed
         assert uv_check.fix_hint is not None
@@ -237,7 +240,7 @@ class TestDoctorMissingNode:
 
         mocker.patch("crux_cli.health.shutil.which", side_effect=fake_which)
 
-        results = h.run_doctor_checks(crux_root=tmp_path, mcp_definitions={}, secrets_index={})
+        results = h.run_doctor_checks(crux_root=tmp_path, mcp_definitions={})
         node_check = [c for c in results if "node" in c.label][0]
         assert not node_check.passed
 
@@ -258,7 +261,7 @@ class TestDoctorMissingClaude:
 
         mocker.patch("crux_cli.health.shutil.which", side_effect=fake_which)
 
-        results = h.run_doctor_checks(crux_root=tmp_path, mcp_definitions={}, secrets_index={})
+        results = h.run_doctor_checks(crux_root=tmp_path, mcp_definitions={})
         claude_check = [c for c in results if "claude" in c.label][0]
         assert not claude_check.passed
         assert "anthropic" in claude_check.fix_hint.lower() or "claude" in claude_check.fix_hint.lower()
@@ -285,48 +288,6 @@ class TestDoctorBrokenRegistry:
     def test_missing_file(self, tmp_path):
         result = h.check_registry_valid(tmp_path / "nonexistent.json")
         assert not result.passed
-
-
-class TestDoctorMissingSecrets:
-    """test_doctor_missing_secrets — fails when auth env vars lack matching secrets."""
-
-    def test_missing_secrets(self):
-        mcp_defs = {
-            "wikijs-mcp": {
-                "auth": {"env_vars": ["WIKIJS_URL", "WIKIJS_API_KEY"]},
-            },
-        }
-        secrets_idx = {}  # nothing stored
-
-        results = h.check_secrets_consistency(secrets_idx, mcp_defs)
-        assert len(results) == 1
-        assert not results[0].passed
-        assert "WIKIJS_URL" in results[0].label
-
-    def test_partial_secrets(self):
-        mcp_defs = {
-            "wikijs-mcp": {
-                "auth": {"env_vars": ["WIKIJS_URL", "WIKIJS_API_KEY"]},
-            },
-        }
-        secrets_idx = {"wikijs-mcp": ["WIKIJS_URL"]}
-
-        results = h.check_secrets_consistency(secrets_idx, mcp_defs)
-        assert len(results) == 1
-        assert not results[0].passed
-        assert "WIKIJS_API_KEY" in results[0].label
-
-    def test_all_secrets_present(self):
-        mcp_defs = {
-            "wikijs-mcp": {
-                "auth": {"env_vars": ["WIKIJS_URL", "WIKIJS_API_KEY"]},
-            },
-        }
-        secrets_idx = {"wikijs-mcp": ["WIKIJS_URL", "WIKIJS_API_KEY"]}
-
-        results = h.check_secrets_consistency(secrets_idx, mcp_defs)
-        assert len(results) == 1
-        assert results[0].passed
 
 
 class TestDoctorStaleProject:

@@ -72,5 +72,6 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "S"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "S108"]  # assert and /tmp paths are expected in tests
 "tests/**/conftest.py" = ["S101", "S603"]  # subprocess in test helpers
-"src/crux_cli/cli/commands/registry.py" = ["S602", "S603", "S606", "S607"]  # subprocess calls with git/crux
+"src/crux_cli/cli/commands/mcp.py" = ["S602", "S603", "S606", "S607"]  # subprocess calls with git/crux
+"src/crux_cli/cli/commands/skill.py" = ["S603", "S607"]  # subprocess calls with git
 "src/crux_cli/cli/commands/doctor.py" = ["S603"]  # subprocess for setup_cmd
