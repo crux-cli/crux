@@ -68,3 +68,8 @@ def secrets_path() -> Path:
 def config_path() -> Path:
     """Path to the user configuration file."""
     return crux_home() / "config.toml"
+
+
+def tokens_path() -> Path:
+    """Path to the OAuth token metadata file."""
+    return crux_home() / "tokens.json"
