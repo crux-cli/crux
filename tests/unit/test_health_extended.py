@@ -182,7 +182,6 @@ class TestDoctorAllPass:
             crux_root=tmp_path,
             registry_path=reg_path,
             mcp_definitions={},
-            secrets_index={},
         )
         assert all(c.passed for c in results), [c for c in results if not c.passed]
 
