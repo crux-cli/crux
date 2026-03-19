@@ -5,9 +5,12 @@ from __future__ import annotations
 import json
 import platform
 import stat
+from pathlib import Path
 from unittest.mock import patch
 
 from crux_cli.sync import (
+    _build_http_bridge_entry,
+    _build_server_entry,
     _secret_lookup_command,
     generate_launcher,
     sync_project,
@@ -44,13 +47,15 @@ class TestSyncGeneratesMcpJson:
     def test_sync_generates_mcp_json(self, tmp_path):
         project = tmp_path / "proj"
         _make_crux_json(project, mcps=["memory"])
-        registry = _make_registry(mcps={
-            "memory": {
-                "type": "npm-package",
-                "command": "npx",
-                "args": ["-y", "@modelcontextprotocol/server-memory"],
+        registry = _make_registry(
+            mcps={
+                "memory": {
+                    "type": "npm-package",
+                    "command": "npx",
+                    "args": ["-y", "@modelcontextprotocol/server-memory"],
+                }
             }
-        })
+        )
 
         success, issues = sync_project(project, registry)
         assert success
@@ -65,9 +70,11 @@ class TestSyncGeneratesMcpJson:
     def test_sync_mcp_json_format_valid(self, tmp_path):
         project = tmp_path / "proj"
         _make_crux_json(project, mcps=["memory"])
-        registry = _make_registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "pkg"]},
-        })
+        registry = _make_registry(
+            mcps={
+                "memory": {"command": "npx", "args": ["-y", "pkg"]},
+            }
+        )
 
         sync_project(project, registry)
         data = json.loads((project / ".mcp.json").read_text())
@@ -104,13 +111,15 @@ class TestSyncGeneratesLauncher:
         project = tmp_path / "proj"
         launcher_dir = tmp_path / "launchers"
         _make_crux_json(project, mcps=["authed-mcp"])
-        registry = _make_registry(mcps={
-            "authed-mcp": {
-                "command": "npx",
-                "args": ["-y", "some-pkg"],
-                "auth": {"env_vars": ["API_KEY"]},
+        registry = _make_registry(
+            mcps={
+                "authed-mcp": {
+                    "command": "npx",
+                    "args": ["-y", "some-pkg"],
+                    "auth": {"env_vars": ["API_KEY"]},
+                }
             }
-        })
+        )
 
         sync_project(project, registry, launcher_base=launcher_dir)
 
@@ -123,13 +132,15 @@ class TestSyncGeneratesLauncher:
         project = tmp_path / "proj"
         launcher_dir = tmp_path / "launchers"
         _make_crux_json(project, mcps=["authed-mcp"])
-        registry = _make_registry(mcps={
-            "authed-mcp": {
-                "command": "npx",
-                "args": [],
-                "auth": {"env_vars": ["SECRET_TOKEN"]},
+        registry = _make_registry(
+            mcps={
+                "authed-mcp": {
+                    "command": "npx",
+                    "args": [],
+                    "auth": {"env_vars": ["SECRET_TOKEN"]},
+                }
             }
-        })
+        )
 
         sync_project(project, registry, launcher_base=launcher_dir)
 
@@ -147,9 +158,11 @@ class TestSyncGeneratesLauncher:
 class TestSyncAllTrackedProjects:
     def test_sync_all_tracked_projects(self, tmp_path):
         """Verify sync_project works on multiple project dirs."""
-        registry = _make_registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "pkg"]},
-        })
+        registry = _make_registry(
+            mcps={
+                "memory": {"command": "npx", "args": ["-y", "pkg"]},
+            }
+        )
 
         projects = []
         for name in ("proj-a", "proj-b"):
@@ -258,3 +271,60 @@ class TestSecretLookupCommand:
         cmd = _secret_lookup_command("my-mcp", "API_KEY")
         assert "secret-tool lookup" in cmd
         assert "crux.my-mcp" in cmd
+
+
+# ---------------------------------------------------------------------------
+# HTTP bridge launcher generation
+# ---------------------------------------------------------------------------
+
+
+class TestHttpBridgeLauncher:
+    """Tests for HTTP bridge launcher generation."""
+
+    def test_bearer_bridge_launcher(self, tmp_path):
+        mcp_data = {
+            "type": "streamable-http",
+            "url": "https://example.com/mcp",
+            "auth": {
+                "type": "bearer",
+                "keychain_key": "API_TOKEN",
+                "header_name": "Authorization",
+                "header_prefix": "Bearer",
+            },
+        }
+        entry = _build_http_bridge_entry("test-mcp", mcp_data, launcher_base=tmp_path)
+        assert entry["command"].endswith(".sh")
+        assert entry["args"] == []
+
+        content = Path(entry["command"]).read_text()
+        assert "CRUX_BRIDGE_URL" in content
+        assert "https://example.com/mcp" in content
+        assert "CRUX_BRIDGE_AUTH_HEADER" in content
+        assert "python3 -m crux_cli.bridge" in content
+        # Security: no literal tokens in the script
+        assert "CRUX_AUTH_TOKEN=$(" in content  # shell expansion, not literal
+
+    def test_bridge_launcher_no_cli_arguments(self, tmp_path):
+        """Security: bridge is invoked with zero arguments."""
+        mcp_data = {
+            "type": "streamable-http",
+            "url": "https://example.com/mcp",
+            "auth": {"type": "bearer", "keychain_key": "TOK"},
+        }
+        entry = _build_http_bridge_entry("test-mcp", mcp_data, launcher_base=tmp_path)
+        content = Path(entry["command"]).read_text()
+        # The exec line should be JUST "exec python3 -m crux_cli.bridge" with no args
+        exec_lines = [line for line in content.splitlines() if line.startswith("exec ")]
+        assert len(exec_lines) == 1
+        assert exec_lines[0].strip() == "exec python3 -m crux_cli.bridge"
+
+    def test_build_server_entry_dispatches_to_bridge(self, tmp_path):
+        """MCPs with url field route through bridge."""
+        mcp_data = {
+            "type": "streamable-http",
+            "url": "https://example.com/mcp",
+            "auth": {"type": "bearer", "keychain_key": "TOK"},
+        }
+        entry = _build_server_entry("test-mcp", mcp_data, launcher_base=tmp_path)
+        content = Path(entry["command"]).read_text()
+        assert "crux_cli.bridge" in content
