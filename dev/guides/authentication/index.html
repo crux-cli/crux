@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -3080,38 +3080,38 @@
 </tr>
 </tbody>
 </table>
-<p>Declare the auth type when adding an MCP:</p>
+<p>Declare the auth type when adding an MCP. When <code>--keychain</code> is used, you are prompted for credentials inline:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>github<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-github<span class="w"> </span>--keychain<span class="w"> </span>GITHUB_TOKEN
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>my-api<span class="w"> </span>--npx<span class="w"> </span>my-api-mcp<span class="w"> </span>--bearer<span class="w"> </span>MY_API_TOKEN
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># → Enter GITHUB_TOKEN: ****</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># → ✓ Stored GITHUB_TOKEN</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># → ✓ Authenticated &#39;github&#39;</span>
+</span></code></pre></div>
+<p>To re-authenticate or rotate credentials later, use <code>crux mcp auth</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>github
 </span></code></pre></div>
 <h2 id="storing-credentials">Storing Credentials<a class="headerlink" href="#storing-credentials" title="Permanent link">&para;</a></h2>
 <h3 id="keychain-api-keys-and-tokens">Keychain (API Keys and Tokens)<a class="headerlink" href="#keychain-api-keys-and-tokens" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Interactive (prompts for value)</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>wikijs<span class="w"> </span>WIKIJS_API_KEY
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Direct (for scripts)</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>wikijs<span class="w"> </span>WIKIJS_API_KEY<span class="w"> </span><span class="s2">&quot;sk-abc123...&quot;</span>
+<p>Credentials are prompted inline during <code>crux mcp add --keychain</code>. To re-authenticate:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>wikijs
 </span></code></pre></div>
 <h3 id="bearer-tokens">Bearer Tokens<a class="headerlink" href="#bearer-tokens" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>my-api<span class="w"> </span>MY_API_TOKEN<span class="w"> </span><span class="s2">&quot;Bearer eyJ...&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>my-api<span class="w"> </span>MY_API_TOKEN<span class="w"> </span><span class="s2">&quot;Bearer eyJ...&quot;</span>
 </span></code></pre></div>
 <p>Bearer tokens are stored in the keystore and injected into the MCP launcher as an <code>Authorization</code> header value.</p>
 <h3 id="oauth">OAuth<a class="headerlink" href="#oauth" title="Permanent link">&para;</a></h3>
 <p>For MCPs that support OAuth 2.0:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>my-oauth-mcp<span class="w"> </span>--oauth
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>my-oauth-mcp<span class="w"> </span>--oauth
 </span></code></pre></div>
 <p>Crux opens the authorization URL in your browser, handles the redirect, and stores the resulting tokens. Refresh tokens are managed automatically.</p>
 <h3 id="external-cli">External CLI<a class="headerlink" href="#external-cli" title="Permanent link">&para;</a></h3>
 <p>For MCPs that delegate to an external CLI for authentication (e.g., the GitHub CLI):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>github<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-github<span class="w"> </span>--external-cli<span class="w"> </span><span class="s2">&quot;gh auth token&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>github<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-github<span class="w"> </span>--external-cli<span class="w"> </span><span class="s2">&quot;gh auth token&quot;</span>
 </span></code></pre></div>
 <p>No separate <code>crux mcp auth</code> call is needed — the external command is called at MCP startup.</p>
 <h3 id="setup-command">Setup Command<a class="headerlink" href="#setup-command" title="Permanent link">&para;</a></h3>
-<p>For MCPs that have their own one-time setup flow:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>my-tool<span class="w"> </span>--npx<span class="w"> </span>my-tool-mcp<span class="w"> </span>--setup-cmd<span class="w"> </span><span class="s2">&quot;my-tool login&quot;</span>
-</span></code></pre></div>
-<p>Run the setup command once:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>my-tool<span class="w"> </span>--run-setup
+<p>For MCPs with existing <code>setup-cmd</code> auth type in the registry, authenticate via:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>my-tool
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1"># → runs the configured setup command</span>
 </span></code></pre></div>
 <h2 id="viewing-and-managing-credentials">Viewing and Managing Credentials<a class="headerlink" href="#viewing-and-managing-credentials" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># List all stored credentials (values hidden)</span>
@@ -3164,30 +3164,28 @@
 <h3 id="age-encrypted">age-encrypted<a class="headerlink" href="#age-encrypted" title="Permanent link">&para;</a></h3>
 <p>For headless Linux servers without a desktop environment. Generates an age identity at <code>~/.crux/age-identity.key</code> and encrypts all credentials into <code>~/.crux/secrets.age</code>.</p>
 <h2 id="how-credentials-reach-mcps">How Credentials Reach MCPs<a class="headerlink" href="#how-credentials-reach-mcps" title="Permanent link">&para;</a></h2>
-<p>When <code>crux project sync</code> generates a launcher script for an MCP that needs authentication, the script contains a keystore <em>lookup command</em> — not the credential value:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">macOS</label><label for="__tabbed_1_2">Linux</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="ch">#!/bin/bash</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WIKIJS_API_KEY</span><span class="o">=</span><span class="k">$(</span>security<span class="w"> </span>find-generic-password<span class="w"> </span>-s<span class="w"> </span>crux.wikijs<span class="w"> </span>-a<span class="w"> </span>WIKIJS_API_KEY<span class="w"> </span>-w<span class="k">)</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nb">exec</span><span class="w"> </span>node<span class="w"> </span>~/.crux/mcps/wikijs/build/index.js
+<p>When <code>crux project sync</code> generates <code>.mcp.json</code>, authenticated MCPs reference a shared launcher script (<code>~/.crux/launchers/keychain-auth.sh</code>). The <code>.mcp.json</code> entry contains only <em>names</em> — never credential values:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;~/.crux/launchers/keychain-auth.sh&quot;</span><span class="p">,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;node&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;~/.crux/mcps/wikijs/build/index.js&quot;</span><span class="p">],</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nt">&quot;CRUX_MCP_NAME&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wikijs&quot;</span><span class="p">,</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">&quot;CRUX_AUTH_ENV_VARS&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;WIKIJS_API_KEY&quot;</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="p">}</span>
 </span></code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="ch">#!/bin/bash</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WIKIJS_API_KEY</span><span class="o">=</span><span class="k">$(</span>secret-tool<span class="w"> </span>lookup<span class="w"> </span>service<span class="w"> </span>crux.wikijs<span class="w"> </span>key<span class="w"> </span>WIKIJS_API_KEY<span class="k">)</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nb">exec</span><span class="w"> </span>node<span class="w"> </span>~/.crux/mcps/wikijs/build/index.js
-</span></code></pre></div>
-</div>
-</div>
-</div>
+<p>At runtime, the shared launcher detects the platform and fetches each credential from the OS keystore:</p>
+<ul>
+<li><strong>macOS</strong>: <code>security find-generic-password -s crux.wikijs -a WIKIJS_API_KEY -w</code></li>
+<li><strong>Linux</strong>: <code>secret-tool lookup service crux.wikijs username WIKIJS_API_KEY</code></li>
+</ul>
 <p>The credential is fetched at runtime when the MCP server starts. It never exists in any file on disk.</p>
 <h2 id="credential-index">Credential Index<a class="headerlink" href="#credential-index" title="Permanent link">&para;</a></h2>
 <p>Crux maintains a <strong>credential index</strong> at <code>~/.crux/secrets.json</code> that tracks which keys exist for which MCPs — but never stores values:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;wikijs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;WIKIJS_API_KEY&quot;</span><span class="p">],</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;github&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GITHUB_TOKEN&quot;</span><span class="p">]</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&quot;wikijs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;WIKIJS_API_KEY&quot;</span><span class="p">],</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">&quot;github&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;GITHUB_TOKEN&quot;</span><span class="p">]</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>This index is used by pre-flight checks to verify all required credentials are present before starting a sandbox run.</p>
 

@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -3056,9 +3056,9 @@
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># → runs: gh auth login</span>
 </span></code></pre></div>
 <h3 id="setup-command">Setup Command<a class="headerlink" href="#setup-command" title="Permanent link">&para;</a></h3>
-<p>MCPs registered with <code>--setup-cmd</code> run that command during auth. Useful for browser-based flows or interactive installers.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>my-oauth-mcp
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># → runs the configured setup-cmd</span>
+<p>MCPs with <code>setup-cmd</code> auth type in the registry run that command during auth. Useful for browser-based flows or interactive installers.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>crux<span class="w"> </span>mcp<span class="w"> </span>auth<span class="w"> </span>my-tool
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># → runs the configured setup command</span>
 </span></code></pre></div>
 <h3 id="bearer-token">Bearer Token<a class="headerlink" href="#bearer-token" title="Permanent link">&para;</a></h3>
 <p>MCPs that accept a static bearer token store it in the keystore under the configured env var name. Prompted interactively.</p>

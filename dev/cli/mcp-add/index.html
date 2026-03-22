@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -2918,15 +2918,11 @@
 </tr>
 <tr>
 <td><code>--keychain &lt;vars&gt;</code></td>
-<td>Comma-separated env var names for keychain auth</td>
+<td>Comma-separated env var names for keychain auth (prompts inline)</td>
 </tr>
 <tr>
 <td><code>--build-cmd &lt;cmd&gt;</code></td>
 <td>Build command to run after cloning</td>
-</tr>
-<tr>
-<td><code>--setup-cmd &lt;cmd&gt;</code></td>
-<td>Setup command to run after registration</td>
 </tr>
 </tbody>
 </table>
@@ -2938,15 +2934,17 @@
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>wikijs<span class="w"> </span>--github<span class="w"> </span>jaalbin24/wikijs-mcp-server<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--build-cmd<span class="w"> </span><span class="s2">&quot;npm install &amp;&amp; npm run build&quot;</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># GitHub repo with keychain auth</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># With keychain auth (prompts for credentials inline)</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>github<span class="w"> </span>--npx<span class="w"> </span>@modelcontextprotocol/server-github<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span>--keychain<span class="w"> </span>GITHUB_TOKEN
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># PyPI package</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>my-tool<span class="w"> </span>--uvx<span class="w"> </span>my-mcp-tool
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># Local path</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>dev-server<span class="w"> </span>--local<span class="w"> </span>/path/to/server
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># → Prompts: Enter GITHUB_TOKEN: ****</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># → ✓ Stored GITHUB_TOKEN</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># PyPI package</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>my-tool<span class="w"> </span>--uvx<span class="w"> </span>my-mcp-tool
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Local path</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>crux<span class="w"> </span>mcp<span class="w"> </span>add<span class="w"> </span>dev-server<span class="w"> </span>--local<span class="w"> </span>/path/to/server
 </span></code></pre></div>
 
 
