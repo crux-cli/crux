@@ -16,23 +16,29 @@ Crux supports several authentication methods depending on how an MCP server expe
 | `bearer` | HTTP Bearer tokens passed in request headers |
 | `oauth` | OAuth 2.0 flows managed by Crux |
 
-Declare the auth type when adding an MCP:
+Declare the auth type when adding an MCP. When `--keychain` is used, you are prompted for credentials inline:
 
 ```bash
 crux mcp add github --npx @modelcontextprotocol/server-github --keychain GITHUB_TOKEN
-crux mcp add my-api --npx my-api-mcp --bearer MY_API_TOKEN
+# → Enter GITHUB_TOKEN: ****
+# → ✓ Stored GITHUB_TOKEN
+# → ✓ Authenticated 'github'
+```
+
+To re-authenticate or rotate credentials later, use `crux mcp auth`:
+
+```bash
+crux mcp auth github
 ```
 
 ## Storing Credentials
 
 ### Keychain (API Keys and Tokens)
 
-```bash
-# Interactive (prompts for value)
-crux mcp auth wikijs WIKIJS_API_KEY
+Credentials are prompted inline during `crux mcp add --keychain`. To re-authenticate:
 
-# Direct (for scripts)
-crux mcp auth wikijs WIKIJS_API_KEY "sk-abc123..."
+```bash
+crux mcp auth wikijs
 ```
 
 ### Bearer Tokens
@@ -65,16 +71,11 @@ No separate `crux mcp auth` call is needed — the external command is called at
 
 ### Setup Command
 
-For MCPs that have their own one-time setup flow:
+For MCPs with existing `setup-cmd` auth type in the registry, authenticate via:
 
 ```bash
-crux mcp add my-tool --npx my-tool-mcp --setup-cmd "my-tool login"
-```
-
-Run the setup command once:
-
-```bash
-crux mcp auth my-tool --run-setup
+crux mcp auth my-tool
+# → runs the configured setup command
 ```
 
 ## Viewing and Managing Credentials
@@ -123,23 +124,23 @@ For headless Linux servers without a desktop environment. Generates an age ident
 
 ## How Credentials Reach MCPs
 
-When `crux project sync` generates a launcher script for an MCP that needs authentication, the script contains a keystore *lookup command* — not the credential value:
+When `crux project sync` generates `.mcp.json`, authenticated MCPs reference a shared launcher script (`~/.crux/launchers/keychain-auth.sh`). The `.mcp.json` entry contains only *names* — never credential values:
 
-=== "macOS"
+```json
+{
+  "command": "~/.crux/launchers/keychain-auth.sh",
+  "args": ["node", "~/.crux/mcps/wikijs/build/index.js"],
+  "env": {
+    "CRUX_MCP_NAME": "wikijs",
+    "CRUX_AUTH_ENV_VARS": "WIKIJS_API_KEY"
+  }
+}
+```
 
-    ```bash
-    #!/bin/bash
-    export WIKIJS_API_KEY=$(security find-generic-password -s crux.wikijs -a WIKIJS_API_KEY -w)
-    exec node ~/.crux/mcps/wikijs/build/index.js
-    ```
+At runtime, the shared launcher detects the platform and fetches each credential from the OS keystore:
 
-=== "Linux"
-
-    ```bash
-    #!/bin/bash
-    export WIKIJS_API_KEY=$(secret-tool lookup service crux.wikijs key WIKIJS_API_KEY)
-    exec node ~/.crux/mcps/wikijs/build/index.js
-    ```
+- **macOS**: `security find-generic-password -s crux.wikijs -a WIKIJS_API_KEY -w`
+- **Linux**: `secret-tool lookup service crux.wikijs username WIKIJS_API_KEY`
 
 The credential is fetched at runtime when the MCP server starts. It never exists in any file on disk.
 

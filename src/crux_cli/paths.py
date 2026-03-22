@@ -41,8 +41,13 @@ def mcps_dir() -> Path:
 
 
 def launchers_dir() -> Path:
-    """Directory containing generated MCP launcher scripts."""
+    """Directory containing generated MCP launcher scripts (legacy)."""
     return crux_home() / "mcps" / "launchers"
+
+
+def shared_launchers_dir() -> Path:
+    """Directory containing shared (non-generated) launcher scripts."""
+    return crux_home() / "launchers"
 
 
 def skills_dir() -> Path:

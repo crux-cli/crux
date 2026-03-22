@@ -86,7 +86,7 @@ class TestKeychainAuthCycle:
             assert "AUTH_TOKEN" not in stored, "AUTH_TOKEN should not be stored yet"
 
     def test_sync_generates_launcher(self, crux_env):
-        """After registering a keychain MCP, sync generates a launcher script."""
+        """After registering a keychain MCP, sync references the shared launcher."""
         env, root = crux_env
         _register_test_mcp(
             root,
@@ -110,22 +110,27 @@ class TestKeychainAuthCycle:
         result = run_crux("project", "sync", env=env, cwd=str(proj_dir))
         assert result.returncode == 0
 
-        # Verify .mcp.json uses launcher
+        # Verify .mcp.json uses shared launcher with env config
         mcp_json = json.loads((proj_dir / ".mcp.json").read_text())
         server = mcp_json["mcpServers"]["test-authed"]
-        assert server["command"].endswith(".sh"), f"Expected .sh launcher, got: {server['command']}"
+        assert server["command"].endswith("keychain-auth.sh"), (
+            f"Expected keychain-auth.sh launcher, got: {server['command']}"
+        )
 
-        # Verify launcher exists and contains keychain lookup commands, not secrets
+        # Verify shared launcher exists and contains keychain lookup commands
         launcher_path = server["command"]
         assert Path(launcher_path).exists(), f"Launcher not found: {launcher_path}"
         launcher_content = Path(launcher_path).read_text()
         assert "security find-generic-password" in launcher_content or "secret-tool lookup" in launcher_content, (
-            "Launcher should contain keychain lookup command"
+            "Shared launcher should contain keychain lookup commands"
         )
-        assert "AUTH_TOKEN" in launcher_content
+
+        # MCP-specific config is in env, not hardcoded in the script
+        assert server["env"]["CRUX_MCP_NAME"] == "test-authed"
+        assert "AUTH_TOKEN" in server["env"]["CRUX_AUTH_ENV_VARS"]
 
     def test_launcher_never_has_literal_secrets(self, crux_env):
-        """Security: launcher script never contains actual secret values."""
+        """Security: no generated files contain actual secret values."""
         env, root = crux_env
         SENTINEL = "SUPER_SECRET_VALUE_12345"
 
@@ -149,6 +154,7 @@ class TestKeychainAuthCycle:
         mcp_json_content = (proj_dir / ".mcp.json").read_text()
         assert SENTINEL not in mcp_json_content
 
+        # Shared launcher is generic — verify it has no sentinel either
         mcp_json = json.loads(mcp_json_content)
         launcher_path = mcp_json["mcpServers"]["test-authed"]["command"]
         launcher_content = Path(launcher_path).read_text()
@@ -300,7 +306,7 @@ class TestProbeWithAuth:
         assert "authentication" in result["detail"].lower()
 
     def test_full_sync_then_probe_cycle(self, crux_env):
-        """Full cycle: register keychain MCP → sync → verify generated launcher path."""
+        """Full cycle: register keychain MCP → sync → verify shared launcher path."""
         env, root = crux_env
         _register_test_mcp(
             root,
@@ -321,9 +327,13 @@ class TestProbeWithAuth:
         assert result.returncode == 0
 
         mcp_json = json.loads((proj_dir / ".mcp.json").read_text())
-        launcher_path = Path(mcp_json["mcpServers"]["test-authed"]["command"])
+        server = mcp_json["mcpServers"]["test-authed"]
+        launcher_path = Path(server["command"])
         assert launcher_path.exists()
-        assert launcher_path.suffix == ".sh"
+        assert launcher_path.name == "keychain-auth.sh"
 
-        # Launcher should be executable
+        # Shared launcher should be executable
         assert os.access(str(launcher_path), os.X_OK)
+
+        # MCP-specific config is in env
+        assert server["env"]["CRUX_MCP_NAME"] == "test-authed"

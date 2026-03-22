@@ -1,18 +1,16 @@
-"""Unit tests for crux_cli.sync — sync engine, launcher generation, .mcp.json."""
+"""Unit tests for crux_cli.sync — sync engine and .mcp.json generation."""
 
 from __future__ import annotations
 
 import json
-import platform
-import stat
 from pathlib import Path
-from unittest.mock import patch
+
+import pytest
 
 from crux_cli.sync import (
     _build_http_bridge_entry,
+    _build_keychain_auth_entry,
     _build_server_entry,
-    _secret_lookup_command,
-    generate_launcher,
     sync_project,
 )
 
@@ -39,7 +37,7 @@ def _make_crux_json(project_dir, name="test-project", mcps=None, skills=None):
 
 
 # ---------------------------------------------------------------------------
-# W2A.4: sync_project
+# sync_project
 # ---------------------------------------------------------------------------
 
 
@@ -106,10 +104,11 @@ class TestSyncGeneratesMcpJson:
         assert data["mcpServers"] == {}
 
 
-class TestSyncGeneratesLauncher:
-    def test_sync_generates_launcher_for_auth_mcp(self, tmp_path):
+class TestSyncAuthedMcpUsesSharedLauncher:
+    """Authed MCPs reference the shared keychain-auth.sh via env config."""
+
+    def test_sync_authed_mcp_uses_shared_launcher(self, tmp_path):
         project = tmp_path / "proj"
-        launcher_dir = tmp_path / "launchers"
         _make_crux_json(project, mcps=["authed-mcp"])
         registry = _make_registry(
             mcps={
@@ -121,38 +120,35 @@ class TestSyncGeneratesLauncher:
             }
         )
 
-        sync_project(project, registry, launcher_base=launcher_dir)
+        sync_project(project, registry)
 
-        launcher = launcher_dir / "authed-mcp.sh"
-        assert launcher.exists()
-        content = launcher.read_text()
-        assert "API_KEY" in content
+        data = json.loads((project / ".mcp.json").read_text())
+        server = data["mcpServers"]["authed-mcp"]
+        assert server["command"].endswith("keychain-auth.sh")
+        assert server["env"]["CRUX_MCP_NAME"] == "authed-mcp"
+        assert server["env"]["CRUX_AUTH_ENV_VARS"] == "API_KEY"
+        # The actual MCP command is passed as args to the shared launcher
+        assert "npx" in server["args"]
 
-    def test_sync_launcher_no_embedded_secrets(self, tmp_path):
+    def test_sync_no_launcher_files_generated(self, tmp_path):
+        """No per-MCP .sh files should be generated anywhere."""
         project = tmp_path / "proj"
-        launcher_dir = tmp_path / "launchers"
         _make_crux_json(project, mcps=["authed-mcp"])
         registry = _make_registry(
             mcps={
                 "authed-mcp": {
                     "command": "npx",
-                    "args": [],
-                    "auth": {"env_vars": ["SECRET_TOKEN"]},
+                    "args": ["-y", "pkg"],
+                    "auth": {"env_vars": ["SECRET"]},
                 }
             }
         )
 
-        sync_project(project, registry, launcher_base=launcher_dir)
+        sync_project(project, registry)
 
-        launcher = launcher_dir / "authed-mcp.sh"
-        content = launcher.read_text()
-        # The script must use keystore lookup commands, not embed values
-        assert "secret_value" not in content.lower()
-        # Must contain lookup command
-        if platform.system() == "Darwin":
-            assert "security find-generic-password" in content
-        else:
-            assert "secret-tool lookup" in content
+        # No .sh files should exist in the project or temp directory
+        sh_files = list(tmp_path.rglob("authed-mcp.sh"))
+        assert sh_files == []
 
 
 class TestSyncAllTrackedProjects:
@@ -178,110 +174,74 @@ class TestSyncAllTrackedProjects:
 
 
 # ---------------------------------------------------------------------------
-# W2A.5: Launcher script generation
+# _build_keychain_auth_entry
 # ---------------------------------------------------------------------------
 
 
-class TestLauncherMacosUsesSecurity:
-    @patch("crux_cli.sync.platform.system", return_value="Darwin")
-    def test_launcher_macos_uses_security(self, mock_sys, tmp_path):
-        launcher_dir = tmp_path / "launchers"
+class TestKeychainAuthEntry:
+    """Tests for the shared keychain launcher entry builder."""
+
+    def test_entry_structure(self):
+        mcp_data = {
+            "command": "npx",
+            "args": ["-y", "some-pkg"],
+            "auth": {"env_vars": ["API_KEY", "SECRET_TOKEN"]},
+        }
+        entry = _build_keychain_auth_entry("test-mcp", mcp_data)
+
+        assert entry["command"].endswith("keychain-auth.sh")
+        assert entry["env"]["CRUX_MCP_NAME"] == "test-mcp"
+        assert entry["env"]["CRUX_AUTH_ENV_VARS"] == "API_KEY,SECRET_TOKEN"
+        # MCP command + original args are passed as positional args
+        assert entry["args"][0] == "npx"
+        assert "-y" in entry["args"]
+        assert "some-pkg" in entry["args"]
+
+    def test_extra_args_appended(self):
         mcp_data = {
             "command": "npx",
             "args": ["-y", "pkg"],
-            "auth": {"env_vars": ["MY_TOKEN"]},
-        }
-        path = generate_launcher("test-mcp", mcp_data, launcher_base=launcher_dir)
-        assert path is not None
-        content = path.read_text()
-        assert "security find-generic-password" in content
-        assert "crux.test-mcp" in content
-        assert "MY_TOKEN" in content
-
-
-class TestLauncherLinuxUsesSecretTool:
-    @patch("crux_cli.sync.platform.system", return_value="Linux")
-    def test_launcher_linux_uses_secret_tool(self, mock_sys, tmp_path):
-        launcher_dir = tmp_path / "launchers"
-        mcp_data = {
-            "command": "node",
-            "args": ["server.js"],
-            "auth": {"env_vars": ["API_KEY"]},
-        }
-        path = generate_launcher("linux-mcp", mcp_data, launcher_base=launcher_dir)
-        assert path is not None
-        content = path.read_text()
-        assert "secret-tool lookup" in content
-        assert "crux.linux-mcp" in content
-        assert "API_KEY" in content
-
-
-class TestLauncherExecutable:
-    def test_launcher_executable(self, tmp_path):
-        launcher_dir = tmp_path / "launchers"
-        mcp_data = {
-            "command": "npx",
-            "args": [],
             "auth": {"env_vars": ["K"]},
         }
-        path = generate_launcher("test-mcp", mcp_data, launcher_base=launcher_dir)
-        assert path is not None
-        mode = path.stat().st_mode
-        assert mode & stat.S_IXUSR
+        entry = _build_keychain_auth_entry("test-mcp", mcp_data, extra_args=["--port", "8080"])
 
-    def test_launcher_returns_none_without_auth(self, tmp_path):
-        launcher_dir = tmp_path / "launchers"
-        mcp_data = {"command": "npx", "args": []}
-        path = generate_launcher("test-mcp", mcp_data, launcher_base=launcher_dir)
-        assert path is None
+        assert entry["args"][-2:] == ["--port", "8080"]
 
-
-class TestLauncherScriptDirRelative:
-    def test_launcher_script_dir_relative(self, tmp_path):
-        launcher_dir = tmp_path / "launchers"
-        source_dir = tmp_path / "mcps" / "my-mcp"
-        source_dir.mkdir(parents=True)
+    def test_source_dir_resolved_to_absolute(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(tmp_path / ".crux"))
         mcp_data = {
             "command": "uv",
             "args": ["run", "--directory", "{source_dir}", "serve"],
-            "source_dir": str(source_dir),
+            "source_dir": "mcps/my-mcp",
             "auth": {"env_vars": ["K"]},
         }
-        path = generate_launcher("my-mcp", mcp_data, launcher_base=launcher_dir)
-        content = path.read_text()
-        assert "$SCRIPT_DIR/" in content
-        assert "{source_dir}" not in content
+        entry = _build_keychain_auth_entry("my-mcp", mcp_data)
+
+        # {source_dir} should be resolved to an absolute path
+        assert "{source_dir}" not in str(entry["args"])
+        dir_arg = entry["args"][3]  # uv, run, --directory, <path>
+        assert Path(dir_arg).is_absolute()
+
+    def test_rejects_unsafe_mcp_name(self):
+        mcp_data = {"command": "npx", "args": [], "auth": {"env_vars": ["K"]}}
+        with pytest.raises(ValueError, match="Unsafe MCP name"):
+            _build_keychain_auth_entry("../evil", mcp_data)
+
+    def test_rejects_unsafe_env_var(self):
+        mcp_data = {"command": "npx", "args": [], "auth": {"env_vars": ["BAD VAR"]}}
+        with pytest.raises(ValueError, match="Unsafe env var"):
+            _build_keychain_auth_entry("test-mcp", mcp_data)
 
 
 # ---------------------------------------------------------------------------
-# Secret lookup command (platform-specific)
+# _build_http_bridge_entry
 # ---------------------------------------------------------------------------
 
 
-class TestSecretLookupCommand:
-    @patch("crux_cli.sync.platform.system", return_value="Darwin")
-    def test_macos_uses_security(self, _mock):
-        cmd = _secret_lookup_command("my-mcp", "API_KEY")
-        assert "security find-generic-password" in cmd
-        assert "crux.my-mcp" in cmd
-        assert "API_KEY" in cmd
+class TestHttpBridgeEntry:
+    """Tests for HTTP bridge entry builder."""
 
-    @patch("crux_cli.sync.platform.system", return_value="Linux")
-    def test_linux_uses_secret_tool(self, _mock):
-        cmd = _secret_lookup_command("my-mcp", "API_KEY")
-        assert "secret-tool lookup" in cmd
-        assert "crux.my-mcp" in cmd
-
-
-# ---------------------------------------------------------------------------
-# HTTP bridge launcher generation
-# ---------------------------------------------------------------------------
-
-
-class TestHttpBridgeLauncher:
-    """Tests for HTTP bridge launcher generation."""
-
-    def test_bearer_bridge_launcher(self, tmp_path):
+    def test_bearer_entry_structure(self):
         mcp_data = {
             "type": "streamable-http",
             "url": "https://example.com/mcp",
@@ -292,39 +252,138 @@ class TestHttpBridgeLauncher:
                 "header_prefix": "Bearer",
             },
         }
-        entry = _build_http_bridge_entry("test-mcp", mcp_data, launcher_base=tmp_path)
-        assert entry["command"].endswith(".sh")
+        entry = _build_http_bridge_entry("test-mcp", mcp_data)
+
+        assert entry["command"].endswith("http-bridge-auth.sh")
         assert entry["args"] == []
+        assert entry["env"]["CRUX_MCP_NAME"] == "test-mcp"
+        assert entry["env"]["CRUX_BRIDGE_URL"] == "https://example.com/mcp"
+        assert entry["env"]["CRUX_BRIDGE_AUTH_HEADER"] == "Authorization"
+        assert entry["env"]["CRUX_BRIDGE_AUTH_PREFIX"] == "Bearer"
+        assert entry["env"]["CRUX_AUTH_KEYCHAIN_KEY"] == "API_TOKEN"
+        assert entry["env"]["CRUX_BRIDGE_AUTH_ENV"] == "CRUX_AUTH_TOKEN"
 
-        content = Path(entry["command"]).read_text()
-        assert "CRUX_BRIDGE_URL" in content
-        assert "https://example.com/mcp" in content
-        assert "CRUX_BRIDGE_AUTH_HEADER" in content
-        assert "python3 -m crux_cli.bridge" in content
-        # Security: no literal tokens in the script
-        assert "CRUX_AUTH_TOKEN=$(" in content  # shell expansion, not literal
+    def test_oauth_uses_access_token_key(self):
+        mcp_data = {
+            "type": "streamable-http",
+            "url": "https://example.com/mcp",
+            "auth": {"type": "oauth"},
+        }
+        entry = _build_http_bridge_entry("test-mcp", mcp_data)
 
-    def test_bridge_launcher_no_cli_arguments(self, tmp_path):
-        """Security: bridge is invoked with zero arguments."""
+        assert entry["env"]["CRUX_AUTH_KEYCHAIN_KEY"] == "access_token"
+
+    def test_oauth_client_credentials_uses_access_token_key(self):
+        mcp_data = {
+            "type": "streamable-http",
+            "url": "https://example.com/mcp",
+            "auth": {"type": "oauth-client-credentials"},
+        }
+        entry = _build_http_bridge_entry("test-mcp", mcp_data)
+
+        assert entry["env"]["CRUX_AUTH_KEYCHAIN_KEY"] == "access_token"
+
+    def test_no_auth_bridge_entry(self):
+        """HTTP MCP with no auth still gets bridge env vars."""
+        mcp_data = {
+            "type": "streamable-http",
+            "url": "https://example.com/mcp",
+            "auth": {},
+        }
+        entry = _build_http_bridge_entry("test-mcp", mcp_data)
+
+        assert entry["env"]["CRUX_BRIDGE_URL"] == "https://example.com/mcp"
+        assert "CRUX_AUTH_KEYCHAIN_KEY" not in entry["env"]
+
+
+# ---------------------------------------------------------------------------
+# _build_server_entry dispatch
+# ---------------------------------------------------------------------------
+
+
+class TestBuildServerEntryDispatch:
+    """Verify _build_server_entry routes to the correct builder."""
+
+    def test_http_mcp_routes_to_bridge(self):
         mcp_data = {
             "type": "streamable-http",
             "url": "https://example.com/mcp",
             "auth": {"type": "bearer", "keychain_key": "TOK"},
         }
-        entry = _build_http_bridge_entry("test-mcp", mcp_data, launcher_base=tmp_path)
-        content = Path(entry["command"]).read_text()
-        # The exec line should be JUST "exec python3 -m crux_cli.bridge" with no args
-        exec_lines = [line for line in content.splitlines() if line.startswith("exec ")]
-        assert len(exec_lines) == 1
-        assert exec_lines[0].strip() == "exec python3 -m crux_cli.bridge"
+        entry = _build_server_entry("test-mcp", mcp_data)
+        assert entry["command"].endswith("http-bridge-auth.sh")
 
-    def test_build_server_entry_dispatches_to_bridge(self, tmp_path):
-        """MCPs with url field route through bridge."""
+    def test_url_field_routes_to_bridge(self):
+        mcp_data = {"url": "https://example.com/mcp", "auth": {}}
+        entry = _build_server_entry("test-mcp", mcp_data)
+        assert entry["command"].endswith("http-bridge-auth.sh")
+
+    def test_authed_stdio_routes_to_keychain(self):
         mcp_data = {
-            "type": "streamable-http",
-            "url": "https://example.com/mcp",
-            "auth": {"type": "bearer", "keychain_key": "TOK"},
+            "command": "npx",
+            "args": ["-y", "pkg"],
+            "auth": {"env_vars": ["API_KEY"]},
         }
-        entry = _build_server_entry("test-mcp", mcp_data, launcher_base=tmp_path)
-        content = Path(entry["command"]).read_text()
+        entry = _build_server_entry("test-mcp", mcp_data)
+        assert entry["command"].endswith("keychain-auth.sh")
+
+    def test_plain_mcp_passthrough(self):
+        mcp_data = {"command": "npx", "args": ["-y", "pkg"]}
+        entry = _build_server_entry("test-mcp", mcp_data)
+        assert entry["command"] == "npx"
+        assert entry["args"] == ["-y", "pkg"]
+
+    def test_plain_mcp_with_extra_args(self):
+        mcp_data = {"command": "npx", "args": ["-y", "pkg"]}
+        entry = _build_server_entry("test-mcp", mcp_data, extra_args=["--port", "8080"])
+        assert entry["args"] == ["-y", "pkg", "--port", "8080"]
+
+    def test_plain_mcp_resolves_source_dir(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(tmp_path / ".crux"))
+        mcp_data = {
+            "command": "uv",
+            "args": ["run", "--directory", "{source_dir}", "serve"],
+            "source_dir": "mcps/my-mcp",
+        }
+        entry = _build_server_entry("my-mcp", mcp_data)
+        assert "{source_dir}" not in str(entry["args"])
+        assert Path(entry["args"][2]).is_absolute()
+
+
+# ---------------------------------------------------------------------------
+# Shared launcher scripts exist as package data
+# ---------------------------------------------------------------------------
+
+
+class TestSharedLauncherScriptsExist:
+    """Verify the bundled shared launcher scripts are present in the package."""
+
+    def test_keychain_auth_script_exists(self):
+        from crux_cli.setup_crux import _BUNDLED_LAUNCHERS
+
+        script = _BUNDLED_LAUNCHERS / "keychain-auth.sh"
+        assert script.exists(), f"Bundled script not found at {script}"
+        content = script.read_text()
+        assert "CRUX_MCP_NAME" in content
+        assert "CRUX_AUTH_ENV_VARS" in content
+        assert "uname -s" in content  # platform detection
+
+    def test_http_bridge_auth_script_exists(self):
+        from crux_cli.setup_crux import _BUNDLED_LAUNCHERS
+
+        script = _BUNDLED_LAUNCHERS / "http-bridge-auth.sh"
+        assert script.exists(), f"Bundled script not found at {script}"
+        content = script.read_text()
+        assert "CRUX_MCP_NAME" in content
+        assert "CRUX_AUTH_KEYCHAIN_KEY" in content
         assert "crux_cli.bridge" in content
+
+    def test_scripts_have_both_platform_branches(self):
+        """Both scripts must handle macOS (security) and Linux (secret-tool)."""
+        from crux_cli.setup_crux import _BUNDLED_LAUNCHERS
+
+        for name in ("keychain-auth.sh", "http-bridge-auth.sh"):
+            content = (_BUNDLED_LAUNCHERS / name).read_text()
+            assert "Darwin" in content, f"{name} missing macOS branch"
+            assert "security find-generic-password" in content, f"{name} missing macOS command"
+            assert "secret-tool lookup" in content, f"{name} missing Linux command"

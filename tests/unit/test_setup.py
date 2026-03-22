@@ -110,6 +110,7 @@ class TestSetupCreatesStructure:
         assert crux_dir.is_dir()
         assert (crux_dir / "mcps").is_dir()
         assert (crux_dir / "mcps" / "launchers").is_dir()
+        assert (crux_dir / "launchers").is_dir()  # shared launchers dir
         assert (crux_dir / "skills").is_dir()
         assert (crux_dir / "sandbox").is_dir()
         assert len(result.dirs_created) > 0
@@ -504,3 +505,67 @@ class TestFindOldMarketplace:
 
     def test_returns_none_when_absent(self, tmp_path):
         assert _find_old_marketplace(search_path=tmp_path) is None
+
+
+# ---------------------------------------------------------------------------
+# Shared launcher installation
+# ---------------------------------------------------------------------------
+
+
+class TestSetupInstallsLaunchers:
+    """run_setup copies shared launcher scripts to ~/.crux/launchers/."""
+
+    def test_setup_installs_launcher_scripts(self, monkeypatch, tmp_path):
+        crux_dir = tmp_path / ".crux"
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(crux_dir))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+        skill = _make_bundled_skill(tmp_path)
+
+        result = run_setup(
+            search_path=tmp_path / "nonexistent",
+            skill_target_dir=tmp_path / "claude_skills",
+            bundled_skill_path=skill,
+        )
+
+        launchers_dir = crux_dir / "launchers"
+        assert launchers_dir.is_dir()
+        assert (launchers_dir / "keychain-auth.sh").exists()
+        assert (launchers_dir / "http-bridge-auth.sh").exists()
+        assert len(result.launchers.installed) == 2
+
+    def test_launcher_scripts_are_executable(self, monkeypatch, tmp_path):
+        crux_dir = tmp_path / ".crux"
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(crux_dir))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+        skill = _make_bundled_skill(tmp_path)
+
+        run_setup(
+            search_path=tmp_path / "nonexistent",
+            skill_target_dir=tmp_path / "claude_skills",
+            bundled_skill_path=skill,
+        )
+
+        import stat
+
+        for name in ("keychain-auth.sh", "http-bridge-auth.sh"):
+            script = crux_dir / "launchers" / name
+            mode = script.stat().st_mode
+            assert mode & stat.S_IXUSR, f"{name} is not executable"
+
+    def test_launcher_install_idempotent(self, monkeypatch, tmp_path):
+        crux_dir = tmp_path / ".crux"
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(crux_dir))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+        skill = _make_bundled_skill(tmp_path)
+        kwargs = dict(
+            search_path=tmp_path / "nonexistent",
+            skill_target_dir=tmp_path / "claude_skills",
+            bundled_skill_path=skill,
+        )
+
+        run_setup(**kwargs)
+        result2 = run_setup(**kwargs)
+
+        # Second run still installs (overwrites), which is fine
+        assert len(result2.launchers.installed) == 2
+        assert (crux_dir / "launchers" / "keychain-auth.sh").exists()

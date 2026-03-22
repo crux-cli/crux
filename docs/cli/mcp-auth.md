@@ -47,11 +47,11 @@ crux mcp auth gh-mcp
 
 ### Setup Command
 
-MCPs registered with `--setup-cmd` run that command during auth. Useful for browser-based flows or interactive installers.
+MCPs with `setup-cmd` auth type in the registry run that command during auth. Useful for browser-based flows or interactive installers.
 
 ```bash
-crux mcp auth my-oauth-mcp
-# → runs the configured setup-cmd
+crux mcp auth my-tool
+# → runs the configured setup command
 ```
 
 ### Bearer Token

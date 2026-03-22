@@ -23,6 +23,7 @@ from crux_cli.paths import (
     launchers_dir,
     mcps_dir,
     sandbox_dir,
+    shared_launchers_dir,
     skills_dir,
 )
 
@@ -34,11 +35,19 @@ MIN_PYTHON = (3, 11)
 REQUIRED_TOOLS = ("uv", "git", "node", "claude")
 
 _BUNDLED_SKILL = Path(__file__).resolve().parent / "data" / "skills" / "crux" / "SKILL.md"
+_BUNDLED_LAUNCHERS = Path(__file__).resolve().parent / "data" / "launchers"
 
 
 # ---------------------------------------------------------------------------
 # Result dataclass
 # ---------------------------------------------------------------------------
+
+@dataclass
+class LauncherInstallResult:
+    """Summary of shared launcher script installation."""
+
+    installed: list[str] = field(default_factory=list)
+
 
 @dataclass
 class SetupResult:
@@ -47,6 +56,7 @@ class SetupResult:
     dirs_created: list[str] = field(default_factory=list)
     config_written: bool = False
     skill_installed: bool = False
+    launchers: LauncherInstallResult = field(default_factory=LauncherInstallResult)
     missing_deps: list[str] = field(default_factory=list)
     migration: MigrationResult | None = None
 
@@ -70,6 +80,7 @@ def _ensure_dirs(result: SetupResult) -> None:
         crux_home(),
         mcps_dir(),
         launchers_dir(),
+        shared_launchers_dir(),
         skills_dir(),
         sandbox_dir(),
     ]
@@ -114,6 +125,31 @@ def install_skill(
     dest_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dest_dir / "SKILL.md")
     return True
+
+
+# ---------------------------------------------------------------------------
+# Shared launcher installation
+# ---------------------------------------------------------------------------
+
+def _install_launchers(
+    result: SetupResult,
+    *,
+    bundled_path: Path | None = None,
+    target_dir: Path | None = None,
+) -> None:
+    """Copy bundled shared launcher scripts to ~/.crux/launchers/."""
+    src_dir = bundled_path or _BUNDLED_LAUNCHERS
+    dest_dir = target_dir or shared_launchers_dir()
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    if not src_dir.is_dir():
+        return
+
+    for script in src_dir.glob("*.sh"):
+        target = dest_dir / script.name
+        shutil.copy2(script, target)
+        target.chmod(0o755)
+        result.launchers.installed.append(script.name)
 
 
 # ---------------------------------------------------------------------------
@@ -246,6 +282,8 @@ def run_setup(
     search_path: Path | None = None,
     skill_target_dir: Path | None = None,
     bundled_skill_path: Path | None = None,
+    launcher_target_dir: Path | None = None,
+    bundled_launcher_path: Path | None = None,
 ) -> SetupResult:
     """Run the full Crux setup sequence."""
     result = SetupResult()
@@ -256,6 +294,12 @@ def run_setup(
     result.skill_installed = install_skill(
         bundled_path=bundled_skill_path,
         target_dir=skill_target_dir,
+    )
+
+    _install_launchers(
+        result,
+        bundled_path=bundled_launcher_path,
+        target_dir=launcher_target_dir,
     )
 
     result.missing_deps = check_dependencies()

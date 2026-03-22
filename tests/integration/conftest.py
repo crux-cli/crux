@@ -25,6 +25,16 @@ def crux_env(tmp_path):
     (tmp_path / "src").mkdir()
     (tmp_path / "sandbox").mkdir()
 
+    # Install shared launcher scripts from bundled package data
+    from crux_cli.setup_crux import _BUNDLED_LAUNCHERS
+
+    launchers_dest = tmp_path / "launchers"
+    launchers_dest.mkdir(parents=True, exist_ok=True)
+    for script in _BUNDLED_LAUNCHERS.glob("*.sh"):
+        target = launchers_dest / script.name
+        shutil.copy2(script, target)
+        target.chmod(0o755)
+
     shutil.copy(
         FIXTURES_DIR / "marketplace_minimal.json",
         marketplace_dir / "marketplace.json",

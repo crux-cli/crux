@@ -41,6 +41,7 @@ Crux is a CLI tool for managing MCP servers, skills, and agent tasks.
 
 - Run `crux init` first to set up the `~/.crux/` directory.
 - Use `crux mcp search` to discover MCPs, then `crux mcp add` to register them.
-- Use `crux mcp auth <name>` to authenticate any MCP that needs credentials.
+- Use `--keychain VAR1,VAR2` with `crux mcp add` to declare and prompt for auth inline.
+- Use `crux mcp auth <name>` to re-authenticate or rotate credentials later.
 - Use `crux project create` to start a project, then `crux project install` to add MCPs.
 - Secrets are stored in the system keychain (macOS) or secret-service (Linux).
