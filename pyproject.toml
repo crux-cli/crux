@@ -33,7 +33,7 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-crux_cli = ["data/skills/crux/SKILL.md"]
+crux_cli = ["data/skills/crux/SKILL.md", "data/launchers/*.sh"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
