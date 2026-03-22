@@ -35,6 +35,22 @@ class TestMcpAdd:
         result = run_crux("mcp", "add", "nosrc", env=env)
         assert result.returncode != 0
 
+    def test_add_setup_cmd_rejected(self, crux_env):
+        """--setup-cmd is no longer a valid flag."""
+        env, root = crux_env
+        result = run_crux("mcp", "add", "x", "--npx", "pkg", "--setup-cmd", "echo hi", env=env)
+        assert result.returncode != 0  # argparse rejects unknown argument
+
+    def test_add_with_keychain_registers_auth(self, crux_env):
+        """--keychain stores auth metadata in registry even without interactive prompt."""
+        env, root = crux_env
+        result = run_crux("mcp", "add", "authed", "--npx", "@test/authed", "--keychain", "API_KEY,SECRET", env=env)
+        assert result.returncode == 0
+        reg = _load_registry(root)
+        auth = reg["mcp_definitions"]["authed"].get("auth", {})
+        assert auth["type"] == "keychain"
+        assert auth["env_vars"] == ["API_KEY", "SECRET"]
+
 
 @pytest.mark.integration
 class TestMcpRemove:

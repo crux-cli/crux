@@ -69,9 +69,6 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
     build_cmd = getattr(args, "build_cmd", None)
     if build_cmd:
         entry["build_cmd"] = build_cmd
-    setup_cmd = getattr(args, "setup_cmd", None)
-    if setup_cmd:
-        entry.setdefault("auth", {})["setup_cmd"] = setup_cmd.split()
 
     if args.uvx:
         base_args = [args.uvx]
@@ -114,14 +111,15 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
     save_registry(reg)
     print(f"\u2705 Registered MCP '{name}'")
 
-    run_setup = entry.get("auth", {}).get("setup_cmd")
-    if run_setup:
-        print(f"  Running setup: {' '.join(run_setup)}")
-        result = subprocess.run(run_setup)  # noqa: S603
-        if result.returncode == 0:
-            print("  Setup complete")
-        else:
-            print(f"  Setup failed (exit {result.returncode}) \u2014 run manually: {' '.join(run_setup)}")
+    # Inline keychain auth: prompt for secrets immediately (interactive terminals only)
+    auth_block = entry.get("auth", {})
+    if auth_block.get("type") == "keychain" and sys.stdin.isatty():
+        try:
+            from crux_cli.auth import _auth_keychain
+
+            _auth_keychain(name, auth_block)
+        except Exception as e:  # noqa: BLE001
+            print(f"  \u26a0\ufe0f  Auth failed: {e} \u2014 run 'crux mcp auth {name}' to retry")
 
 
 def cmd_mcp_remove(args: argparse.Namespace) -> None:

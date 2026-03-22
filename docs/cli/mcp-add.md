@@ -25,9 +25,8 @@ crux mcp add <name> [options]
 | `--command <cmd>` | Command to run the MCP server |
 | `--args <args>` | Arguments for the command (space-separated) |
 | `--tags <tags>` | Comma-separated tags |
-| `--keychain <vars>` | Comma-separated env var names for keychain auth |
+| `--keychain <vars>` | Comma-separated env var names for keychain auth (prompts inline) |
 | `--build-cmd <cmd>` | Build command to run after cloning |
-| `--setup-cmd <cmd>` | Setup command to run after registration |
 
 ## Examples
 
@@ -39,9 +38,11 @@ crux mcp add filesystem --npx @modelcontextprotocol/server-filesystem
 crux mcp add wikijs --github jaalbin24/wikijs-mcp-server \
   --build-cmd "npm install && npm run build"
 
-# GitHub repo with keychain auth
+# With keychain auth (prompts for credentials inline)
 crux mcp add github --npx @modelcontextprotocol/server-github \
   --keychain GITHUB_TOKEN
+# → Prompts: Enter GITHUB_TOKEN: ****
+# → ✓ Stored GITHUB_TOKEN
 
 # PyPI package
 crux mcp add my-tool --uvx my-mcp-tool

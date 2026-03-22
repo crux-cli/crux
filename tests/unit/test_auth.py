@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 from types import SimpleNamespace
 from typing import Any
 
@@ -212,6 +214,26 @@ class TestAuthSingle:
         for call in mock_backend.set_calls:
             assert call[2] == "test-secret"
 
+    def test_auth_keychain_skips_already_stored(self, monkeypatch, capsys):
+        """_auth_keychain skips vars already in the secrets index and backend."""
+        monkeypatch.setattr(
+            "crux_cli.auth.load_secrets_index",
+            lambda: {"mymcp": ["API_KEY"]},
+        )
+
+        mock_backend = MockBackend()
+        mock_backend._data[("mymcp", "API_KEY")] = "existing"
+        monkeypatch.setattr("crux_cli.auth.get_backend", lambda: mock_backend)
+        monkeypatch.setattr("crux_cli.auth.getpass.getpass", lambda prompt: "new-secret")
+
+        from crux_cli.auth import _auth_keychain
+
+        _auth_keychain("mymcp", {"type": "keychain", "env_vars": ["API_KEY", "NEW_VAR"]})
+
+        # Only NEW_VAR should be prompted and stored; API_KEY should be skipped
+        assert len(mock_backend.set_calls) == 1
+        assert mock_backend.set_calls[0][1] == "NEW_VAR"
+
     def test_auth_single_mcp_not_found(self, monkeypatch, capsys):
         """auth_single with nonexistent MCP name calls sys.exit(1)."""
         import pytest
@@ -226,3 +248,88 @@ class TestAuthSingle:
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
         assert "nonexistent" in captured.out
+
+
+# ---------------------------------------------------------------------------
+# Inline auth during mcp add
+# ---------------------------------------------------------------------------
+
+
+class TestInlineAuthDuringAdd:
+    """Test that cmd_mcp_add prompts for keychain secrets inline."""
+
+    def test_add_with_keychain_prompts_inline(self, monkeypatch, tmp_path):
+        """When --keychain is provided and stdin is a TTY, secrets are prompted inline."""
+        crux_dir = tmp_path / ".crux"
+        crux_dir.mkdir()
+        (crux_dir / "registry.json").write_text(
+            json.dumps({"version": "1.0.0", "mcp_definitions": {}, "skill_definitions": {}})
+        )
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(crux_dir))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+
+        # Mock stdin as TTY
+        monkeypatch.setattr("sys.stdin", SimpleNamespace(isatty=lambda: True))
+
+        # Mock auth backend
+        mock_backend = MockBackend()
+        monkeypatch.setattr("crux_cli.auth.get_backend", lambda: mock_backend)
+        monkeypatch.setattr("crux_cli.auth.load_secrets_index", lambda: {})
+        monkeypatch.setattr("crux_cli.auth.getpass.getpass", lambda prompt: "test-secret")
+
+        from crux_cli.cli.commands.mcp import cmd_mcp_add
+
+        args = argparse.Namespace(
+            name="test-mcp",
+            npx="@test/pkg",
+            uvx=None,
+            github=None,
+            local=None,
+            command=None,
+            args=None,
+            tags=None,
+            keychain="API_KEY,SECRET",
+            build_cmd=None,
+        )
+        cmd_mcp_add(args)
+
+        # Backend should have received set() calls for each keychain var
+        assert len(mock_backend.set_calls) == 2
+        keys_stored = [call[1] for call in mock_backend.set_calls]
+        assert "API_KEY" in keys_stored
+        assert "SECRET" in keys_stored
+
+    def test_add_with_keychain_skips_when_not_tty(self, monkeypatch, tmp_path):
+        """When stdin is not a TTY, inline auth is skipped."""
+        crux_dir = tmp_path / ".crux"
+        crux_dir.mkdir()
+        (crux_dir / "registry.json").write_text(
+            json.dumps({"version": "1.0.0", "mcp_definitions": {}, "skill_definitions": {}})
+        )
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(crux_dir))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+
+        # Mock stdin as NOT a TTY
+        monkeypatch.setattr("sys.stdin", SimpleNamespace(isatty=lambda: False))
+
+        mock_backend = MockBackend()
+        monkeypatch.setattr("crux_cli.auth.get_backend", lambda: mock_backend)
+
+        from crux_cli.cli.commands.mcp import cmd_mcp_add
+
+        args = argparse.Namespace(
+            name="test-mcp2",
+            npx="@test/pkg",
+            uvx=None,
+            github=None,
+            local=None,
+            command=None,
+            args=None,
+            tags=None,
+            keychain="API_KEY",
+            build_cmd=None,
+        )
+        cmd_mcp_add(args)
+
+        # Backend should NOT have received any set() calls
+        assert len(mock_backend.set_calls) == 0
