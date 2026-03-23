@@ -22,6 +22,14 @@ Crux is a CLI tool for **macOS** and **Linux** that brings package-management to
 
 ## Install
 
+**As a Claude Code plugin** (recommended):
+
+```bash
+claude plugin add crux-cli/crux
+```
+
+**Or via curl:**
+
 ```bash
 curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
 ```

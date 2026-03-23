@@ -6,7 +6,7 @@ args: "[version] — optional version number (e.g., 1.0.2). If omitted, incremen
 
 # Release Version
 
-Bump the version in `pyproject.toml` on main, tag the release, run the release pipeline, and deploy docs.
+Bump the version in `pyproject.toml` and `.claude-plugin/plugin.json` on main, tag the release, run the release pipeline, and deploy docs.
 
 ## Step 0: Resolve Version
 
@@ -45,10 +45,18 @@ Update `pyproject.toml`:
 version = "<VERSION>"
 ```
 
+Update `.claude-plugin/plugin.json`:
+
+```json
+"version": "<VERSION>"
+```
+
+Both files must have the same version string.
+
 Commit and push directly to main:
 
 ```bash
-git add pyproject.toml
+git add pyproject.toml .claude-plugin/plugin.json
 git commit -m "chore: bump version to <VERSION>"
 git push origin main
 ```
