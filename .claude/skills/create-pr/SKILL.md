@@ -33,7 +33,18 @@ git diff ${BASE}...HEAD --stat
 
 # Changed files
 gh api repos/:owner/:repo/compare/${BASE}...${BRANCH} --jq '.files[].filename'
+
+# Check for a related issue (by branch name pattern like fix/issue-42 or feat/issue-15)
+# Extract issue number if the branch follows <prefix>/issue-<number> convention
+ISSUE_NUM=$(echo "$BRANCH" | grep -oE 'issue-[0-9]+' | grep -oE '[0-9]+')
+if [ -n "$ISSUE_NUM" ]; then
+  gh issue view "$ISSUE_NUM" --json number,title,body,labels
+fi
 ```
+
+### Linked Issue
+
+If the branch name contains an issue number (e.g., `fix/issue-42`), or if commit messages reference an issue (`closes #42`, `fixes #42`), fetch the issue details. The PR body should include `Closes #<number>` to auto-close the issue on merge.
 
 ## Step 2: Analyze Changes
 
@@ -53,6 +64,10 @@ Use this exact format. Every section is required. The `/review-pr` skill parses 
 ## Summary
 
 <1-3 sentences: what this PR does and why>
+
+## Linked Issue
+
+<If this PR addresses a GitHub issue, write "Closes #<number>" and include a one-line summary of the issue. Write "None" if no issue is linked.>
 
 ## Changes
 
