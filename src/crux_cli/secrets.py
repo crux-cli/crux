@@ -105,7 +105,7 @@ class MacOSKeychainBackend:
     def set(self, mcp_name: str, key: str, value: str) -> None:  # noqa: A003
         """Store a secret in macOS Keychain via ``security add-generic-password``."""
         service = self._service(mcp_name)
-        cmd = ["security", "add-generic-password", "-s", service, "-a", key, "-w", "-U"]  # noqa: S607
+        cmd = ["security", "add-generic-password", "-U", "-s", service, "-a", key, "-w"]  # noqa: S607
         result = subprocess.run(cmd, input=value.encode(), capture_output=True)  # noqa: S603
         if result.returncode != 0:
             msg = result.stderr.decode().strip() if result.stderr else "unknown error"

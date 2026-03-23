@@ -24,6 +24,7 @@ from crux_cli.secrets import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def secrets_home(monkeypatch, tmp_path):
     """Point crux_home() and secrets_path() at a temp directory."""
@@ -37,6 +38,7 @@ def secrets_home(monkeypatch, tmp_path):
 # ===========================================================================
 # W1B.1  Protocol
 # ===========================================================================
+
 
 class TestBackendProtocol:
     """Verify that the SecretsBackend protocol has the right shape."""
@@ -61,6 +63,7 @@ class TestBackendProtocol:
 # ===========================================================================
 # W1B.1  get_backend factory
 # ===========================================================================
+
 
 class TestGetBackend:
     def test_get_backend_keychain(self):
@@ -98,6 +101,7 @@ class TestGetBackend:
 # W1B.2  macOS Keychain backend (mocked)
 # ===========================================================================
 
+
 class TestKeychainSet:
     def test_keychain_set(self, secrets_home, mocker):
         mock_run = mocker.patch("crux_cli.secrets.subprocess.run")
@@ -112,17 +116,32 @@ class TestKeychainSet:
         assert "myvalue" not in args
         assert mock_run.call_args[1].get("input") == b"myvalue"
 
+    def test_keychain_set_w_flag_is_last(self, secrets_home, mocker):
+        """Ensure -w is the last flag so security reads the password from stdin.
+
+        Regression test for #18: when -U followed -w, macOS security
+        interpreted -U as the password value instead of reading stdin.
+        """
+        mock_run = mocker.patch("crux_cli.secrets.subprocess.run")
+        mock_run.return_value = MagicMock(returncode=0, stderr=b"")
+        backend = MacOSKeychainBackend()
+        backend.set("mymcp", "MY_KEY", "myvalue")
+        args = mock_run.call_args[0][0]
+        assert args[-1] == "-w", f"-w must be last arg so stdin is read; got {args}"
+        # -U must come before -w, not after
+        u_idx = args.index("-U")
+        w_idx = args.index("-w")
+        assert u_idx < w_idx, f"-U (idx {u_idx}) must precede -w (idx {w_idx})"
+
     def test_keychain_set_updates_index(self, secrets_home, mocker):
-        mocker.patch("crux_cli.secrets.subprocess.run",
-                      return_value=MagicMock(returncode=0, stderr=b""))
+        mocker.patch("crux_cli.secrets.subprocess.run", return_value=MagicMock(returncode=0, stderr=b""))
         backend = MacOSKeychainBackend()
         backend.set("mymcp", "MY_KEY", "val")
         idx = load_secrets_index()
         assert "MY_KEY" in idx["mymcp"]
 
     def test_keychain_set_exits_on_failure(self, secrets_home, mocker):
-        mocker.patch("crux_cli.secrets.subprocess.run",
-                      return_value=MagicMock(returncode=1, stderr=b"error"))
+        mocker.patch("crux_cli.secrets.subprocess.run", return_value=MagicMock(returncode=1, stderr=b"error"))
         backend = MacOSKeychainBackend()
         with pytest.raises(SystemExit):
             backend.set("mymcp", "MY_KEY", "val")
@@ -130,22 +149,19 @@ class TestKeychainSet:
 
 class TestKeychainGet:
     def test_keychain_get(self, mocker):
-        mocker.patch("crux_cli.secrets.subprocess.run",
-                      return_value=MagicMock(returncode=0, stdout="secret\n"))
+        mocker.patch("crux_cli.secrets.subprocess.run", return_value=MagicMock(returncode=0, stdout="secret\n"))
         backend = MacOSKeychainBackend()
         assert backend.get("mymcp", "MY_KEY") == "secret"
 
     def test_keychain_not_found(self, mocker):
-        mocker.patch("crux_cli.secrets.subprocess.run",
-                      return_value=MagicMock(returncode=44, stdout=""))
+        mocker.patch("crux_cli.secrets.subprocess.run", return_value=MagicMock(returncode=44, stdout=""))
         backend = MacOSKeychainBackend()
         assert backend.get("mymcp", "MY_KEY") is None
 
 
 class TestKeychainDelete:
     def test_keychain_delete(self, secrets_home, mocker):
-        mocker.patch("crux_cli.secrets.subprocess.run",
-                      return_value=MagicMock(returncode=0))
+        mocker.patch("crux_cli.secrets.subprocess.run", return_value=MagicMock(returncode=0))
         save_secrets_index({"mymcp": ["K1", "K2"]})
         backend = MacOSKeychainBackend()
         backend.delete("mymcp", "K1")
@@ -177,12 +193,11 @@ class TestKeychainListKeys:
 # W1B.3  Linux Secret Service backend (mocked)
 # ===========================================================================
 
+
 class TestSecretServiceSet:
     def test_secret_service_set(self, secrets_home, mocker):
         mock_collection = MagicMock()
-        mocker.patch.object(
-            LinuxSecretServiceBackend, "_get_collection", return_value=mock_collection
-        )
+        mocker.patch.object(LinuxSecretServiceBackend, "_get_collection", return_value=mock_collection)
         backend = LinuxSecretServiceBackend()
         backend.set("mymcp", "MY_KEY", "myvalue")
         mock_collection.create_item.assert_called_once_with(
@@ -201,18 +216,14 @@ class TestSecretServiceGet:
         mock_item.get_secret.return_value = b"secret_value"
         mock_collection = MagicMock()
         mock_collection.search_items.return_value = [mock_item]
-        mocker.patch.object(
-            LinuxSecretServiceBackend, "_get_collection", return_value=mock_collection
-        )
+        mocker.patch.object(LinuxSecretServiceBackend, "_get_collection", return_value=mock_collection)
         backend = LinuxSecretServiceBackend()
         assert backend.get("mymcp", "KEY") == "secret_value"
 
     def test_secret_service_get_not_found(self, mocker):
         mock_collection = MagicMock()
         mock_collection.search_items.return_value = []
-        mocker.patch.object(
-            LinuxSecretServiceBackend, "_get_collection", return_value=mock_collection
-        )
+        mocker.patch.object(LinuxSecretServiceBackend, "_get_collection", return_value=mock_collection)
         backend = LinuxSecretServiceBackend()
         assert backend.get("mymcp", "KEY") is None
 
@@ -222,9 +233,7 @@ class TestSecretServiceDelete:
         mock_item = MagicMock()
         mock_collection = MagicMock()
         mock_collection.search_items.return_value = [mock_item]
-        mocker.patch.object(
-            LinuxSecretServiceBackend, "_get_collection", return_value=mock_collection
-        )
+        mocker.patch.object(LinuxSecretServiceBackend, "_get_collection", return_value=mock_collection)
         save_secrets_index({"mymcp": ["KEY"]})
         backend = LinuxSecretServiceBackend()
         backend.delete("mymcp", "KEY")
@@ -236,26 +245,20 @@ class TestSecretServiceDelete:
 class TestSecretServiceDBusFallback:
     def test_secret_service_dbus_unavailable_falls_back(self, secrets_home, mocker):
         """When D-Bus is unavailable, falls back to AgeEncryptedBackend."""
-        mocker.patch.object(
-            LinuxSecretServiceBackend, "_get_collection", return_value=None
-        )
+        mocker.patch.object(LinuxSecretServiceBackend, "_get_collection", return_value=None)
         mock_age_set = mocker.patch.object(AgeEncryptedBackend, "set")
         backend = LinuxSecretServiceBackend()
         backend.set("mymcp", "KEY", "val")
         mock_age_set.assert_called_once_with("mymcp", "KEY", "val")
 
     def test_secret_service_get_falls_back(self, secrets_home, mocker):
-        mocker.patch.object(
-            LinuxSecretServiceBackend, "_get_collection", return_value=None
-        )
+        mocker.patch.object(LinuxSecretServiceBackend, "_get_collection", return_value=None)
         mocker.patch.object(AgeEncryptedBackend, "get", return_value="fallback_val")
         backend = LinuxSecretServiceBackend()
         assert backend.get("mymcp", "KEY") == "fallback_val"
 
     def test_secret_service_delete_falls_back(self, secrets_home, mocker):
-        mocker.patch.object(
-            LinuxSecretServiceBackend, "_get_collection", return_value=None
-        )
+        mocker.patch.object(LinuxSecretServiceBackend, "_get_collection", return_value=None)
         mock_age_delete = mocker.patch.object(AgeEncryptedBackend, "delete")
         backend = LinuxSecretServiceBackend()
         backend.delete("mymcp", "KEY")
@@ -266,17 +269,21 @@ class TestSecretServiceDBusFallback:
 # W1B.4  Age encrypted file backend (mocked)
 # ===========================================================================
 
+
 class TestAgeSet:
     def test_age_set(self, secrets_home, mocker):
         identity = secrets_home / "identity"
         identity.write_text("# public key: age1abc\nAGE-SECRET-KEY-1XYZ\n")
         identity.chmod(0o600)
 
-        mocker.patch("crux_cli.secrets.subprocess.run", side_effect=[
-            # _load_store (decrypt) — no existing file, won't be called
-            # _save_store (encrypt)
-            MagicMock(returncode=0, stdout="", stderr=""),
-        ])
+        mocker.patch(
+            "crux_cli.secrets.subprocess.run",
+            side_effect=[
+                # _load_store (decrypt) — no existing file, won't be called
+                # _save_store (encrypt)
+                MagicMock(returncode=0, stdout="", stderr=""),
+            ],
+        )
         # No existing secrets.age file
         backend = AgeEncryptedBackend()
         backend.set("mymcp", "KEY", "value123")
@@ -292,8 +299,9 @@ class TestAgeGet:
         (secrets_home / "secrets.age").write_text("encrypted")
 
         store = {"mymcp": {"KEY": "secret_value"}}
-        mocker.patch("crux_cli.secrets.subprocess.run",
-                      return_value=MagicMock(returncode=0, stdout=json.dumps(store), stderr=""))
+        mocker.patch(
+            "crux_cli.secrets.subprocess.run", return_value=MagicMock(returncode=0, stdout=json.dumps(store), stderr="")
+        )
         backend = AgeEncryptedBackend()
         assert backend.get("mymcp", "KEY") == "secret_value"
 
@@ -308,8 +316,9 @@ class TestAgeGet:
         identity.write_text("# public key: age1abc\nAGE-SECRET-KEY-1XYZ\n")
         identity.chmod(0o600)
         (secrets_home / "secrets.age").write_text("corrupted")
-        mocker.patch("crux_cli.secrets.subprocess.run",
-                      return_value=MagicMock(returncode=1, stdout="", stderr="bad key"))
+        mocker.patch(
+            "crux_cli.secrets.subprocess.run", return_value=MagicMock(returncode=1, stdout="", stderr="bad key")
+        )
         backend = AgeEncryptedBackend()
         with pytest.raises(RuntimeError, match="Failed to decrypt"):
             backend.get("mymcp", "KEY")
@@ -378,6 +387,7 @@ class TestAgeIdentityPermissions:
 # ===========================================================================
 # W1B.6  Secrets index
 # ===========================================================================
+
 
 class TestSecretsIndexFormat:
     def test_secrets_index_format(self, secrets_home):
@@ -451,6 +461,7 @@ class TestSecretsIndexAtomicWrite:
 # ===========================================================================
 # W1B.5  CLI integration (mocked backend)
 # ===========================================================================
+
 
 class TestCLISecretSet:
     def test_cli_secret_set(self, secrets_home, mocker):
