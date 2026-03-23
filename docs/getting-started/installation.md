@@ -6,9 +6,19 @@
 - **macOS** or **Linux** (Windows support is planned)
 - [uv](https://docs.astral.sh/uv/) — fast Python package manager (installed automatically by the installer)
 
-## Recommended: Curl Installer
+## Recommended: Claude Code Plugin
 
-The fastest way to install Crux:
+If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), install Crux as a plugin:
+
+```bash
+claude plugin add crux-cli/crux
+```
+
+The plugin auto-installs the `crux` CLI on your first session. It also provides the Crux skill so Claude knows all available commands.
+
+## Alternative: Curl Installer
+
+The fastest way to install Crux without the plugin:
 
 ```bash
 curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh

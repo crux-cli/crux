@@ -1,0 +1,15 @@
+{
+  "name": "crux",
+  "displayName": "Crux",
+  "description": "Agentic Tool Manager for Claude Code — manage MCP servers, skills, and projects with per-project scoping and OS keychain auth",
+  "version": "1.0.2",
+  "author": {
+    "name": "crux-cli"
+  },
+  "homepage": "https://github.com/crux-cli/crux",
+  "repository": "https://github.com/crux-cli/crux",
+  "license": "MIT",
+  "keywords": ["mcp", "tools", "skills", "project-management"],
+  "skills": "./src/crux_cli/data/skills/",
+  "hooks": "./hooks/hooks.json"
+}
