@@ -11,7 +11,8 @@
 If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), install Crux as a plugin:
 
 ```bash
-claude plugin add crux-cli/crux
+claude plugin marketplace add crux-cli/claude-marketplace
+claude plugin install crux
 ```
 
 The plugin auto-installs the `crux` CLI on your first session. It also provides the Crux skill so Claude knows all available commands.
