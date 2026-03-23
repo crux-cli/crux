@@ -64,6 +64,22 @@ Also read the PR description and any linked issues for context:
 gh pr view <PR#> --json title,body,labels,files
 ```
 
+### 2.0: Check Linked Issue
+
+If the PR body contains `Closes #<number>` or `Fixes #<number>`, fetch the linked issue:
+
+```bash
+gh issue view <ISSUE#> --json number,title,body,labels
+```
+
+Use the issue description to:
+
+- **Verify the fix matches the reported problem** — does the PR actually address what the issue describes?
+- **Check repro steps are covered** — if the issue includes repro steps, are they addressed by the changes or covered by tests?
+- **Validate scope** — does the PR stay within the scope of what the issue requested, or does it include unrelated changes?
+
+If the PR claims to close an issue but the changes don't address it, flag this as a **WARNING** finding.
+
 ### 2a. Logic & Correctness
 
 Review every changed file for:
