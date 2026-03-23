@@ -108,6 +108,29 @@ echo "Docs: https://crux-cli.github.io/crux/"
 
 Report the version, PyPI status, and docs URL.
 
+## Step 7: Update Marketplace Plugin Version
+
+Update the version in the `claude-marketplace` repo so the plugin's SessionStart hook installs the correct version:
+
+```bash
+cd ../claude-marketplace
+git checkout main
+git pull origin main
+```
+
+Update `plugins/crux/.claude-plugin/plugin.json` — set `"version"` to `"<VERSION>"`.
+
+Update `plugins/crux/hooks/hooks.json` — set `PLUGIN_VERSION='<VERSION>'` in the hook command.
+
+Commit and push:
+
+```bash
+git add plugins/crux/.claude-plugin/plugin.json plugins/crux/hooks/hooks.json
+git commit -m "chore: bump crux plugin version to <VERSION>"
+git push origin main
+cd ../crux
+```
+
 ## Rollback
 
 If tagged but release pipeline failed:
