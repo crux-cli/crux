@@ -1,6 +1,6 @@
 [project]
 name = "crux-cli"
-version = "1.0.3"
+version = "1.0.4"
 description = "Crux OS — Agentic AI control plane"
 requires-python = ">=3.11"
 dependencies = [
