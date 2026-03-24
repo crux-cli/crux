@@ -1,0 +1,170 @@
+{% extends "main.html" %}
+
+{% block tabs %}
+  {{ super() }}
+  <style>
+    .md-header { position: initial; }
+    .md-main__inner { margin: 0; }
+    .md-content { display: none; }
+    @media screen and (min-width: 60em) {
+      .md-sidebar--secondary { display: none; }
+    }
+    @media screen and (min-width: 76.25em) {
+      .md-sidebar--primary { display: none; }
+    }
+  </style>
+
+  <!-- Hero -->
+  <section class="crux-hero">
+    <div class="md-grid md-typeset">
+      <div class="crux-hero__inner">
+        <h1>Crux</h1>
+        <p class="crux-hero__tagline">
+          Agentic Tool Manager for Claude Code
+        </p>
+        <p class="crux-hero__sub">
+          A CLI tool for <strong>macOS</strong> and <strong>Linux</strong> that brings package&#8209;management to your <strong>Claude&nbsp;Code</strong> agentic workflows.
+          Add MCP servers and skills to a local registry, scope them per project, and keep credentials in your OS&nbsp;keychain&nbsp;&mdash;&nbsp;never&nbsp;in&nbsp;files.
+        </p>
+        <div class="crux-hero__cta">
+          <a href="{{ 'getting-started/quickstart/' | url }}" class="md-button md-button--primary">
+            Get started
+          </a>
+          <a href="{{ 'getting-started/installation/' | url }}" class="md-button">
+            Install
+          </a>
+        </div>
+        <div class="crux-hero__install">
+          <code>claude plugin marketplace add crux-cli/claude-marketplace && claude plugin install crux</code>
+        </div>
+        <p class="crux-hero__alt-install" style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">
+          or <code style="font-size: 0.85rem;">curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh</code>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Value props -->
+  <section class="crux-features">
+    <div class="md-grid md-typeset">
+
+      <div class="crux-features__grid">
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji">{% include ".icons/material/package-variant.svg" %}</span>
+          </div>
+          <h3>One registry, every project</h3>
+          <p>Add MCP servers and skills once&nbsp;&mdash;&nbsp;from npm, PyPI, GitHub, or local&nbsp;sources. Use them across all your projects without copy&#8209;pasting config&nbsp;files.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji">{% include ".icons/material/shield-lock.svg" %}</span>
+          </div>
+          <h3>Secrets in your keychain</h3>
+          <p>API keys live in macOS Keychain, Linux Secret&nbsp;Service, or an age&#8209;encrypted vault. Launcher scripts fetch them at runtime. Nothing touches disk.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji">{% include ".icons/material/file-document-check.svg" %}</span>
+          </div>
+          <h3>Scoped per project</h3>
+          <p>Each project declares its tools in <code>crux.json</code>. Agents see only what&rsquo;s declared&nbsp;&mdash;&nbsp;fewer tools means better outputs and tighter security.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji">{% include ".icons/material/cube-outline.svg" %}</span>
+          </div>
+          <h3>Sandboxed execution</h3>
+          <p><code>crux&nbsp;task&nbsp;run</code> creates isolated environments with pre&#8209;flight validation. Misconfigurations are caught before your agent starts.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji">{% include ".icons/material/heart-pulse.svg" %}</span>
+          </div>
+          <h3>Health monitoring</h3>
+          <p><code>crux&nbsp;project&nbsp;status</code> probes every MCP via JSON&#8209;RPC. <code>crux&nbsp;doctor</code> validates your environment and auto&#8209;fixes what it&nbsp;can.</p>
+        </div>
+        <div class="crux-feature">
+          <div class="crux-feature__icon">
+            <span class="twemoji">{% include ".icons/material/magnify.svg" %}</span>
+          </div>
+          <h3>Discover &amp; search</h3>
+          <p>Search the official MCP registry directly from your terminal. Find servers, get suggested install commands, add with one&nbsp;line.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="crux-how">
+    <div class="md-grid md-typeset">
+      <h2>How it works</h2>
+      <div class="crux-how__steps">
+        <div class="crux-step">
+          <div class="crux-step__num">1</div>
+          <div class="crux-step__body">
+            <h3>Build your registry</h3>
+            <p>Add MCP servers and skills from any source. You do this once&nbsp;&mdash;&nbsp;they&rsquo;re available to every project.</p>
+            <pre><code>crux mcp add filesystem --npx @modelcontextprotocol/server-filesystem
+crux mcp add wikijs --github jaalbin24/wikijs-mcp-server
+crux skill add autoresearch --github user/autoresearch-skill</code></pre>
+          </div>
+        </div>
+        <div class="crux-step">
+          <div class="crux-step__num">2</div>
+          <div class="crux-step__body">
+            <h3>Authenticate your MCPs</h3>
+            <p>API keys go in your OS keychain. Crux generates launcher scripts that fetch them at runtime.</p>
+            <pre><code>crux mcp auth wikijs
+crux mcp auth github</code></pre>
+          </div>
+        </div>
+        <div class="crux-step">
+          <div class="crux-step__num">3</div>
+          <div class="crux-step__body">
+            <h3>Use in a project or a one&#8209;off sandbox</h3>
+            <p><strong>Project mode</strong>&nbsp;&mdash;&nbsp;declare what each project needs in a <code>crux.json</code> manifest. Crux generates the <code>.mcp.json</code> that Claude Code expects.</p>
+            <pre><code>crux project create homelab-assistant && cd homelab-assistant
+crux project install wikijs filesystem autoresearch
+crux project status</code></pre>
+            <p style="margin-top: 1rem;"><strong>Sandbox mode</strong>&nbsp;&mdash;&nbsp;run an agent with a specific set of tools, without setting up a project. Pre&#8209;flight checks catch problems before execution.</p>
+            <pre><code>crux task run "Update the wiki with latest research" \
+  --mcps wikijs --skills autoresearch</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Replaces -->
+  <section class="crux-replaces">
+    <div class="md-grid md-typeset">
+      <h2>Replaces manual management of</h2>
+      <div class="crux-replaces__grid">
+        <div class="crux-replaces__item">
+          <strong>.mcp.json files</strong>
+          <span>Hand-edited per project</span>
+        </div>
+        <div class="crux-replaces__item">
+          <strong>.env / plaintext secrets</strong>
+          <span>Committed to git, leaked in logs</span>
+        </div>
+        <div class="crux-replaces__item">
+          <strong>Global MCP configs</strong>
+          <span>Every agent sees every tool</span>
+        </div>
+        <div class="crux-replaces__item">
+          <strong>Manual skill management</strong>
+          <span>Files copied between machines</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
+
+{% block content %}{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}

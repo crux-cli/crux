@@ -1,0 +1,297 @@
+/* ── Crux theme overrides ── */
+
+:root {
+  --md-primary-fg-color: #673ab7;
+  --md-primary-fg-color--light: #9575cd;
+  --md-primary-fg-color--dark: #4527a0;
+  --md-accent-fg-color: #ffc107;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #9575cd;
+  --md-primary-fg-color--light: #b39ddb;
+  --md-primary-fg-color--dark: #7e57c2;
+}
+
+
+/* ── Hero section ── */
+
+.crux-hero {
+  padding: 4rem 1rem 3rem;
+  background: var(--md-default-bg-color);
+}
+
+.crux-hero__inner {
+  max-width: 42rem;
+}
+
+/* ── Mobile padding for all homepage sections ── */
+
+@media screen and (max-width: 44.9375em) {
+  .crux-hero { padding: 2rem 1rem; }
+  .crux-features { padding: 2rem 1rem; }
+  .crux-how { padding: 2rem 1rem; }
+  .crux-replaces { padding: 2rem 1rem 3rem; }
+  .crux-hero__install code { font-size: 0.75rem; word-break: break-all; }
+}
+
+.crux-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.1;
+  color: var(--md-primary-fg-color);
+}
+
+.crux-hero__tagline {
+  font-size: 1.4rem;
+  font-weight: 400;
+  margin: 0.75rem 0 0;
+  color: var(--md-default-fg-color);
+  line-height: 1.4;
+}
+
+.crux-hero__sub {
+  font-size: 0.95rem;
+  margin: 1rem 0 1.5rem;
+  color: var(--md-default-fg-color--light);
+  max-width: 38rem;
+  line-height: 1.6;
+}
+
+.crux-hero__cta {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.crux-hero__cta .md-button {
+  font-weight: 600;
+}
+
+.crux-hero__install {
+  margin-top: 0.5rem;
+}
+
+.crux-hero__install code {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  background: var(--md-code-bg-color);
+  color: var(--md-code-fg-color);
+  font-size: 0.85rem;
+  font-family: var(--md-code-font-family);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  user-select: all;
+}
+
+
+/* ── Feature cards grid ── */
+
+.crux-features {
+  padding: 3rem 0;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.crux-features__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+@media screen and (max-width: 76.25em) {
+  .crux-features__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 44.9375em) {
+  .crux-features__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crux-feature {
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.crux-feature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+[data-md-color-scheme="slate"] .crux-feature:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.crux-feature__icon {
+  margin-bottom: 0.75rem;
+}
+
+.crux-feature__icon .twemoji svg {
+  width: 2rem;
+  height: 2rem;
+  fill: var(--md-primary-fg-color);
+}
+
+.crux-feature h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.crux-feature p {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--md-default-fg-color--light);
+  line-height: 1.6;
+}
+
+
+/* ── How it works — numbered steps ── */
+
+.crux-how {
+  padding: 3rem 0;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.crux-how > .md-grid > h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.crux-how__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.crux-step {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+@media screen and (max-width: 44.9375em) {
+  .crux-step {
+    flex-direction: column;
+  }
+}
+
+.crux-step__num {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--md-primary-fg-color);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.15rem;
+}
+
+.crux-step__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.crux-step__body h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+}
+
+.crux-step__body p {
+  font-size: 0.9rem;
+  color: var(--md-default-fg-color--light);
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+
+.crux-step__body pre {
+  margin: 0;
+  border-radius: 0.375rem;
+}
+
+.crux-step__body pre code {
+  font-size: 0.8rem;
+}
+
+
+/* ── Replaces section ── */
+
+.crux-replaces {
+  padding: 3rem 0 4rem;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.crux-replaces > .md-grid > h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.crux-replaces__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media screen and (max-width: 44.9375em) {
+  .crux-replaces__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crux-replaces__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.crux-replaces__item strong {
+  font-size: 0.9rem;
+  color: var(--md-default-fg-color);
+}
+
+.crux-replaces__item span {
+  font-size: 0.8rem;
+  color: var(--md-default-fg-color--light);
+}
+
+
+/* ── Styled horizontal rules (subpages) ── */
+
+.md-typeset hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--md-default-fg-color--lightest),
+    transparent
+  );
+  margin: 3rem 0;
+}
+
+
+/* ── Grid card hover (subpages) ── */
+
+.md-typeset .grid.cards > ul > li {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.md-typeset .grid.cards > ul > li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
