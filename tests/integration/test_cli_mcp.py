@@ -68,6 +68,25 @@ class TestMcpRemove:
         result = run_crux("mcp", "remove", "nope", env=env)
         assert result.returncode != 0
 
+    def test_remove_with_keep_secrets_flag(self, crux_env):
+        env, root = crux_env
+        run_crux("mcp", "add", "authed", "--npx", "@test/authed", "--keychain", "KEY1,KEY2", env=env)
+        result = run_crux("mcp", "remove", "authed", "--keep-secrets", env=env)
+        assert result.returncode == 0
+        assert "Removed" in result.stdout
+
+    def test_remove_with_remove_secrets_flag(self, crux_env):
+        env, root = crux_env
+        run_crux("mcp", "add", "authed2", "--npx", "@test/authed2", "--keychain", "KEY1", env=env)
+        result = run_crux("mcp", "remove", "authed2", "--remove-secrets", env=env)
+        assert result.returncode == 0
+        assert "Removed" in result.stdout
+
+    def test_remove_secrets_flags_mutually_exclusive(self, crux_env):
+        env, root = crux_env
+        result = run_crux("mcp", "remove", "x", "--keep-secrets", "--remove-secrets", env=env)
+        assert result.returncode != 0
+
 
 @pytest.mark.integration
 class TestMcpList:

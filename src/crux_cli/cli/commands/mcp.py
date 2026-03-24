@@ -147,7 +147,56 @@ def cmd_mcp_remove(args: argparse.Namespace) -> None:
     del reg[section][name]
     save_registry(reg)
     print(f"\u2705 Removed MCP '{name}' from registry")
+
+    # Clean up keychain secrets if the MCP had auth configured
+    _cleanup_secrets(name, data, args)
+
     print("   Note: run 'crux project sync' to regenerate project configurations")
+
+
+def _cleanup_secrets(name: str, data: dict[str, Any], args: argparse.Namespace) -> None:
+    """Prompt to remove keychain secrets for a removed MCP, respecting CLI flags."""
+    from crux_cli.secrets import get_backend, load_secrets_index
+
+    auth = data.get("auth", {})
+    env_vars = auth.get("env_vars", [])
+    if not env_vars:
+        return
+
+    backend = get_backend()
+    stored = [v for v in env_vars if backend.get(name, v)]
+    if not stored:
+        return
+
+    keep_secrets = getattr(args, "keep_secrets", False)
+    remove_secrets = getattr(args, "remove_secrets", False)
+
+    if keep_secrets:
+        should_remove = False
+    elif remove_secrets:
+        should_remove = True
+    elif sys.stdin.isatty():
+        print(f"  \U0001f511 Found {len(stored)} stored secret(s): {', '.join(stored)}")
+        answer = input("  Also remove secrets from keychain? [Y/n]: ").strip().lower()
+        should_remove = answer != "n"
+    else:
+        # Non-interactive, no flag — default to keeping secrets
+        print(f"  \U0001f511 Found {len(stored)} secret(s) kept (use --remove-secrets to clean up)")
+        return
+
+    if should_remove:
+        for var in stored:
+            backend.delete(name, var)
+        # Clean up any remaining index entries for env vars that weren't stored
+        index = load_secrets_index()
+        if name in index:
+            index.pop(name, None)
+            from crux_cli.secrets import save_secrets_index
+
+            save_secrets_index(index)
+        print(f"  \U0001f5d1\ufe0f  Removed {len(stored)} secret(s) from keychain")
+    else:
+        print("  Kept secrets in keychain")
 
 
 def cmd_mcp_list(args: argparse.Namespace) -> None:

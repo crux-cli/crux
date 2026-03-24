@@ -61,6 +61,9 @@ def main() -> None:
 
     p = mcp_sub.add_parser("remove", help="Unregister an MCP server")
     p.add_argument("name", help="Name to remove")
+    secrets_group = p.add_mutually_exclusive_group()
+    secrets_group.add_argument("--keep-secrets", action="store_true", help="Keep keychain secrets (no prompt)")
+    secrets_group.add_argument("--remove-secrets", action="store_true", help="Remove keychain secrets (no prompt)")
     p.set_defaults(func=cmd_mcp_remove)
 
     p = mcp_sub.add_parser("list", help="List registered MCP servers")
