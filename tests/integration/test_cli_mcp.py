@@ -89,6 +89,26 @@ class TestMcpRemove:
 
 
 @pytest.mark.integration
+class TestMcpAuth:
+    def test_auth_value_flag_accepted(self, crux_env):
+        """--value flag is accepted by the CLI parser."""
+        env, root = crux_env
+        run_crux("mcp", "add", "authed", "--npx", "@test/authed", "--keychain", "API_KEY", env=env)
+        # --value should be accepted (may fail to store due to keychain, but shouldn't be a parse error)
+        result = run_crux("mcp", "auth", "authed", "--value", "API_KEY=test123", env=env)
+        # Should not fail with argparse error (exit code 2)
+        assert result.returncode != 2
+
+    def test_auth_value_invalid_format_fails(self, crux_env):
+        """--value without = should fail."""
+        env, root = crux_env
+        run_crux("mcp", "add", "authed2", "--npx", "@test/authed2", "--keychain", "KEY", env=env)
+        result = run_crux("mcp", "auth", "authed2", "--value", "NOEQUALS", env=env)
+        assert result.returncode != 0
+        assert "Invalid --value format" in result.stdout
+
+
+@pytest.mark.integration
 class TestMcpList:
     def test_list_shows_mcps(self, crux_env):
         env, root = crux_env
