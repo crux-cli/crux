@@ -11,13 +11,6 @@ from crux_cli.cli.commands.mcp import _cleanup_secrets
 
 
 @pytest.fixture
-def mock_backend():
-    backend = MagicMock()
-    backend.get.return_value = "some-value"
-    return backend
-
-
-@pytest.fixture
 def mcp_data_with_secrets():
     return {
         "auth": {
