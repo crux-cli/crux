@@ -13,7 +13,12 @@ from crux_cli.paths import tokens_path
 from crux_cli.secrets import get_backend, load_secrets_index
 
 
-def auth_single(mcp_name: str, registry: dict[str, Any] | None = None) -> None:
+def auth_single(
+    mcp_name: str,
+    registry: dict[str, Any] | None = None,
+    *,
+    inline_values: dict[str, str] | None = None,
+) -> None:
     """Authenticate a single MCP by dispatching to the appropriate auth handler."""
     if registry is None:
         registry = load_registry()
@@ -40,13 +45,13 @@ def auth_single(mcp_name: str, registry: dict[str, Any] | None = None) -> None:
             auth_type = "setup-cmd"
 
     if auth_type == "keychain":
-        _auth_keychain(mcp_name, auth)
+        _auth_keychain(mcp_name, auth, inline_values=inline_values)
     elif auth_type == "external-cli":
         _auth_external_cli(mcp_name, auth)
     elif auth_type == "setup-cmd":
         _auth_setup_cmd(mcp_name, auth)
     elif auth_type == "bearer":
-        _auth_bearer(mcp_name, auth)
+        _auth_bearer(mcp_name, auth, inline_values=inline_values)
     elif auth_type in ("oauth", "oauth-client-credentials"):
         # Defer to oauth module (Plan phase 3)
         from crux_cli.oauth import run_client_credentials_flow, run_oauth_flow
@@ -106,8 +111,13 @@ def auth_all(registry: dict[str, Any] | None = None) -> None:
             print(f"\u26a0\ufe0f  Failed: {e}")
 
 
-def _auth_keychain(mcp_name: str, auth: dict[str, Any]) -> None:
-    """Authenticate via OS keychain — prompt for each env var."""
+def _auth_keychain(
+    mcp_name: str,
+    auth: dict[str, Any],
+    *,
+    inline_values: dict[str, str] | None = None,
+) -> None:
+    """Authenticate via OS keychain — prompt for each env var (or use inline values)."""
     env_vars = auth.get("env_vars", [])
     if not env_vars:
         print(f"\u2139\ufe0f  No env vars configured for '{mcp_name}'")
@@ -118,11 +128,23 @@ def _auth_keychain(mcp_name: str, auth: dict[str, Any]) -> None:
     stored = secrets_index.get(mcp_name, [])
 
     for var in env_vars:
+        # Use inline value if provided (always overwrite)
+        if inline_values and var in inline_values:
+            backend.set(mcp_name, var, inline_values[var])
+            print(f"  \u2705 Stored {var}")
+            continue
+
+        # Skip already-stored secrets in interactive mode
         if var in stored:
             existing = backend.get(mcp_name, var)
             if existing:
                 print(f"  {var}: already set (use crux mcp auth {mcp_name} to reset)")
                 continue
+
+        # If inline_values were provided but this var is missing, skip prompting
+        if inline_values is not None:
+            print(f"  Skipped {var} (no --value provided)")
+            continue
 
         value = getpass.getpass(f"  Enter {var}: ")
         if not value:
@@ -190,10 +212,21 @@ def _auth_setup_cmd(mcp_name: str, auth: dict[str, Any]) -> None:
         sys.exit(result.returncode)
 
 
-def _auth_bearer(mcp_name: str, auth: dict[str, Any]) -> None:
+def _auth_bearer(
+    mcp_name: str,
+    auth: dict[str, Any],
+    *,
+    inline_values: dict[str, str] | None = None,
+) -> None:
     """Authenticate via static Bearer token."""
     keychain_key = auth.get("keychain_key", "API_TOKEN")
     backend = get_backend()
+
+    # Use inline value if provided (always overwrite)
+    if inline_values and keychain_key in inline_values:
+        backend.set(mcp_name, keychain_key, inline_values[keychain_key])
+        print(f"\u2705 Token stored for '{mcp_name}'")
+        return
 
     existing = backend.get(mcp_name, keychain_key)
     if existing:

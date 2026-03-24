@@ -82,6 +82,7 @@ def main() -> None:
     p.add_argument("name", nargs="?", help="MCP name (omit to show auth status)")
     p.add_argument("--all", action="store_true", help="Authenticate all MCPs needing auth")
     p.add_argument("--refresh", action="store_true", help="Refresh OAuth token only")
+    p.add_argument("--value", action="append", metavar="KEY=VALUE", help="Set secret non-interactively (repeatable)")
     p.set_defaults(func=cmd_mcp_auth)
 
     p = mcp_sub.add_parser("status", help="Probe all registered MCP servers")

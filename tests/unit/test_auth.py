@@ -251,6 +251,85 @@ class TestAuthSingle:
 
 
 # ---------------------------------------------------------------------------
+# --value inline auth tests
+# ---------------------------------------------------------------------------
+
+
+class TestInlineValueAuth:
+    """Test that --value flag sets secrets non-interactively."""
+
+    def test_keychain_inline_values_stored(self, monkeypatch):
+        """Inline values are stored without prompting."""
+        monkeypatch.setattr("crux_cli.auth.load_secrets_index", lambda: {})
+        mock_backend = MockBackend()
+        monkeypatch.setattr("crux_cli.auth.get_backend", lambda: mock_backend)
+
+        from crux_cli.auth import auth_single
+
+        registry = _make_registry("mymcp", {"type": "keychain", "env_vars": ["API_KEY", "SECRET"]})
+        auth_single("mymcp", registry, inline_values={"API_KEY": "key123", "SECRET": "sec456"})
+
+        assert len(mock_backend.set_calls) == 2
+        stored = {call[1]: call[2] for call in mock_backend.set_calls}
+        assert stored["API_KEY"] == "key123"
+        assert stored["SECRET"] == "sec456"  # noqa: S105
+
+    def test_keychain_inline_overwrites_existing(self, monkeypatch):
+        """Inline values overwrite already-stored secrets."""
+        monkeypatch.setattr("crux_cli.auth.load_secrets_index", lambda: {"mymcp": ["API_KEY"]})
+        mock_backend = MockBackend()
+        mock_backend._data[("mymcp", "API_KEY")] = "old-value"
+        monkeypatch.setattr("crux_cli.auth.get_backend", lambda: mock_backend)
+
+        from crux_cli.auth import _auth_keychain
+
+        _auth_keychain("mymcp", {"env_vars": ["API_KEY"]}, inline_values={"API_KEY": "new-value"})
+
+        assert len(mock_backend.set_calls) == 1
+        assert mock_backend.set_calls[0][2] == "new-value"
+
+    def test_keychain_inline_partial_skips_missing(self, monkeypatch, capsys):
+        """When inline_values provided but a var is missing, it's skipped without prompting."""
+        monkeypatch.setattr("crux_cli.auth.load_secrets_index", lambda: {})
+        mock_backend = MockBackend()
+        monkeypatch.setattr("crux_cli.auth.get_backend", lambda: mock_backend)
+
+        from crux_cli.auth import _auth_keychain
+
+        _auth_keychain("mymcp", {"env_vars": ["API_KEY", "SECRET"]}, inline_values={"API_KEY": "key123"})
+
+        assert len(mock_backend.set_calls) == 1
+        assert mock_backend.set_calls[0][1] == "API_KEY"
+        captured = capsys.readouterr()
+        assert "Skipped SECRET" in captured.out
+
+    def test_bearer_inline_value_stored(self, monkeypatch):
+        """Inline value for bearer token is stored without prompting."""
+        mock_backend = MockBackend()
+        monkeypatch.setattr("crux_cli.auth.get_backend", lambda: mock_backend)
+
+        from crux_cli.auth import _auth_bearer
+
+        _auth_bearer("mymcp", {"keychain_key": "API_TOKEN"}, inline_values={"API_TOKEN": "mytoken"})
+
+        assert len(mock_backend.set_calls) == 1
+        assert mock_backend.set_calls[0][2] == "mytoken"
+
+    def test_bearer_inline_overwrites_existing(self, monkeypatch):
+        """Inline bearer token overwrites existing without prompting."""
+        mock_backend = MockBackend()
+        mock_backend._data[("mymcp", "API_TOKEN")] = "old-token"
+        monkeypatch.setattr("crux_cli.auth.get_backend", lambda: mock_backend)
+
+        from crux_cli.auth import _auth_bearer
+
+        _auth_bearer("mymcp", {"keychain_key": "API_TOKEN"}, inline_values={"API_TOKEN": "new-token"})
+
+        assert len(mock_backend.set_calls) == 1
+        assert mock_backend.set_calls[0][2] == "new-token"
+
+
+# ---------------------------------------------------------------------------
 # Inline auth during mcp add
 # ---------------------------------------------------------------------------
 

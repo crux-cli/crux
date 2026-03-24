@@ -481,8 +481,20 @@ def cmd_mcp_auth(args: argparse.Namespace) -> None:
     name = getattr(args, "name", None)
     do_all = getattr(args, "all", False)
 
+    values = getattr(args, "value", None)
+
     if name:
-        auth_single(name)
+        # Parse --value KEY=VALUE pairs into a dict
+        inline_values: dict[str, str] | None = None
+        if values:
+            inline_values = {}
+            for pair in values:
+                if "=" not in pair:
+                    print(f"\u274c Invalid --value format: '{pair}' (expected KEY=VALUE)")
+                    sys.exit(1)
+                k, v = pair.split("=", 1)
+                inline_values[k] = v
+        auth_single(name, inline_values=inline_values)
     elif do_all:
         auth_all()
     else:
