@@ -16,13 +16,21 @@ Crux supports several authentication methods depending on how an MCP server expe
 | `bearer` | HTTP Bearer tokens passed in request headers |
 | `oauth` | OAuth 2.0 flows managed by Crux |
 
-Declare the auth type when adding an MCP. When `--keychain` is used, you are prompted for credentials inline:
+Declare the auth type when adding an MCP. When `--keychain` is used, Crux installs the package first, then prompts for credentials:
 
 ```bash
 crux mcp add github --npm @modelcontextprotocol/server-github --keychain GITHUB_TOKEN
+# → Installing @modelcontextprotocol/server-github via npm install -g...
 # → Enter GITHUB_TOKEN: ****
 # → ✓ Stored GITHUB_TOKEN
-# → ✓ Authenticated 'github'
+# → ✅ Registered MCP 'github'
+```
+
+If an MCP requires authentication before it can be installed, use `--skip-validation` to register first, then authenticate:
+
+```bash
+crux mcp add private-mcp --npm @corp/private-mcp --keychain API_KEY --skip-validation
+crux mcp auth private-mcp
 ```
 
 To re-authenticate or rotate credentials later, use `crux mcp auth`:

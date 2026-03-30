@@ -4,16 +4,16 @@ Set up a project with scoped MCP access in 30 seconds.
 
 ## 1. Add MCPs to Your Registry
 
-Register MCP servers from npm, PyPI, GitHub, or local sources. You only do this once per MCP — they're available across all your projects.
+Register MCP servers from npm, PyPI, GitHub, or local sources. Crux installs and validates each package before registering it. You only do this once per MCP — they're available across all your projects.
 
 ```bash
-# npm packages
+# npm packages (installs globally via npm install -g)
 crux add mcp filesystem --npm @modelcontextprotocol/server-filesystem
 
-# GitHub repos
+# GitHub repos (clones and auto-installs dependencies)
 crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
 
-# PyPI packages
+# PyPI packages (installs via uv tool install)
 crux add mcp my-tool --uv my-mcp-tool
 ```
 

@@ -6,14 +6,18 @@ The registry is your personal catalog of MCP servers and skills. Add once, use i
 
 Register MCP servers from different sources:
 
-=== "npm (npx)"
+=== "npm"
+
+    Installs the package globally via `npm install -g`, then registers it:
 
     ```bash
     crux mcp add filesystem --npm @modelcontextprotocol/server-filesystem
     crux mcp add github --npm @modelcontextprotocol/server-github
     ```
 
-=== "PyPI (uvx)"
+=== "PyPI"
+
+    Installs the tool permanently via `uv tool install`, then registers it:
 
     ```bash
     crux mcp add my-tool --uv my-mcp-package
@@ -21,17 +25,21 @@ Register MCP servers from different sources:
 
 === "GitHub"
 
+    Clones the repo and auto-detects dependencies (`package.json`, `pyproject.toml`, or `requirements.txt`):
+
     ```bash
     crux mcp add wikijs --github jaalbin24/wikijs-mcp-server
     ```
 
-    GitHub sources are cloned to `~/.crux/mcps/`. If the MCP needs a build step:
+    GitHub sources are cloned to `~/.crux/mcps/`. Dependencies are installed automatically. Use `--build-cmd` only for custom build steps beyond what auto-detection handles:
 
     ```bash
-    crux mcp add wikijs --github jaalbin24/wikijs-mcp-server --build-cmd "npm install && npm run build"
+    crux mcp add custom --github user/repo --build-cmd "make build"
     ```
 
 === "Local"
+
+    Copies the directory and auto-detects dependencies:
 
     ```bash
     crux mcp add my-local-mcp --local /path/to/mcp-server
