@@ -71,6 +71,39 @@ class TestMcpAdd:
         assert auth["type"] == "keychain"
         assert auth["env_vars"] == ["API_KEY", "SECRET"]
 
+    def test_add_skip_validation_registers_without_install(self, crux_env):
+        """--skip-validation should register even with a fake package."""
+        env, root = crux_env
+        result = run_crux(
+            "mcp",
+            "add",
+            "fake-npm",
+            "--npm",
+            "totally-fake-nonexistent-pkg-xyz",
+            "--skip-validation",
+            env=env,
+        )
+        assert result.returncode == 0
+        assert "Registered MCP" in result.stdout
+        reg = _load_registry(root)
+        assert "fake-npm" in reg["mcp_definitions"]
+
+    def test_add_skip_validation_uv(self, crux_env):
+        """--skip-validation for --uv should also work."""
+        env, root = crux_env
+        result = run_crux(
+            "mcp",
+            "add",
+            "fake-uv",
+            "--uv",
+            "totally-fake-nonexistent-pkg-xyz",
+            "--skip-validation",
+            env=env,
+        )
+        assert result.returncode == 0
+        reg = _load_registry(root)
+        assert "fake-uv" in reg["mcp_definitions"]
+
 
 @pytest.mark.integration
 class TestMcpRemove:
