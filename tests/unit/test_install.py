@@ -1,228 +1,181 @@
-"""Unit tests for crux install / uninstall logic (W2A.2, W2A.3).
-
-These exercise the sync engine used by install/uninstall rather than spawning
-a subprocess — keeping them fast and deterministic.
-"""
-
-from __future__ import annotations
+"""Unit tests for crux_cli.install — all subprocess calls mocked."""
 
 import json
-import shutil
+import subprocess
+from unittest.mock import MagicMock
 
-from crux_cli.manifest import load_crux_json, save_crux_json
-from crux_cli.sync import sync_project
-
-
-def _registry(mcps=None, skills=None):
-    return {
-        "version": "1.0.0",
-        "mcp_definitions": mcps or {},
-        "skill_definitions": skills or {},
-    }
+from crux_cli.install import (
+    detect_and_install_deps,
+    install_npm_package,
+    install_uv_package,
+)
 
 
-# ---------------------------------------------------------------------------
-# W2A.2: crux install
-# ---------------------------------------------------------------------------
+class TestInstallNpmPackage:
+    def test_successful_install(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="added 1 package\n", stderr=""),
+        )
+        ok, err = install_npm_package("@test/mcp-server")
+        assert ok
+        assert err == ""
+
+    def test_package_not_found(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=1, stdout="", stderr="npm error E404 Not Found"),
+        )
+        ok, err = install_npm_package("nonexistent-pkg")
+        assert not ok
+        assert "not found" in err
+
+    def test_install_failure_reported(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=1, stdout="", stderr="ERR! engine incompatible"),
+        )
+        ok, err = install_npm_package("bad-pkg")
+        assert not ok
+        assert "npm install failed" in err
+
+    def test_npm_not_installed_skips(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            side_effect=FileNotFoundError("npm not found"),
+        )
+        ok, err = install_npm_package("any-pkg")
+        assert ok
+
+    def test_timeout_skips(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            side_effect=subprocess.TimeoutExpired(cmd="npm", timeout=120),
+        )
+        ok, err = install_npm_package("any-pkg")
+        assert ok
 
 
-class TestInstallSingleMcp:
-    def test_install_single_mcp(self, tmp_path):
-        """Installing a single MCP adds it to crux.json and generates .mcp.json."""
-        project = tmp_path / "proj"
-        project.mkdir()
+class TestInstallUvPackage:
+    def test_successful_install(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="Installed 1 package\n", stderr=""),
+        )
+        ok, err = install_uv_package("my-mcp-tool")
+        assert ok
+        assert err == ""
 
-        crux_json = {"name": "proj", "mcps": [], "skills": []}
-        # Simulate what cmd_install does: add to mcps, save, then sync
-        crux_json["mcps"].append("memory")
-        save_crux_json(project, crux_json)
+    def test_package_not_found(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=1, stdout="", stderr="error: Package `fake-pkg` not found"),
+        )
+        ok, err = install_uv_package("fake-pkg")
+        assert not ok
+        assert "not found" in err
 
-        registry = _registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "pkg"]},
-        })
-        success, issues = sync_project(project, registry)
-        assert success
-        assert issues == []
+    def test_yanked_versions(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=1, stdout="", stderr="No solution found: all versions yanked"),
+        )
+        ok, err = install_uv_package("yanked-pkg")
+        assert not ok
+        assert "not installable" in err
 
-        loaded = load_crux_json(project)
-        assert "memory" in loaded["mcps"]
-        assert (project / ".mcp.json").exists()
+    def test_build_failure(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=1, stdout="", stderr="error: Failed to build pglast"),
+        )
+        ok, err = install_uv_package("broken-pkg")
+        assert not ok
+        assert "uv tool install failed" in err
 
+    def test_uv_not_installed_skips(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            side_effect=FileNotFoundError("uv not found"),
+        )
+        ok, err = install_uv_package("any-pkg")
+        assert ok
 
-class TestInstallMultipleMcps:
-    def test_install_multiple_mcps(self, tmp_path):
-        project = tmp_path / "proj"
-        project.mkdir()
-
-        crux_json = {"name": "proj", "mcps": ["memory", "github-mcp"], "skills": []}
-        save_crux_json(project, crux_json)
-
-        registry = _registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "mem-pkg"]},
-            "github-mcp": {"command": "npx", "args": ["-y", "gh-pkg"]},
-        })
-        success, issues = sync_project(project, registry)
-        assert success
-        assert issues == []
-
-        data = json.loads((project / ".mcp.json").read_text())
-        assert "memory" in data["mcpServers"]
-        assert "github-mcp" in data["mcpServers"]
-
-
-class TestInstallSkillCopiesToClaudeSkills:
-    def test_install_skill_copies_to_claude_skills(self, tmp_path):
-        project = tmp_path / "proj"
-        project.mkdir()
-
-        # Create a fake skill source
-        skill_source = tmp_path / "skills" / "my-skill"
-        skill_source.mkdir(parents=True)
-        (skill_source / "SKILL.md").write_text("# My Skill\n")
-
-        crux_json = {"name": "proj", "mcps": [], "skills": ["my-skill"]}
-        save_crux_json(project, crux_json)
-
-        registry = _registry(skills={
-            "my-skill": {"type": "local", "source_dir": str(skill_source)},
-        })
-        success, issues = sync_project(project, registry)
-        assert success
-        assert issues == []
-
-        dest = project / ".claude" / "skills" / "my-skill"
-        assert dest.exists()
-        assert (dest / "SKILL.md").exists()
+    def test_timeout_skips(self, mocker):
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            side_effect=subprocess.TimeoutExpired(cmd="uv", timeout=120),
+        )
+        ok, err = install_uv_package("any-pkg")
+        assert ok
 
 
-class TestInstallAlreadyInstalledSkips:
-    def test_install_already_installed_skips(self, tmp_path):
-        """If an MCP is already in crux.json mcps, it should be a no-op."""
-        project = tmp_path / "proj"
-        project.mkdir()
+class TestDetectAndInstallDeps:
+    def test_npm_project_with_build(self, tmp_path, mocker):
+        pkg_json = {"scripts": {"build": "tsc"}}
+        (tmp_path / "package.json").write_text(json.dumps(pkg_json))
+        mock_run = mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="", stderr=""),
+        )
+        entry = {}
+        ok, err = detect_and_install_deps(tmp_path, entry)
+        assert ok
+        commands = [call[0][0] for call in mock_run.call_args_list]
+        assert any("npm" in str(c) and "install" in str(c) for c in commands)
+        assert "build_cmd" in entry
 
-        crux_json = {"name": "proj", "mcps": ["memory"], "skills": []}
-        save_crux_json(project, crux_json)
+    def test_npm_project_no_build(self, tmp_path, mocker):
+        pkg_json = {"scripts": {"start": "node index.js"}}
+        (tmp_path / "package.json").write_text(json.dumps(pkg_json))
+        mock_run = mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="", stderr=""),
+        )
+        entry = {}
+        ok, err = detect_and_install_deps(tmp_path, entry)
+        assert ok
+        commands = [call[0][0] for call in mock_run.call_args_list]
+        assert any("npm" in str(c) and "install" in str(c) for c in commands)
+        assert "build_cmd" not in entry
 
-        # "memory" is already in mcps — checking membership
-        loaded = load_crux_json(project)
-        assert "memory" in loaded["mcps"]
+    def test_pyproject_toml(self, tmp_path, mocker):
+        (tmp_path / "pyproject.toml").write_text("[project]\nname = 'test'\n")
+        mock_run = mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="", stderr=""),
+        )
+        entry = {}
+        ok, err = detect_and_install_deps(tmp_path, entry)
+        assert ok
+        commands = [call[0][0] for call in mock_run.call_args_list]
+        assert any("uv" in str(c) and "sync" in str(c) for c in commands)
 
+    def test_requirements_txt(self, tmp_path, mocker):
+        (tmp_path / "requirements.txt").write_text("requests\n")
+        mock_run = mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=0, stdout="", stderr=""),
+        )
+        entry = {}
+        ok, err = detect_and_install_deps(tmp_path, entry)
+        assert ok
+        commands = [str(call[0][0]) for call in mock_run.call_args_list]
+        assert any("uv" in c for c in commands)
 
-class TestInstallNotInRegistryErrors:
-    def test_install_not_in_registry_errors(self, tmp_path):
-        """Sync should report an issue for MCPs not in registry."""
-        project = tmp_path / "proj"
-        project.mkdir()
+    def test_no_project_files_skips(self, tmp_path):
+        entry = {}
+        ok, err = detect_and_install_deps(tmp_path, entry)
+        assert ok
+        assert err == ""
 
-        crux_json = {"name": "proj", "mcps": ["nonexistent"], "skills": []}
-        save_crux_json(project, crux_json)
-
-        registry = _registry()
-        success, issues = sync_project(project, registry)
-        assert any("nonexistent" in i for i in issues)
-
-
-class TestInstallTriggersSync:
-    def test_install_triggers_sync(self, tmp_path):
-        """After install, .mcp.json should be generated (sync runs automatically)."""
-        project = tmp_path / "proj"
-        project.mkdir()
-
-        crux_json = {"name": "proj", "mcps": ["memory"], "skills": []}
-        save_crux_json(project, crux_json)
-
-        registry = _registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "pkg"]},
-        })
-        sync_project(project, registry)
-
-        assert (project / ".mcp.json").exists()
-        data = json.loads((project / ".mcp.json").read_text())
-        assert "memory" in data["mcpServers"]
-
-
-# ---------------------------------------------------------------------------
-# W2A.3: crux uninstall
-# ---------------------------------------------------------------------------
-
-
-class TestUninstallRemovesFromCruxJson:
-    def test_uninstall_removes_from_crux_json(self, tmp_path):
-        project = tmp_path / "proj"
-        project.mkdir()
-
-        crux_json = {"name": "proj", "mcps": ["memory", "github-mcp"], "skills": []}
-        save_crux_json(project, crux_json)
-
-        # Simulate uninstall: remove from mcps, save
-        crux_json["mcps"].remove("memory")
-        save_crux_json(project, crux_json)
-
-        loaded = load_crux_json(project)
-        assert "memory" not in loaded["mcps"]
-        assert "github-mcp" in loaded["mcps"]
-
-
-class TestUninstallRemovesSkillDir:
-    def test_uninstall_removes_skill_dir(self, tmp_path):
-        project = tmp_path / "proj"
-        project.mkdir()
-
-        # Simulate an installed skill
-        skill_dest = project / ".claude" / "skills" / "my-skill"
-        skill_dest.mkdir(parents=True)
-        (skill_dest / "SKILL.md").write_text("# test")
-
-        crux_json = {"name": "proj", "mcps": [], "skills": ["my-skill"]}
-        save_crux_json(project, crux_json)
-
-        # Simulate uninstall: remove from skills, delete dir
-        crux_json["skills"].remove("my-skill")
-        save_crux_json(project, crux_json)
-        if skill_dest.exists():
-            shutil.rmtree(skill_dest)
-
-        loaded = load_crux_json(project)
-        assert "my-skill" not in loaded["skills"]
-        assert not skill_dest.exists()
-
-
-class TestUninstallTriggersSync:
-    def test_uninstall_triggers_sync(self, tmp_path):
-        project = tmp_path / "proj"
-        project.mkdir()
-
-        crux_json = {"name": "proj", "mcps": ["memory"], "skills": []}
-        save_crux_json(project, crux_json)
-
-        registry = _registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "pkg"]},
-        })
-
-        # Install + sync
-        sync_project(project, registry)
-        data = json.loads((project / ".mcp.json").read_text())
-        assert "memory" in data["mcpServers"]
-
-        # Uninstall + sync
-        crux_json["mcps"].remove("memory")
-        save_crux_json(project, crux_json)
-        sync_project(project, registry)
-
-        data = json.loads((project / ".mcp.json").read_text())
-        assert "memory" not in data["mcpServers"]
-
-
-class TestUninstallNotInstalledErrors:
-    def test_uninstall_not_installed_errors(self, tmp_path):
-        """Uninstalling something not in crux.json should be detectable."""
-        project = tmp_path / "proj"
-        project.mkdir()
-
-        crux_json = {"name": "proj", "mcps": [], "skills": []}
-        save_crux_json(project, crux_json)
-
-        loaded = load_crux_json(project)
-        assert "nonexistent" not in loaded.get("mcps", [])
-        assert "nonexistent" not in loaded.get("skills", [])
+    def test_npm_install_failure(self, tmp_path, mocker):
+        (tmp_path / "package.json").write_text("{}")
+        mocker.patch(
+            "crux_cli.install.subprocess.run",
+            return_value=MagicMock(returncode=1, stdout="", stderr="npm ERR! network error"),
+        )
+        entry = {}
+        ok, err = detect_and_install_deps(tmp_path, entry)
+        assert not ok
+        assert "npm install failed" in err
