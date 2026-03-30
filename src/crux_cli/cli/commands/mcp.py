@@ -15,7 +15,6 @@ from crux_cli.install import (
     detect_and_install_deps,
     install_npm_package,
     install_uv_package,
-    rollback_mcp_add,
 )
 from crux_cli.manifest import load_registry, save_registry
 from crux_cli.paths import mcps_dir as v1_mcps_dir
@@ -125,28 +124,6 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
 
     reg[registry_key][name] = entry
     save_registry(reg)
-
-    # Probe: verify the MCP server starts and responds
-    if not skip_validation and entry.get("command"):
-        from crux_cli.health import probe_mcp_server_detailed
-
-        print("  Probing MCP server...")
-        config = {"command": entry.get("command", ""), "args": entry.get("args", [])}
-        if entry.get("env"):
-            config["env"] = entry["env"]
-        result = probe_mcp_server_detailed(config, timeout=60)
-        if result["status"] == "failed":
-            print(f"\u274c MCP server probe failed: {result['detail']}")
-            rollback_mcp_add(name, entry)
-            print("  Registration rolled back.")
-            sys.exit(1)
-        elif result["status"] == "connected":
-            tools = result.get("tools_count")
-            detail = result.get("detail", "")
-            tools_str = f" ({tools} tools)" if tools is not None else ""
-            print(f"  \u2705 Server verified: {detail}{tools_str}")
-        else:
-            print(f"  \u26a0\ufe0f  Server responded with status: {result['status']}")
 
     print(f"\u2705 Registered MCP '{name}'")
 
