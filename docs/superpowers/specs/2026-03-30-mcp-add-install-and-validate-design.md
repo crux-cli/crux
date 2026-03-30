@@ -11,7 +11,7 @@ Three open issues describe this:
 
 ## Design
 
-Each MCP type follows: **install -> register -> probe -> rollback on failure**.
+Each MCP type follows: **install -> register on success, fail on error**. No probe or rollback — install exit codes are the validation. Protocol-level probing (JSON-RPC handshake) is deferred to `crux mcp status` after auth is configured, since many servers can't respond without credentials.
 
 ### `--npm <pkg>`
 
