@@ -11,8 +11,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from crux_cli.install import (
+    detect_and_install_deps,
+    install_npm_package,
+    install_uv_package,
+    rollback_mcp_add,
+)
 from crux_cli.manifest import load_registry, save_registry
-from crux_cli.package_validation import validate_npm_package, validate_pypi_package
 from crux_cli.paths import mcps_dir as v1_mcps_dir
 from crux_cli.registry import (
     best_package,
@@ -23,23 +28,6 @@ from crux_cli.registry import (
     suggest_crux_add,
 )
 from crux_cli.validation import validate_name
-
-
-def detect_and_run_build(dest: Path, entry: dict) -> None:
-    """Auto-detect build requirements and run the build."""
-    pkg_json = dest / "package.json"
-    if pkg_json.exists():
-        with open(pkg_json) as f:
-            pkg = json.load(f)
-        if "build" in pkg.get("scripts", {}):
-            build_cmd = "npm install && npm run build"
-            entry["build_cmd"] = build_cmd
-            print("  \U0001f528 Building (npm)...")
-            result = subprocess.run(build_cmd, shell=True, cwd=dest, capture_output=True, text=True)  # noqa: S602
-            if result.returncode == 0:
-                print("  \u2705 Build complete")
-            else:
-                print(f"  \u26a0\ufe0f  Build failed:\n{result.stderr[-500:].strip()}")
 
 
 def cmd_mcp_add(args: argparse.Namespace) -> None:
@@ -75,9 +63,10 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
 
     if args.uv:
         if not skip_validation:
-            ok, err = validate_pypi_package(args.uv)
+            print(f"  Installing {args.uv} via uv tool install...")
+            ok, err = install_uv_package(args.uv)
             if not ok:
-                print(f"\u274c Package validation failed for '{args.uv}': {err}")
+                print(f"\u274c Installation failed for '{args.uv}': {err}")
                 print("  Use --skip-validation to register anyway.")
                 sys.exit(1)
         base_args = [args.uv]
@@ -86,9 +75,10 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
         entry.update({"type": "uvx-package", "command": "uvx", "args": base_args})
     elif args.npm:
         if not skip_validation:
-            ok, err = validate_npm_package(args.npm)
+            print(f"  Installing {args.npm} via npm install -g...")
+            ok, err = install_npm_package(args.npm)
             if not ok:
-                print(f"\u274c Package validation failed for '{args.npm}': {err}")
+                print(f"\u274c Installation failed for '{args.npm}': {err}")
                 print("  Use --skip-validation to register anyway.")
                 sys.exit(1)
         base_args = ["-y", args.npm]
@@ -107,7 +97,12 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
         if args.command:
             run_args = args.args.split() if args.args else []
             entry.update({"command": args.command, "args": run_args})
-        detect_and_run_build(dest, entry)
+        if not skip_validation:
+            ok, err = detect_and_install_deps(dest, entry)
+            if not ok:
+                shutil.rmtree(dest, ignore_errors=True)
+                print(f"\u274c Dependency installation failed: {err}")
+                sys.exit(1)
     elif args.local:
         source = Path(args.local).resolve()
         dest = v1_mcps_dir() / name
@@ -118,12 +113,41 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
         entry.update({"type": "local", "source_dir": str(dest)})
         if args.command:
             entry.update({"command": args.command, "args": args.args.split() if args.args else []})
+        if not skip_validation:
+            ok, err = detect_and_install_deps(dest, entry)
+            if not ok:
+                shutil.rmtree(dest, ignore_errors=True)
+                print(f"\u274c Dependency installation failed: {err}")
+                sys.exit(1)
     else:
         print("\u274c Specify a source: --uv <package>, --npm <package>, --github <user/repo>, or --local <path>")
         sys.exit(1)
 
     reg[registry_key][name] = entry
     save_registry(reg)
+
+    # Probe: verify the MCP server starts and responds
+    if not skip_validation and entry.get("command"):
+        from crux_cli.health import probe_mcp_server_detailed
+
+        print("  Probing MCP server...")
+        config = {"command": entry.get("command", ""), "args": entry.get("args", [])}
+        if entry.get("env"):
+            config["env"] = entry["env"]
+        result = probe_mcp_server_detailed(config, timeout=60)
+        if result["status"] == "failed":
+            print(f"\u274c MCP server probe failed: {result['detail']}")
+            rollback_mcp_add(name, entry)
+            print("  Registration rolled back.")
+            sys.exit(1)
+        elif result["status"] == "connected":
+            tools = result.get("tools_count")
+            detail = result.get("detail", "")
+            tools_str = f" ({tools} tools)" if tools is not None else ""
+            print(f"  \u2705 Server verified: {detail}{tools_str}")
+        else:
+            print(f"  \u26a0\ufe0f  Server responded with status: {result['status']}")
+
     print(f"\u2705 Registered MCP '{name}'")
 
     # Inline keychain auth: prompt for secrets immediately (interactive terminals only)
