@@ -19,7 +19,7 @@ Crux supports several authentication methods depending on how an MCP server expe
 Declare the auth type when adding an MCP. When `--keychain` is used, you are prompted for credentials inline:
 
 ```bash
-crux mcp add github --npx @modelcontextprotocol/server-github --keychain GITHUB_TOKEN
+crux mcp add github --npm @modelcontextprotocol/server-github --keychain GITHUB_TOKEN
 # → Enter GITHUB_TOKEN: ****
 # → ✓ Stored GITHUB_TOKEN
 # → ✓ Authenticated 'github'
@@ -64,7 +64,7 @@ Crux opens the authorization URL in your browser, handles the redirect, and stor
 For MCPs that delegate to an external CLI for authentication (e.g., the GitHub CLI):
 
 ```bash
-crux mcp add github --npx @modelcontextprotocol/server-github --external-cli "gh auth token"
+crux mcp add github --npm @modelcontextprotocol/server-github --external-cli "gh auth token"
 ```
 
 No separate `crux mcp auth` call is needed — the external command is called at MCP startup.

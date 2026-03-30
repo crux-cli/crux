@@ -1,4 +1,4 @@
-"""Package validation for npm and PyPI packages."""
+"""Package validation and pre-installation for npm and PyPI packages."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import subprocess
 
 
 def validate_npm_package(package: str) -> tuple[bool, str]:
-    """Check that an npm package exists and can be cached.
+    """Verify an npm package exists and pre-cache it for use.
 
     Returns (ok, error_message).
     """
@@ -18,7 +18,7 @@ def validate_npm_package(package: str) -> tuple[bool, str]:
         pkg_name = "@" + parts[0]
 
     try:
-        # First check if the package exists in the registry
+        # Check if the package exists in the registry
         result = subprocess.run(  # noqa: S603
             ["npm", "view", pkg_name, "name"],  # noqa: S607
             capture_output=True,
@@ -31,7 +31,7 @@ def validate_npm_package(package: str) -> tuple[bool, str]:
                 return False, f"package '{pkg_name}' not found in npm registry"
             return False, f"npm lookup failed: {stderr[:200]}"
 
-        # Pre-cache the package so it's ready for use
+        # Pre-cache the package so npx can use it immediately
         cache_result = subprocess.run(  # noqa: S603
             ["npm", "cache", "add", package],  # noqa: S607
             capture_output=True,
@@ -50,7 +50,7 @@ def validate_npm_package(package: str) -> tuple[bool, str]:
 
 
 def validate_pypi_package(package: str) -> tuple[bool, str]:
-    """Check that a PyPI package exists and has installable versions.
+    """Verify a PyPI package exists and pre-install it into the uvx cache.
 
     Returns (ok, error_message).
     """
@@ -58,21 +58,24 @@ def validate_pypi_package(package: str) -> tuple[bool, str]:
     pkg_name = package.split("[")[0].split(">")[0].split("<")[0].split("=")[0].split("!")[0]
 
     try:
+        # Pre-install via uvx so the tool is cached and ready
         result = subprocess.run(  # noqa: S603
-            ["uv", "pip", "install", "--dry-run", pkg_name],  # noqa: S607
+            ["uvx", "install", pkg_name],  # noqa: S607
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=120,
         )
         if result.returncode != 0:
             stderr = result.stderr.strip()
-            if "No solution found" in stderr or "no versions" in stderr.lower() or "yanked" in stderr.lower():
+            if "No solution found" in stderr or "no versions" in stderr.lower():
                 return False, f"package '{pkg_name}' not installable (no available versions)"
+            if "yanked" in stderr.lower():
+                return False, f"package '{pkg_name}' not installable (all versions yanked)"
             if "not found" in stderr.lower() or "no such" in stderr.lower():
                 return False, f"package '{pkg_name}' not found on PyPI"
-            return False, f"uv lookup failed: {stderr[:200]}"
+            return False, f"uvx install failed: {stderr[:200]}"
         return True, ""
     except FileNotFoundError:
-        return True, ""  # uv not installed, skip validation
+        return True, ""  # uvx not installed, skip validation
     except subprocess.TimeoutExpired:
         return True, ""  # timeout, skip validation

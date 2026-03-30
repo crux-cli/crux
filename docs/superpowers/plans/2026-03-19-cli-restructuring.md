@@ -121,8 +121,8 @@ def main() -> None:
 
     p = mcp_sub.add_parser("add", help="Register a new MCP server")
     p.add_argument("name", help="Name for the MCP")
-    p.add_argument("--uvx", help="PyPI package to run via uvx")
-    p.add_argument("--npx", help="npm package")
+    p.add_argument("--uv", help="PyPI package to run via uvx")
+    p.add_argument("--npm", help="npm package")
     p.add_argument("--github", help="GitHub repo (e.g. user/repo)")
     p.add_argument("--local", help="Local directory path")
     p.add_argument("--command", help="Command to run the MCP")
@@ -307,7 +307,7 @@ Note the `elif entry_type == "skill"` branch in `cmd_add`, the skill handling in
 - [ ] **Step 2: Create `commands/skill.py`**
 
 Extract skill-specific code:
-- `cmd_skill_add` — skill registration from `cmd_add`'s skill branch (GitHub/local only, no --npx/--uvx/--keychain)
+- `cmd_skill_add` — skill registration from `cmd_add`'s skill branch (GitHub/local only, no --npm/--uv/--keychain)
 - `cmd_skill_remove` — only searches `skill_definitions`
 - `cmd_skill_list` — only shows skills table
 
@@ -834,14 +834,14 @@ git commit -m "refactor: cmd_setup -> cmd_init, remove MCP setup branch, remove 
 - [ ] **Step 2: Update `preflight.py`**
 
 Update fix hint strings:
-- Line 66-67: `f"Fix: crux add mcp {name} --npx <package>"` → `f"Fix: crux mcp add {name} --npx <package>"`
+- Line 66-67: `f"Fix: crux add mcp {name} --npm <package>"` → `f"Fix: crux mcp add {name} --npm <package>"`
 - Line 102-103: `f"Fix: crux secret set {name} {var} <value>"` → `f"Fix: crux mcp auth {name}"`
 - Line 138: `f"Fix: crux add skill {name} --github <repo>"` → `f"Fix: crux skill add {name} --github <repo>"`
 
 - [ ] **Step 3: Update `registry.py` (core)**
 
 Read the file, find `suggest_crux_add` function. Update the command strings it generates:
-- `f"crux add mcp {safe_name} --npx {pkg}"` → `f"crux mcp add {safe_name} --npx {pkg}"`
+- `f"crux add mcp {safe_name} --npm {pkg}"` → `f"crux mcp add {safe_name} --npm {pkg}"`
 - Same for `--github` variant
 
 - [ ] **Step 4: Verify syntax for all three files**
@@ -911,7 +911,7 @@ Crux is a CLI tool for managing MCP servers, skills, and agent tasks.
 
 ### MCP Servers
 - `crux mcp search <query>` — Search the MCP Registry
-- `crux mcp add <name> --npx <pkg>` — Register an MCP server
+- `crux mcp add <name> --npm <pkg>` — Register an MCP server
 - `crux mcp remove <name>` — Unregister an MCP server
 - `crux mcp list` — List registered MCP servers
 - `crux mcp upgrade` — Update cloned MCP repos
@@ -1119,7 +1119,7 @@ def _load_registry(root):
 class TestMcpAdd:
     def test_add_npx_mcp(self, crux_env):
         env, root = crux_env
-        result = run_crux("mcp", "add", "new-mcp", "--npx", "@test/new-mcp", "--tags", "test", env=env)
+        result = run_crux("mcp", "add", "new-mcp", "--npm", "@test/new-mcp", "--tags", "test", env=env)
         assert result.returncode == 0
         assert "Registered MCP" in result.stdout
         reg = _load_registry(root)
@@ -1127,8 +1127,8 @@ class TestMcpAdd:
 
     def test_add_duplicate_fails(self, crux_env):
         env, root = crux_env
-        run_crux("mcp", "add", "dup", "--npx", "@test/dup", env=env)
-        result = run_crux("mcp", "add", "dup", "--npx", "@test/dup", env=env)
+        run_crux("mcp", "add", "dup", "--npm", "@test/dup", env=env)
+        result = run_crux("mcp", "add", "dup", "--npm", "@test/dup", env=env)
         assert result.returncode != 0
         assert "already exists" in result.stdout
 
@@ -1142,7 +1142,7 @@ class TestMcpAdd:
 class TestMcpRemove:
     def test_remove_existing(self, crux_env):
         env, root = crux_env
-        run_crux("mcp", "add", "to-remove", "--npx", "@test/pkg", env=env)
+        run_crux("mcp", "add", "to-remove", "--npm", "@test/pkg", env=env)
         result = run_crux("mcp", "remove", "to-remove", env=env)
         assert result.returncode == 0
         assert "Removed" in result.stdout
@@ -1359,7 +1359,7 @@ python -m crux_cli.cli.main task --help
 - [ ] **Step 3: Verify old commands no longer work**
 
 ```bash
-python -m crux_cli.cli.main add mcp test --npx test 2>&1 | grep -q "invalid choice"
+python -m crux_cli.cli.main add mcp test --npm test 2>&1 | grep -q "invalid choice"
 python -m crux_cli.cli.main secret set test KEY 2>&1 | grep -q "invalid choice"
 python -m crux_cli.cli.main run list 2>&1 | grep -q "invalid choice"
 python -m crux_cli.cli.main init 2>&1 | grep -q "Setup complete"  # crux init = env setup, not project create

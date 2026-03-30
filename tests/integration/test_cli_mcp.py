@@ -21,7 +21,7 @@ class TestMcpAdd:
             "mcp",
             "add",
             "new-mcp",
-            "--npx",
+            "--npm",
             "@test/new-mcp",
             "--tags",
             "test",
@@ -35,8 +35,8 @@ class TestMcpAdd:
 
     def test_add_duplicate_fails(self, crux_env):
         env, root = crux_env
-        run_crux("mcp", "add", "dup", "--npx", "@test/dup", "--skip-validation", env=env)
-        result = run_crux("mcp", "add", "dup", "--npx", "@test/dup", "--skip-validation", env=env)
+        run_crux("mcp", "add", "dup", "--npm", "@test/dup", "--skip-validation", env=env)
+        result = run_crux("mcp", "add", "dup", "--npm", "@test/dup", "--skip-validation", env=env)
         assert result.returncode != 0
         assert "already exists" in result.stdout
 
@@ -48,7 +48,7 @@ class TestMcpAdd:
     def test_add_setup_cmd_rejected(self, crux_env):
         """--setup-cmd is no longer a valid flag."""
         env, root = crux_env
-        result = run_crux("mcp", "add", "x", "--npx", "pkg", "--setup-cmd", "echo hi", env=env)
+        result = run_crux("mcp", "add", "x", "--npm", "pkg", "--setup-cmd", "echo hi", env=env)
         assert result.returncode != 0  # argparse rejects unknown argument
 
     def test_add_with_keychain_registers_auth(self, crux_env):
@@ -58,7 +58,7 @@ class TestMcpAdd:
             "mcp",
             "add",
             "authed",
-            "--npx",
+            "--npm",
             "@test/authed",
             "--keychain",
             "API_KEY,SECRET",
@@ -76,7 +76,7 @@ class TestMcpAdd:
 class TestMcpRemove:
     def test_remove_existing(self, crux_env):
         env, root = crux_env
-        run_crux("mcp", "add", "to-remove", "--npx", "@test/pkg", "--skip-validation", env=env)
+        run_crux("mcp", "add", "to-remove", "--npm", "@test/pkg", "--skip-validation", env=env)
         result = run_crux("mcp", "remove", "to-remove", env=env)
         assert result.returncode == 0
         assert "Removed" in result.stdout
@@ -94,7 +94,7 @@ class TestMcpRemove:
             "mcp",
             "add",
             "authed",
-            "--npx",
+            "--npm",
             "@test/authed",
             "--keychain",
             "KEY1,KEY2",
@@ -111,7 +111,7 @@ class TestMcpRemove:
             "mcp",
             "add",
             "authed2",
-            "--npx",
+            "--npm",
             "@test/authed2",
             "--keychain",
             "KEY1",
@@ -137,7 +137,7 @@ class TestMcpAuth:
             "mcp",
             "add",
             "authed",
-            "--npx",
+            "--npm",
             "@test/authed",
             "--keychain",
             "API_KEY",
@@ -156,7 +156,7 @@ class TestMcpAuth:
             "mcp",
             "add",
             "authed2",
-            "--npx",
+            "--npm",
             "@test/authed2",
             "--keychain",
             "KEY",

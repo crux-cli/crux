@@ -5,7 +5,7 @@
 `crux mcp add` registers MCP servers in `registry.json` without installing dependencies or verifying the server works. All failures are deferred to agent runtime, where they're harder to debug and disrupt active tasks.
 
 Three open issues describe this:
-- **#27**: `--npx`/`--uvx` packages are never downloaded or validated
+- **#27**: `--npm`/`--uv` packages are never downloaded or validated
 - **#28**: `--github` repos are cloned but dependencies aren't installed
 - **#29**: No runtime health check (addressed by probe step)
 
@@ -13,7 +13,7 @@ Three open issues describe this:
 
 Each MCP type follows: **install -> register -> probe -> rollback on failure**.
 
-### `--npx <pkg>`
+### `--npm <pkg>`
 
 1. Run `npm install -g <pkg>` to permanently install the package globally. This downloads, links the binary, and makes it available to npx immediately.
 2. If install fails (E404, network error, missing entrypoint, incompatible platform) -> report error, don't register.
@@ -21,7 +21,7 @@ Each MCP type follows: **install -> register -> probe -> rollback on failure**.
 4. Probe via `probe_mcp_server_detailed` (JSON-RPC handshake, 60s timeout).
 5. If probe returns `"failed"` -> delete registry entry, run `npm uninstall -g <pkg>`, report error.
 
-### `--uvx <pkg>`
+### `--uv <pkg>`
 
 1. Run `uv tool install <pkg>` to permanently install the tool into `~/.local/share/uv/tools/`. This creates a persistent venv, installs deps, and links the entrypoint. Subsequent `uvx <pkg>` invocations use the installed version instantly.
 2. If install fails (yanked, no versions, build error, incompatible Python) -> report error, don't register.

@@ -215,7 +215,7 @@ class TestRemoteUrl:
 class TestSuggestCruxAdd:
     def test_npm_package(self):
         cmd = suggest_crux_add("npm-server", NPM_SERVER)
-        assert cmd == "crux mcp add npm-server --npx @example/npm-server"
+        assert cmd == "crux mcp add npm-server --npm @example/npm-server"
 
     def test_github_fallback(self):
         cmd = suggest_crux_add("my-server", GITHUB_SERVER)
@@ -230,4 +230,4 @@ class TestSuggestCruxAdd:
     def test_npm_takes_precedence_over_github(self):
         srv = {**NPM_SERVER, "repository": {"url": "https://github.com/x/y"}}
         cmd = suggest_crux_add("mixed", srv)
-        assert "--npx" in cmd
+        assert "--npm" in cmd

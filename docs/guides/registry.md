@@ -9,14 +9,14 @@ Register MCP servers from different sources:
 === "npm (npx)"
 
     ```bash
-    crux mcp add filesystem --npx @modelcontextprotocol/server-filesystem
-    crux mcp add github --npx @modelcontextprotocol/server-github
+    crux mcp add filesystem --npm @modelcontextprotocol/server-filesystem
+    crux mcp add github --npm @modelcontextprotocol/server-github
     ```
 
 === "PyPI (uvx)"
 
     ```bash
-    crux mcp add my-tool --uvx my-mcp-package
+    crux mcp add my-tool --uv my-mcp-package
     ```
 
 === "GitHub"
@@ -52,7 +52,7 @@ This tells Crux that `wikijs` expects the `WIKIJS_API_KEY` environment variable.
 Organize your MCPs with tags:
 
 ```bash
-crux mcp add filesystem --npx @modelcontextprotocol/server-filesystem --tags "core,filesystem"
+crux mcp add filesystem --npm @modelcontextprotocol/server-filesystem --tags "core,filesystem"
 ```
 
 ## Adding Skills

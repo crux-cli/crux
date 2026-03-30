@@ -18,8 +18,8 @@ crux mcp add <name> [options]
 
 | Option | Description |
 |--------|-------------|
-| `--npx <package>` | npm package to run via npx |
-| `--uvx <package>` | PyPI package to run via uvx |
+| `--npm <package>` | npm package to run via npx |
+| `--uv <package>` | PyPI package to run via uvx |
 | `--github <user/repo>` | GitHub repository to clone |
 | `--local <path>` | Local directory path |
 | `--command <cmd>` | Command to run the MCP server |
@@ -32,20 +32,20 @@ crux mcp add <name> [options]
 
 ```bash
 # npm package
-crux mcp add filesystem --npx @modelcontextprotocol/server-filesystem
+crux mcp add filesystem --npm @modelcontextprotocol/server-filesystem
 
 # GitHub repo with build step
 crux mcp add wikijs --github jaalbin24/wikijs-mcp-server \
   --build-cmd "npm install && npm run build"
 
 # With keychain auth (prompts for credentials inline)
-crux mcp add github --npx @modelcontextprotocol/server-github \
+crux mcp add github --npm @modelcontextprotocol/server-github \
   --keychain GITHUB_TOKEN
 # → Prompts: Enter GITHUB_TOKEN: ****
 # → ✓ Stored GITHUB_TOKEN
 
 # PyPI package
-crux mcp add my-tool --uvx my-mcp-tool
+crux mcp add my-tool --uv my-mcp-tool
 
 # Local path
 crux mcp add dev-server --local /path/to/server

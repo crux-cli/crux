@@ -154,4 +154,4 @@ class TestValidatePypiPackage:
         )
         ok, err = validate_pypi_package("some-pkg")
         assert not ok
-        assert "uv lookup failed" in err
+        assert "uvx install failed" in err

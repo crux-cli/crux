@@ -73,25 +73,25 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
 
     skip_validation = getattr(args, "skip_validation", False)
 
-    if args.uvx:
+    if args.uv:
         if not skip_validation:
-            ok, err = validate_pypi_package(args.uvx)
+            ok, err = validate_pypi_package(args.uv)
             if not ok:
-                print(f"\u274c Package validation failed for '{args.uvx}': {err}")
+                print(f"\u274c Package validation failed for '{args.uv}': {err}")
                 print("  Use --skip-validation to register anyway.")
                 sys.exit(1)
-        base_args = [args.uvx]
+        base_args = [args.uv]
         if args.args:
             base_args += args.args.split()
         entry.update({"type": "uvx-package", "command": "uvx", "args": base_args})
-    elif args.npx:
+    elif args.npm:
         if not skip_validation:
-            ok, err = validate_npm_package(args.npx)
+            ok, err = validate_npm_package(args.npm)
             if not ok:
-                print(f"\u274c Package validation failed for '{args.npx}': {err}")
+                print(f"\u274c Package validation failed for '{args.npm}': {err}")
                 print("  Use --skip-validation to register anyway.")
                 sys.exit(1)
-        base_args = ["-y", args.npx]
+        base_args = ["-y", args.npm]
         if args.args:
             base_args += args.args.split()
         entry.update({"type": "npm-package", "command": "npx", "args": base_args})
@@ -119,7 +119,7 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
         if args.command:
             entry.update({"command": args.command, "args": args.args.split() if args.args else []})
     else:
-        print("\u274c Specify a source: --uvx <package>, --npx <package>, --github <user/repo>, or --local <path>")
+        print("\u274c Specify a source: --uv <package>, --npm <package>, --github <user/repo>, or --local <path>")
         sys.exit(1)
 
     reg[registry_key][name] = entry
@@ -230,7 +230,7 @@ def cmd_mcp_list(args: argparse.Namespace) -> None:
     console = Console()
 
     if not all_mcps:
-        print("No MCPs registered. Run 'crux mcp add <name> --npx <package>' to get started.")
+        print("No MCPs registered. Run 'crux mcp add <name> --npm <package>' to get started.")
         print()
         return
 
@@ -346,8 +346,8 @@ def _search_add(console: object, servers: list[dict]) -> None:
         safe_name = custom
 
     if reg == "npm" and pkg:
-        console.print(f"\n[dim]Running:[/dim] crux mcp add {safe_name} --npx {pkg}\n")
-        os.execvp("crux", ["crux", "mcp", "add", safe_name, "--npx", pkg])  # noqa: S606, S607
+        console.print(f"\n[dim]Running:[/dim] crux mcp add {safe_name} --npm {pkg}\n")
+        os.execvp("crux", ["crux", "mcp", "add", safe_name, "--npm", pkg])  # noqa: S606, S607
     elif slug:
         console.print(f"\n[dim]Running:[/dim] crux mcp add {safe_name} --github {slug}\n")
         os.execvp("crux", ["crux", "mcp", "add", safe_name, "--github", slug])  # noqa: S606, S607
@@ -489,7 +489,7 @@ def cmd_mcp_status(args: argparse.Namespace) -> None:
     mcp_definitions = dict(reg.get("mcp_definitions", {}))
 
     if not mcp_definitions:
-        print("No MCPs registered. Run 'crux mcp add <name> --npx <package>' to get started.")
+        print("No MCPs registered. Run 'crux mcp add <name> --npm <package>' to get started.")
         print()
         return
 

@@ -48,8 +48,8 @@ def main() -> None:
 
     p = mcp_sub.add_parser("add", help="Register a new MCP server")
     p.add_argument("name", help="Name for the MCP")
-    p.add_argument("--uvx", help="PyPI package to run via uvx")
-    p.add_argument("--npx", help="npm package")
+    p.add_argument("--uv", help="PyPI package to install via uv")
+    p.add_argument("--npm", help="npm package to install globally")
     p.add_argument("--github", help="GitHub repo (e.g. user/repo)")
     p.add_argument("--local", help="Local directory path")
     p.add_argument("--command", help="Command to run the MCP")

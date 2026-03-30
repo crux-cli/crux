@@ -81,7 +81,7 @@ def suggest_crux_add(safe_name: str, server: dict[str, Any]) -> str | None:
     """Return the best `crux mcp add` command string for a registry server, or None."""
     reg, pkg = best_package(server)
     if reg == "npm":
-        return f"crux mcp add {safe_name} --npx {pkg}"
+        return f"crux mcp add {safe_name} --npm {pkg}"
     slug = github_slug(server)
     if slug:
         return f"crux mcp add {safe_name} --github {slug}"

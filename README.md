@@ -42,7 +42,7 @@ Or if you already have [uv](https://docs.astral.sh/uv/): `uv tool install crux-c
 **1. Build your registry** — add MCP servers and skills from any source:
 
 ```bash
-crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
+crux add mcp filesystem --npm @modelcontextprotocol/server-filesystem
 crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
 crux add skill autoresearch --github user/autoresearch-skill
 ```

@@ -8,13 +8,13 @@ Register MCP servers from npm, PyPI, GitHub, or local sources. You only do this 
 
 ```bash
 # npm packages
-crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
+crux add mcp filesystem --npm @modelcontextprotocol/server-filesystem
 
 # GitHub repos
 crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
 
 # PyPI packages
-crux add mcp my-tool --uvx my-mcp-tool
+crux add mcp my-tool --uv my-mcp-tool
 ```
 
 See what's available in the official registry:
