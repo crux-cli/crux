@@ -149,3 +149,45 @@ def _install_uv_requirements(dest: Path) -> tuple[bool, str]:
         return False, f"uv pip install failed: {install.stderr.strip()[:300]}"
     print("  Dependencies installed")
     return True, ""
+
+
+def rollback_mcp_add(name: str, entry: dict) -> None:
+    """Roll back a failed mcp add: remove registry entry, clean up files and packages."""
+    from crux_cli.manifest import load_registry, save_registry
+
+    # Remove from registry
+    reg = load_registry()
+    if name in reg.get("mcp_definitions", {}):
+        del reg["mcp_definitions"][name]
+        save_registry(reg)
+
+    # Delete source directory if under crux home
+    source_dir = entry.get("source_dir")
+    if source_dir:
+        from crux_cli.paths import crux_home
+
+        resolved = Path(source_dir).resolve()
+        if resolved.exists() and str(resolved).startswith(str(crux_home().resolve())):
+            import shutil
+
+            shutil.rmtree(resolved)
+
+    # Uninstall packages
+    mcp_type = entry.get("type", "")
+    if mcp_type == "uvx-package":
+        pkg = entry.get("args", [""])[0]
+        if pkg:
+            subprocess.run(  # noqa: S603
+                ["uv", "tool", "uninstall", pkg],  # noqa: S607
+                capture_output=True,
+                timeout=30,
+            )
+    elif mcp_type == "npm-package":
+        args = entry.get("args", [])
+        pkg = next((a for a in args if not a.startswith("-")), None)
+        if pkg:
+            subprocess.run(  # noqa: S603
+                ["npm", "uninstall", "-g", pkg],  # noqa: S607
+                capture_output=True,
+                timeout=30,
+            )

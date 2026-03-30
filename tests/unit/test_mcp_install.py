@@ -8,6 +8,7 @@ from crux_cli.install import (
     detect_and_install_deps,
     install_npm_package,
     install_uv_package,
+    rollback_mcp_add,
 )
 
 
@@ -179,3 +180,82 @@ class TestDetectAndInstallDeps:
         ok, err = detect_and_install_deps(tmp_path, entry)
         assert not ok
         assert "npm install failed" in err
+
+
+class TestRollbackMcpAdd:
+    def test_rollback_removes_registry_entry(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(tmp_path))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+        reg_path = tmp_path / "registry.json"
+        reg_path.write_text(
+            json.dumps(
+                {
+                    "version": "1.0.0",
+                    "mcp_definitions": {"test-mcp": {"type": "npm-package"}},
+                    "skill_definitions": {},
+                }
+            )
+        )
+        rollback_mcp_add("test-mcp", {"type": "npm-package"})
+        reg = json.loads(reg_path.read_text())
+        assert "test-mcp" not in reg["mcp_definitions"]
+
+    def test_rollback_deletes_source_dir(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(tmp_path))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+        reg_path = tmp_path / "registry.json"
+        source_dir = tmp_path / "mcps" / "test-mcp"
+        source_dir.mkdir(parents=True)
+        (source_dir / "index.js").write_text("// test")
+        reg_path.write_text(
+            json.dumps(
+                {
+                    "version": "1.0.0",
+                    "mcp_definitions": {
+                        "test-mcp": {
+                            "type": "github",
+                            "source_dir": str(source_dir),
+                        }
+                    },
+                    "skill_definitions": {},
+                }
+            )
+        )
+        rollback_mcp_add("test-mcp", {"type": "github", "source_dir": str(source_dir)})
+        assert not source_dir.exists()
+
+    def test_rollback_uvx_uninstalls(self, tmp_path, monkeypatch, mocker):
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(tmp_path))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+        reg_path = tmp_path / "registry.json"
+        reg_path.write_text(
+            json.dumps(
+                {
+                    "version": "1.0.0",
+                    "mcp_definitions": {"test-mcp": {"type": "uvx-package", "args": ["my-tool"]}},
+                    "skill_definitions": {},
+                }
+            )
+        )
+        mock_run = mocker.patch("crux_cli.install.subprocess.run")
+        rollback_mcp_add("test-mcp", {"type": "uvx-package", "args": ["my-tool"]})
+        mock_run.assert_called_once()
+        assert "uninstall" in str(mock_run.call_args)
+
+    def test_rollback_npm_uninstalls(self, tmp_path, monkeypatch, mocker):
+        monkeypatch.setenv("CRUX_TEST_ROOT", str(tmp_path))
+        monkeypatch.delenv("CRUX_HOME", raising=False)
+        reg_path = tmp_path / "registry.json"
+        reg_path.write_text(
+            json.dumps(
+                {
+                    "version": "1.0.0",
+                    "mcp_definitions": {"test-mcp": {"type": "npm-package", "args": ["-y", "@test/pkg"]}},
+                    "skill_definitions": {},
+                }
+            )
+        )
+        mock_run = mocker.patch("crux_cli.install.subprocess.run")
+        rollback_mcp_add("test-mcp", {"type": "npm-package", "args": ["-y", "@test/pkg"]})
+        mock_run.assert_called_once()
+        assert "uninstall" in str(mock_run.call_args)
