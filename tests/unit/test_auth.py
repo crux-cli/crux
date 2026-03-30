@@ -369,6 +369,7 @@ class TestInlineAuthDuringAdd:
             tags=None,
             keychain="API_KEY,SECRET",
             build_cmd=None,
+            skip_validation=True,
         )
         cmd_mcp_add(args)
 
@@ -407,6 +408,7 @@ class TestInlineAuthDuringAdd:
             tags=None,
             keychain="API_KEY",
             build_cmd=None,
+            skip_validation=True,
         )
         cmd_mcp_add(args)
 

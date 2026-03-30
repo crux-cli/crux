@@ -57,6 +57,7 @@ def main() -> None:
     p.add_argument("--tags", help="Comma-separated tags")
     p.add_argument("--keychain", help="Comma-separated env var names for keychain auth")
     p.add_argument("--build-cmd", dest="build_cmd", help="Build command after clone")
+    p.add_argument("--skip-validation", action="store_true", help="Skip package existence check")
     p.set_defaults(func=cmd_mcp_add)
 
     p = mcp_sub.add_parser("remove", help="Unregister an MCP server")

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from crux_cli.manifest import load_registry, save_registry
+from crux_cli.package_validation import validate_npm_package, validate_pypi_package
 from crux_cli.paths import mcps_dir as v1_mcps_dir
 from crux_cli.registry import (
     best_package,
@@ -70,12 +71,26 @@ def cmd_mcp_add(args: argparse.Namespace) -> None:
     if build_cmd:
         entry["build_cmd"] = build_cmd
 
+    skip_validation = getattr(args, "skip_validation", False)
+
     if args.uvx:
+        if not skip_validation:
+            ok, err = validate_pypi_package(args.uvx)
+            if not ok:
+                print(f"\u274c Package validation failed for '{args.uvx}': {err}")
+                print("  Use --skip-validation to register anyway.")
+                sys.exit(1)
         base_args = [args.uvx]
         if args.args:
             base_args += args.args.split()
         entry.update({"type": "uvx-package", "command": "uvx", "args": base_args})
     elif args.npx:
+        if not skip_validation:
+            ok, err = validate_npm_package(args.npx)
+            if not ok:
+                print(f"\u274c Package validation failed for '{args.npx}': {err}")
+                print("  Use --skip-validation to register anyway.")
+                sys.exit(1)
         base_args = ["-y", args.npx]
         if args.args:
             base_args += args.args.split()
