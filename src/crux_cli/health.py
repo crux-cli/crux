@@ -15,15 +15,15 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 
-def probe_mcp_server(config: dict[str, Any]) -> tuple[str, str]:
+def probe_mcp_server(config: dict[str, Any], timeout: int = 10) -> tuple[str, str]:
     """Probe an MCP server via MCP initialize + tools/list handshake.
     Returns (status, reason).
     """
-    result = probe_mcp_server_detailed(config)
+    result = probe_mcp_server_detailed(config, timeout=timeout)
     return result["status"], result["detail"]
 
 
-def probe_mcp_server_detailed(config: dict[str, Any]) -> dict[str, Any]:
+def probe_mcp_server_detailed(config: dict[str, Any], timeout: int = 10) -> dict[str, Any]:
     """Extended probe returning a dict with status, detail, tools_count, server_info."""
     command = config.get("command", "")
     args_list = config.get("args", [])
@@ -85,7 +85,7 @@ def probe_mcp_server_detailed(config: dict[str, Any]) -> dict[str, Any]:
         proc = subprocess.Popen(  # noqa: S603
             full_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
         )
-        stdout, _ = proc.communicate(input=messages.encode(), timeout=10)
+        stdout, _ = proc.communicate(input=messages.encode(), timeout=timeout)
         lines = [line for line in stdout.decode().splitlines() if line.strip()]
 
         server_info_detail = None

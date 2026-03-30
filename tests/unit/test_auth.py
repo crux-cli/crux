@@ -360,8 +360,8 @@ class TestInlineAuthDuringAdd:
 
         args = argparse.Namespace(
             name="test-mcp",
-            npx="@test/pkg",
-            uvx=None,
+            npm="@test/pkg",
+            uv=None,
             github=None,
             local=None,
             command=None,
@@ -369,6 +369,7 @@ class TestInlineAuthDuringAdd:
             tags=None,
             keychain="API_KEY,SECRET",
             build_cmd=None,
+            skip_validation=True,
         )
         cmd_mcp_add(args)
 
@@ -398,8 +399,8 @@ class TestInlineAuthDuringAdd:
 
         args = argparse.Namespace(
             name="test-mcp2",
-            npx="@test/pkg",
-            uvx=None,
+            npm="@test/pkg",
+            uv=None,
             github=None,
             local=None,
             command=None,
@@ -407,6 +408,7 @@ class TestInlineAuthDuringAdd:
             tags=None,
             keychain="API_KEY",
             build_cmd=None,
+            skip_validation=True,
         )
         cmd_mcp_add(args)
 

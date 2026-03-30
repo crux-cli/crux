@@ -1,4 +1,5 @@
 """Unit tests for crux_cli.health — all subprocess calls mocked."""
+
 import json
 import shutil
 import subprocess
@@ -161,15 +162,26 @@ class TestProbeMcpServer:
         mock_popen = mocker.patch("crux_cli.health.subprocess.Popen")
         mixed_stdout = (
             b"Starting server...\n"
-            + json.dumps(INIT_RESPONSE).encode() + b"\n"
+            + json.dumps(INIT_RESPONSE).encode()
+            + b"\n"
             + b"Some log line\n"
-            + json.dumps(TOOLS_LIST_RESPONSE).encode() + b"\n"
+            + json.dumps(TOOLS_LIST_RESPONSE).encode()
+            + b"\n"
         )
         mock_proc = MagicMock()
         mock_proc.communicate.return_value = (mixed_stdout, b"")
         mock_popen.return_value = mock_proc
         status, _ = h.probe_mcp_server({"command": "npx", "args": []})
         assert status == "connected"
+
+    def test_custom_timeout_passed_to_communicate(self, mocker):
+        mocker.patch("crux_cli.health.shutil.which", return_value="/usr/bin/npx")
+        mock_popen = mocker.patch("crux_cli.health.subprocess.Popen")
+        mock_popen.return_value = _make_proc([INIT_RESPONSE, TOOLS_LIST_RESPONSE])
+        h.probe_mcp_server_detailed({"command": "npx", "args": []}, timeout=45)
+        mock_popen.return_value.communicate.assert_called_once()
+        call_kwargs = mock_popen.return_value.communicate.call_args
+        assert call_kwargs[1]["timeout"] == 45
 
     # --- real subprocess (optional, skipped if npx unavailable) ---
 

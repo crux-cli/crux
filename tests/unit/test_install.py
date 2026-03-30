@@ -37,9 +37,11 @@ class TestInstallSingleMcp:
         crux_json["mcps"].append("memory")
         save_crux_json(project, crux_json)
 
-        registry = _registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "pkg"]},
-        })
+        registry = _registry(
+            mcps={
+                "memory": {"command": "npx", "args": ["-y", "pkg"]},
+            }
+        )
         success, issues = sync_project(project, registry)
         assert success
         assert issues == []
@@ -57,10 +59,12 @@ class TestInstallMultipleMcps:
         crux_json = {"name": "proj", "mcps": ["memory", "github-mcp"], "skills": []}
         save_crux_json(project, crux_json)
 
-        registry = _registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "mem-pkg"]},
-            "github-mcp": {"command": "npx", "args": ["-y", "gh-pkg"]},
-        })
+        registry = _registry(
+            mcps={
+                "memory": {"command": "npx", "args": ["-y", "mem-pkg"]},
+                "github-mcp": {"command": "npx", "args": ["-y", "gh-pkg"]},
+            }
+        )
         success, issues = sync_project(project, registry)
         assert success
         assert issues == []
@@ -83,9 +87,11 @@ class TestInstallSkillCopiesToClaudeSkills:
         crux_json = {"name": "proj", "mcps": [], "skills": ["my-skill"]}
         save_crux_json(project, crux_json)
 
-        registry = _registry(skills={
-            "my-skill": {"type": "local", "source_dir": str(skill_source)},
-        })
+        registry = _registry(
+            skills={
+                "my-skill": {"type": "local", "source_dir": str(skill_source)},
+            }
+        )
         success, issues = sync_project(project, registry)
         assert success
         assert issues == []
@@ -132,9 +138,11 @@ class TestInstallTriggersSync:
         crux_json = {"name": "proj", "mcps": ["memory"], "skills": []}
         save_crux_json(project, crux_json)
 
-        registry = _registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "pkg"]},
-        })
+        registry = _registry(
+            mcps={
+                "memory": {"command": "npx", "args": ["-y", "pkg"]},
+            }
+        )
         sync_project(project, registry)
 
         assert (project / ".mcp.json").exists()
@@ -196,9 +204,11 @@ class TestUninstallTriggersSync:
         crux_json = {"name": "proj", "mcps": ["memory"], "skills": []}
         save_crux_json(project, crux_json)
 
-        registry = _registry(mcps={
-            "memory": {"command": "npx", "args": ["-y", "pkg"]},
-        })
+        registry = _registry(
+            mcps={
+                "memory": {"command": "npx", "args": ["-y", "pkg"]},
+            }
+        )
 
         # Install + sync
         sync_project(project, registry)

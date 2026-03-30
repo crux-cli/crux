@@ -5,6 +5,20 @@ All notable changes to Crux are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **`crux mcp add --npm`** now runs `npm install -g` to install packages globally before registering. Catches missing packages, build failures, and platform incompatibilities at registration time instead of agent runtime.
+- **`crux mcp add --uv`** now runs `uv tool install` to permanently install Python tools before registering. Catches yanked versions, missing packages, and build errors immediately.
+- **`crux mcp add --github`** now auto-detects project type and installs dependencies after cloning: `package.json` triggers `npm install` (+ `npm run build` if build script exists), `pyproject.toml` triggers `uv sync`, `requirements.txt` triggers `uv venv && uv pip install -r requirements.txt`.
+- **`crux mcp add --local`** now runs the same dependency auto-detection and installation as `--github`.
+- Renamed CLI flags: `--npx` is now `--npm`, `--uvx` is now `--uv`.
+
+### Added
+
+- **`--skip-validation` flag** for `crux mcp add`: bypasses installation and dependency checks. Useful for MCPs that require auth before installation, offline registration, or private registries.
+
 ## [1.0.0] - 2026-03-16
 
 ### Added

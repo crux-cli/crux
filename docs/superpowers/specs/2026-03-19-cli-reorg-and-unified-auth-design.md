@@ -36,7 +36,7 @@ crux version [--check]  # Show version / check for updates
 ### 1.2 `crux mcp` — MCP Server Management
 
 ```
-crux mcp add <name> [--npx|--uvx|--github|--local|--url <src>]
+crux mcp add <name> [--npm|--uv|--github|--local|--url <src>]
                      [--command <cmd>] [--args <args>] [--tags <tags>]
                      [--build-cmd <cmd>] [--setup-cmd <cmd>]
                      [--keychain <var1,var2>]
@@ -481,7 +481,7 @@ Extract skill-specific logic from old `registry.py`:
 
 **`preflight.py`** — Update fix hint messages:
 - `"Fix: crux secret set {name} {var} <value>"` → `"Fix: crux mcp auth {name}"`
-- `"Fix: crux add mcp {name} --npx <package>"` → `"Fix: crux mcp add {name} --npx <package>"`
+- `"Fix: crux add mcp {name} --npm <package>"` → `"Fix: crux mcp add {name} --npm <package>"`
 - `"Fix: crux add skill {name} --github <repo>"` → `"Fix: crux skill add {name} --github <repo>"`
 
 **`sync.py`** — Add HTTP transport support:
@@ -731,7 +731,7 @@ Crux is a CLI tool for managing MCP servers, skills, and agent tasks.
 
 ### MCP Servers
 - `crux mcp search <query>` — Search the MCP Registry
-- `crux mcp add <name> --npx <pkg>` — Register an MCP server
+- `crux mcp add <name> --npm <pkg>` — Register an MCP server
 - `crux mcp remove <name>` — Unregister an MCP server
 - `crux mcp list` — List registered MCP servers
 - `crux mcp upgrade` — Update cloned MCP repos

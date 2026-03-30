@@ -6,7 +6,7 @@ Crux is a CLI tool for managing MCP servers, skills, and agent tasks.
 
 ### MCP Servers
 - `crux mcp search <query>` — Search the MCP Registry
-- `crux mcp add <name> --npx <pkg>` — Register an MCP server
+- `crux mcp add <name> --npm <pkg>` — Register an MCP server
 - `crux mcp remove <name>` — Unregister an MCP server
 - `crux mcp list` — List registered MCP servers
 - `crux mcp upgrade` — Update cloned MCP repos

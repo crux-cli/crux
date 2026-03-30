@@ -16,13 +16,21 @@ Crux supports several authentication methods depending on how an MCP server expe
 | `bearer` | HTTP Bearer tokens passed in request headers |
 | `oauth` | OAuth 2.0 flows managed by Crux |
 
-Declare the auth type when adding an MCP. When `--keychain` is used, you are prompted for credentials inline:
+Declare the auth type when adding an MCP. When `--keychain` is used, Crux installs the package first, then prompts for credentials:
 
 ```bash
-crux mcp add github --npx @modelcontextprotocol/server-github --keychain GITHUB_TOKEN
+crux mcp add github --npm @modelcontextprotocol/server-github --keychain GITHUB_TOKEN
+# → Installing @modelcontextprotocol/server-github via npm install -g...
 # → Enter GITHUB_TOKEN: ****
 # → ✓ Stored GITHUB_TOKEN
-# → ✓ Authenticated 'github'
+# → ✅ Registered MCP 'github'
+```
+
+If an MCP requires authentication before it can be installed, use `--skip-validation` to register first, then authenticate:
+
+```bash
+crux mcp add private-mcp --npm @corp/private-mcp --keychain API_KEY --skip-validation
+crux mcp auth private-mcp
 ```
 
 To re-authenticate or rotate credentials later, use `crux mcp auth`:
@@ -64,7 +72,7 @@ Crux opens the authorization URL in your browser, handles the redirect, and stor
 For MCPs that delegate to an external CLI for authentication (e.g., the GitHub CLI):
 
 ```bash
-crux mcp add github --npx @modelcontextprotocol/server-github --external-cli "gh auth token"
+crux mcp add github --npm @modelcontextprotocol/server-github --external-cli "gh auth token"
 ```
 
 No separate `crux mcp auth` call is needed — the external command is called at MCP startup.

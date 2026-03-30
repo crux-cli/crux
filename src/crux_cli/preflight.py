@@ -60,7 +60,7 @@ def _check_mcp_exists(name: str, mcp_defs: dict[str, Any], errors: list[str]) ->
     if name not in mcp_defs:
         available = ", ".join(sorted(mcp_defs.keys())) or "(none)"
         errors.append(
-            f"MCP '{name}' not found in registry. Available: {available}. Fix: crux mcp add {name} --npx <package>"
+            f"MCP '{name}' not found in registry. Available: {available}. Fix: crux mcp add {name} --npm <package>"
         )
 
 

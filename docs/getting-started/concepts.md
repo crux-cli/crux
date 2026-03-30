@@ -7,7 +7,7 @@ Understanding Crux's architecture and key abstractions.
 The **registry** (`~/.crux/registry.json`) is your personal catalog of all MCP servers and skills you've registered. It's machine-wide — shared across all your projects.
 
 ```bash
-crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
+crux add mcp filesystem --npm @modelcontextprotocol/server-filesystem
 crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
 crux list
 ```
