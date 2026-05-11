@@ -1,6 +1,6 @@
 [project]
 name = "crux-cli"
-version = "1.0.5"
+version = "2.0.0"
 description = "Crux OS — Agentic AI control plane"
 requires-python = ">=3.11"
 dependencies = [
@@ -73,6 +73,5 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "S"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101", "S108"]  # assert and /tmp paths are expected in tests
 "tests/**/conftest.py" = ["S101", "S603"]  # subprocess in test helpers
-"src/crux_cli/cli/commands/mcp.py" = ["S602", "S603", "S606", "S607"]  # subprocess calls with git/crux
-"src/crux_cli/cli/commands/skill.py" = ["S603", "S607"]  # subprocess calls with git
-"src/crux_cli/cli/commands/doctor.py" = ["S603"]  # subprocess for setup_cmd
+"src/crux_cli/registry_ops.py" = ["S603", "S607"]  # subprocess for git clone
+"src/crux_cli/cli/commands/harness_cmd.py" = ["S603"]  # subprocess for $EDITOR

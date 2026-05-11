@@ -48,9 +48,7 @@ class TestLoadConfigCustom:
 
     def test_load_config_custom(self, tmp_path):
         config_file = tmp_path / "config.toml"
-        config_file.write_text(
-            '[secrets]\nbackend = "plaintext"\n\n[paths]\ncrux_home = "/custom"\n'
-        )
+        config_file.write_text('[secrets]\nbackend = "plaintext"\n\n[paths]\ncrux_home = "/custom"\n')
         cfg = load_config(path=config_file)
         assert cfg["secrets"]["backend"] == "plaintext"
         assert cfg["paths"]["crux_home"] == "/custom"

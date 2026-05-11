@@ -1,6 +1,6 @@
 # Crux
 
-**Agentic Tool Manager for Claude Code.**
+**Harness manager for Claude Code.**
 
 [![CI](https://github.com/crux-cli/crux/actions/workflows/ci.yml/badge.svg)](https://github.com/crux-cli/crux/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/crux-cli)](https://pypi.org/project/crux-cli/)
@@ -9,124 +9,153 @@
 
 ---
 
-Crux is a CLI tool for **macOS** and **Linux** that brings package-management to your **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** agentic workflows. Add MCP servers and skills to a local registry, scope them per project, and keep credentials in your OS keychain — never in files.
+Crux v2 manages **harnesses** — versioned bundles of agent configuration (`CLAUDE.md`, skills, MCPs, plugins, hooks) for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Activate a harness with `crux use`, and Crux deploys symlinks into the paths Claude Code already reads from.
 
 ### Highlights
 
-- **One registry, every project** — add MCPs and skills once from npm, PyPI, GitHub, or local sources. No more copy-pasting `.mcp.json`.
-- **Secrets in your keychain** — API keys live in macOS Keychain, Linux Secret Service, or an age-encrypted vault. Launcher scripts fetch them at runtime.
-- **Scoped per project** — each project declares its tools in `crux.json`. Agents see only what's declared — fewer tools means better outputs.
-- **Sandboxed execution** — `crux run` creates isolated environments with pre-flight validation. Misconfigurations are caught before your agent starts.
-- **Health monitoring** — `crux status` probes every MCP via JSON-RPC. `crux doctor` validates your environment and auto-fixes what it can.
-- **Discover & search** — search the official MCP registry from your terminal and add servers with one command.
+- **Composition as a first-class object.** A harness is a single TOML bundle that names which skills, MCPs, and plugins make up a configuration. Reuse it across projects instead of copy-pasting.
+- **Versioning and rollback.** `crux bump` snapshots the current harness as the next version. `crux use -` rolls back to the previous activation. Every version is preserved on disk.
+- **No magic, just symlinks.** Activation places symlinks under `~/.claude/` (or `<cwd>/.claude/`) pointing into the registry. `ls -la` shows exactly what Crux deployed; non-Crux files are never touched.
+- **Per-directory or per-user.** Drop a `crux.toml` pointer in a project to override the user-level default. Resolution walks up from the cwd, then falls back to `~/.crux/active.toml`.
+- **Secrets in your keychain.** API keys live in macOS Keychain, Linux Secret Service, or an age-encrypted vault. Launcher scripts fetch them at runtime; nothing ever lands in `.mcp.json`.
 
 ## Install
 
-**As a Claude Code plugin** (recommended):
-
-```bash
-claude plugin marketplace add crux-cli/claude-marketplace
-claude plugin install crux
-```
-
-**Or via curl:**
-
 ```bash
 curl -LsSf https://raw.githubusercontent.com/crux-cli/crux/main/install.sh | sh
+crux setup
 ```
 
-Or if you already have [uv](https://docs.astral.sh/uv/): `uv tool install crux-cli && crux setup`
+Or with [uv](https://docs.astral.sh/uv/): `uv tool install crux-cli && crux setup`.
 
-## Get started in three steps
-
-**1. Build your registry** — add MCP servers and skills from any source:
+## Quickstart
 
 ```bash
-crux add mcp filesystem --npx @modelcontextprotocol/server-filesystem
-crux add mcp wikijs --github jaalbin24/wikijs-mcp-server
-crux add skill autoresearch --github user/autoresearch-skill
+# One-time setup
+crux setup
+
+# Stock the registry with primitives
+crux registry add mcp filesystem @modelcontextprotocol/server-filesystem --npm
+crux registry add skill autoresearch user/autoresearch-skill --github
+
+# Build a harness and pull primitives into its bundle
+crux new coding
+crux edit skills coding --add autoresearch
+crux edit mcps coding --add filesystem
+
+# Activate it for everything (user-level)
+crux use coding --user
+
+# Or override per project
+cd ~/code/my-app
+crux use coding
+crux active                    # prints "coding@v1 (directory, …/crux.toml)"
+
+# Iterate: bump produces v2, roll back with `use -`
+crux bump coding
+crux use coding@v2 --user
+crux use - --user              # back to v1
 ```
 
-**2. Store credentials securely** — API keys go in your OS keychain:
+## Concepts
 
-```bash
-crux secret set wikijs WIKIJS_API_KEY
-crux secret set github GITHUB_TOKEN
+| Primitive | What it is |
+|-----------|------------|
+| **MCP**     | A server providing tools to the agent. Source: npm, uvx, GitHub, local, or HTTP. |
+| **Skill**   | A reusable capability bundle. Source: local directory or GitHub repo. |
+| **Plugin**  | A third-party bundle (own CLAUDE.md, hooks, skills). Stored versioned. |
+| **Harness** | A composition referencing the above + its own CLAUDE.md + its own hooks. |
+
+Harnesses are stored at `~/.crux/registry/harnesses/<name>/<version>/` with a `bundle.toml`:
+
+```toml
+[harness]
+name = "coding"
+version = "v3"
+description = "Tuned for careful refactors"
+
+[skills]
+include = ["autoresearch"]
+
+[mcps]
+include = ["filesystem", "wikijs"]
+
+[plugins]
+include = ["awesome-coding@v2"]
+
+[hooks]
+pre_tool_use = "hooks/pre.sh"
 ```
 
-**3. Use in a project or a one-off sandbox:**
+A pointer file names the active harness:
 
-*Project mode* — declare what each project needs in a `crux.json` manifest:
-
-```bash
-crux init homelab-assistant && cd homelab-assistant
-crux install wikijs filesystem autoresearch
-crux status
+```toml
+# <project>/crux.toml or ~/.crux/active.toml
+harness = "coding@v3"
 ```
 
-*Sandbox mode* — run an agent with a specific set of tools, without a full project:
-
-```bash
-crux run "Update the wiki with latest research" \
-  --mcps wikijs --skills autoresearch
-```
-
-## Replaces manual management of
-
-| What | Without Crux | With Crux |
-|------|-------------|-----------|
-| **MCP config** | Hand-edited `.mcp.json` per project | `crux.json` manifest + `crux sync` |
-| **Credentials** | Plaintext `.env` files committed to git | OS keychain, fetched at runtime |
-| **Tool scoping** | Every agent sees every tool | Each project declares its own subset |
-| **Skills** | Files manually copied between machines | Registry with `crux add skill` |
+`@<version>` is optional — omitted means *latest*.
 
 ## Commands
 
 ```
 Setup:
-  crux setup                  Initialize ~/.crux and environment
-  crux doctor                 Diagnose and auto-fix environment issues
+  crux setup                                  Initialize ~/.crux
+  crux doctor                                 Diagnose the environment
+  crux migrate [--name <name>]                Migrate cwd's crux.json (v1.x)
 
 Registry:
-  crux add mcp <name>         Register an MCP (npm, PyPI, GitHub, local)
-  crux add skill <name>       Register a skill
-  crux remove <name>          Unregister an MCP or skill
-  crux list                   List everything in the registry
-  crux search <query>         Search the official MCP Registry
-  crux upgrade [<name>]       Update cloned sources to latest
-
-Project:
-  crux init [<name>]          Create a project with crux.json
-  crux install <name...>      Add MCPs/skills to project and sync
-  crux uninstall <name...>    Remove MCPs/skills from project and sync
-  crux sync [--all]           Generate .mcp.json from crux.json
-  crux status [--all]         Show MCP server health
+  crux registry add mcp <name> <src> [--npm|--uvx|--github|--local|--http] [--keychain VAR,VAR]
+  crux registry add skill <name> <src> [--github]
+  crux registry add plugin <name> <src> [--version vN]
+  crux registry remove <name> [--force]
+  crux registry list
 
 Secrets:
-  crux secret set <mcp> <key> Store a secret in OS keystore
-  crux secret get <mcp> <key> Retrieve a secret
-  crux secret list [<mcp>]    List stored secrets (values masked)
+  crux secret set <mcp> <key> [--value V]
+  crux secret list [<mcp>]
+  crux secret remove <mcp> <key>
 
-Sandbox:
-  crux run <task>             Execute agent with scoped MCP access
-  crux run --file <manifest>  Execute from a reusable run manifest
-  crux run list               List recent runs
-  crux run clean              Remove completed sandboxes
+Harness lifecycle:
+  crux new <name>                             Create at v1
+  crux bump <name>                            Snapshot latest as vN+1
+  crux list [<name>]                          List harnesses or versions
+  crux show <name>[@<v>]                      Display a bundle
+
+Harness editing:
+  crux edit claude [<ref>]                    Open $EDITOR on CLAUDE.md
+  crux edit skills  [<ref>] [--add N --remove N ...]
+  crux edit mcps    [<ref>] [--add N --remove N ...]
+  crux edit plugins [<ref>] [--add N --remove N ...]
+  crux edit hooks   [<ref>]                   Open $EDITOR on hooks/
+
+Activation:
+  crux use <name>[@<v>] [--user]              Activate; rebuild symlinks
+  crux use -          [--user]                Roll back to previous
+  crux use --none     [--user]                Deactivate
+  crux active                                 Show resolved active harness
 ```
+
+## Migration from v1.x
+
+```bash
+cd my-v1-project
+crux migrate
+# crux.json -> harness@v1 + crux.toml pointer
+```
+
+The migration creates a harness named after the project (override with `--name`), seeds it with the MCPs and skills from `crux.json`, writes a directory-level pointer, and deletes the old `crux.json`. The harness is at `~/.crux/registry/harnesses/<name>/v1/`.
 
 ## Security
 
-Crux takes an opinionated stance: **there is no insecure-but-easier path.**
-
-- Secrets never appear in any file on disk — only in your OS keystore
-- Launcher scripts contain keystore lookup commands, not credential values
-- Generated `.mcp.json` never contains secrets
-- Each sandbox gets only the MCPs explicitly declared for that run
-- Path traversal protections on all file operations
+- Secrets live in your OS keystore, not in files on disk.
+- Launcher scripts hold lookup commands, not credential values.
+- Generated `.mcp.json` references env-var names, never the values.
+- `crux use` refuses to overwrite any file or symlink it didn't place.
 
 ## Documentation
 
-Full docs, guides, and API reference at [crux-cli.github.io/crux](https://crux-cli.github.io/crux).
+Full docs at [crux-cli.github.io/crux](https://crux-cli.github.io/crux).
 
 ## Development
 
