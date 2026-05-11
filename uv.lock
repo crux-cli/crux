@@ -259,7 +259,7 @@ toml = [
 
 [[package]]
 name = "crux-cli"
-version = "1.0.5"
+version = "2.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "packaging" },
