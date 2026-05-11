@@ -59,25 +59,19 @@ def simple_registry():
 
 class TestSandboxCreatesDirectory:
     def test_sandbox_creates_directory(self, sandbox_home, simple_registry):
-        path = create_sandbox(
-            "20260316-abcd", ["memory"], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", ["memory"], registry=simple_registry, skip_preflight=True)
         assert path.is_dir()
         assert (path / "workspace").is_dir()
         assert path.name == "20260316-abcd"
 
     def test_sandbox_path_under_crux_sandbox(self, sandbox_home, simple_registry):
-        path = create_sandbox(
-            "20260316-1234", ["memory"], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-1234", ["memory"], registry=simple_registry, skip_preflight=True)
         assert path.parent == sandbox_home / "sandbox"
 
 
 class TestSandboxScopedMcpJson:
     def test_sandbox_scoped_mcp_json(self, sandbox_home, simple_registry):
-        path = create_sandbox(
-            "20260316-abcd", ["memory"], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", ["memory"], registry=simple_registry, skip_preflight=True)
         mcp_json = json.loads((path / ".mcp.json").read_text())
         assert "mcpServers" in mcp_json
         assert "memory" in mcp_json["mcpServers"]
@@ -85,18 +79,14 @@ class TestSandboxScopedMcpJson:
         assert server.get("command") or server.get("args") is not None
 
     def test_sandbox_empty_mcps(self, sandbox_home, simple_registry):
-        path = create_sandbox(
-            "20260316-abcd", [], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", [], registry=simple_registry, skip_preflight=True)
         mcp_json = json.loads((path / ".mcp.json").read_text())
         assert mcp_json["mcpServers"] == {}
 
 
 class TestSandboxRunMeta:
     def test_sandbox_run_meta(self, sandbox_home, simple_registry):
-        path = create_sandbox(
-            "20260316-abcd", ["memory"], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", ["memory"], registry=simple_registry, skip_preflight=True)
         meta = write_run_meta(path, "20260316-abcd", "do stuff", ["memory"])
         assert meta["id"] == "20260316-abcd"
         assert meta["task"] == "do stuff"
@@ -108,9 +98,7 @@ class TestSandboxRunMeta:
         assert stored["id"] == "20260316-abcd"
 
     def test_update_meta_merges(self, sandbox_home, simple_registry):
-        path = create_sandbox(
-            "20260316-abcd", [], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", [], registry=simple_registry, skip_preflight=True)
         write_run_meta(path, "20260316-abcd", "task", [])
         update_run_meta(path, status="done", exit_code=0)
         stored = json.loads((path / "run-meta.json").read_text())
@@ -137,9 +125,7 @@ class TestSandboxRunIdFormat:
 class TestRunInvokesClaude:
     def test_run_invokes_claude(self, sandbox_home, simple_registry, mocker):
         """run_agent calls claude with correct args (mocked)."""
-        path = create_sandbox(
-            "20260316-abcd", ["memory"], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", ["memory"], registry=simple_registry, skip_preflight=True)
         write_run_meta(path, "20260316-abcd", "test task", ["memory"])
 
         mocker.patch("crux_cli.sandbox.shutil.which", return_value="/usr/local/bin/claude")
@@ -173,9 +159,7 @@ def _mock_popen(mocker, returncode=0):
 
 class TestRunCapturesExitCode:
     def test_run_captures_exit_code(self, sandbox_home, simple_registry, mocker):
-        path = create_sandbox(
-            "20260316-abcd", [], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", [], registry=simple_registry, skip_preflight=True)
         write_run_meta(path, "20260316-abcd", "fail task", [])
         _mock_popen(mocker, returncode=42)
 
@@ -183,9 +167,7 @@ class TestRunCapturesExitCode:
         assert exit_code == 42
 
     def test_run_exit_zero_on_success(self, sandbox_home, simple_registry, mocker):
-        path = create_sandbox(
-            "20260316-abcd", [], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", [], registry=simple_registry, skip_preflight=True)
         write_run_meta(path, "20260316-abcd", "ok task", [])
         _mock_popen(mocker, returncode=0)
 
@@ -194,9 +176,7 @@ class TestRunCapturesExitCode:
 
 class TestRunUpdatesMeta:
     def test_run_updates_meta(self, sandbox_home, simple_registry, mocker):
-        path = create_sandbox(
-            "20260316-abcd", [], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", [], registry=simple_registry, skip_preflight=True)
         write_run_meta(path, "20260316-abcd", "task", [])
         _mock_popen(mocker, returncode=0)
 
@@ -209,9 +189,7 @@ class TestRunUpdatesMeta:
         assert "duration_seconds" in meta
 
     def test_run_updates_meta_on_failure(self, sandbox_home, simple_registry, mocker):
-        path = create_sandbox(
-            "20260316-abcd", [], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", [], registry=simple_registry, skip_preflight=True)
         write_run_meta(path, "20260316-abcd", "task", [])
         _mock_popen(mocker, returncode=1)
 
@@ -226,9 +204,7 @@ class TestRunTimeoutKillsProcess:
     def test_run_timeout_kills_process(self, sandbox_home, simple_registry, mocker):
         import subprocess as sp
 
-        path = create_sandbox(
-            "20260316-abcd", [], registry=simple_registry, skip_preflight=True
-        )
+        path = create_sandbox("20260316-abcd", [], registry=simple_registry, skip_preflight=True)
         write_run_meta(path, "20260316-abcd", "slow task", [])
 
         mock_proc = MagicMock()
@@ -322,9 +298,7 @@ class TestRunCleanRemovesCompleted:
         # Create 1 running run
         running = base / "20260316-run0"
         running.mkdir(parents=True)
-        (running / "run-meta.json").write_text(
-            json.dumps({"id": "20260316-run0", "status": "running"})
-        )
+        (running / "run-meta.json").write_text(json.dumps({"id": "20260316-run0", "status": "running"}))
 
         removed = clean_runs(keep=5)
         # Should remove 2 oldest completed (7 - 5 = 2), keep running
@@ -362,9 +336,7 @@ class TestRunCleanKeepsRecent:
         for i in range(5):
             d = base / f"20260310-{i:04x}"
             d.mkdir(parents=True)
-            (d / "run-meta.json").write_text(
-                json.dumps({"id": d.name, "status": "done"})
-            )
+            (d / "run-meta.json").write_text(json.dumps({"id": d.name, "status": "done"}))
 
         removed = clean_runs(keep=5)
         assert removed == 0  # nothing to remove, exactly at limit

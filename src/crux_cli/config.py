@@ -17,6 +17,7 @@ from crux_cli.paths import config_path, crux_home
 # Platform detection
 # ---------------------------------------------------------------------------
 
+
 def detect_secrets_backend() -> str:
     """Return 'keychain' on macOS, 'secret-service' on Linux, 'plaintext' otherwise."""
     system = platform.system().lower()
@@ -30,6 +31,7 @@ def detect_secrets_backend() -> str:
 # ---------------------------------------------------------------------------
 # Default config
 # ---------------------------------------------------------------------------
+
 
 def default_config() -> dict[str, Any]:
     """Return the default configuration dict."""
@@ -46,6 +48,7 @@ def default_config() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Load / save
 # ---------------------------------------------------------------------------
+
 
 def load_config(path: Path | None = None) -> dict[str, Any]:
     """Load configuration from TOML, merging file values over defaults."""
@@ -77,6 +80,7 @@ def save_config(cfg: dict[str, Any], path: Path | None = None) -> None:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> None:
     """Recursively merge *override* into *base* in place."""

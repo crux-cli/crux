@@ -1,4 +1,5 @@
 """Unit tests for crux_cli.health — all subprocess calls mocked."""
+
 import json
 import shutil
 import subprocess
@@ -161,9 +162,11 @@ class TestProbeMcpServer:
         mock_popen = mocker.patch("crux_cli.health.subprocess.Popen")
         mixed_stdout = (
             b"Starting server...\n"
-            + json.dumps(INIT_RESPONSE).encode() + b"\n"
+            + json.dumps(INIT_RESPONSE).encode()
+            + b"\n"
             + b"Some log line\n"
-            + json.dumps(TOOLS_LIST_RESPONSE).encode() + b"\n"
+            + json.dumps(TOOLS_LIST_RESPONSE).encode()
+            + b"\n"
         )
         mock_proc = MagicMock()
         mock_proc.communicate.return_value = (mixed_stdout, b"")

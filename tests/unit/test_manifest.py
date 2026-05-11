@@ -1,4 +1,5 @@
 """Unit tests for crux_cli.manifest — registry and crux.json I/O."""
+
 import json
 
 import crux_cli.manifest as m

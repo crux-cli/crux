@@ -16,6 +16,7 @@ from crux_cli.setup_crux import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_old_layout(root: Path, *, with_sources: bool = True) -> Path:
     """Build a fake old marketplace layout under *root* and return *root*.
 
@@ -91,6 +92,7 @@ def _make_bundled_skill(tmp_path: Path) -> Path:
 # ---------------------------------------------------------------------------
 # W4A.1 — Fresh install
 # ---------------------------------------------------------------------------
+
 
 class TestSetupCreatesStructure:
     """run_setup creates the ~/.crux/ directory tree."""
@@ -229,6 +231,7 @@ class TestSetupIdempotent:
 # ---------------------------------------------------------------------------
 # W4A.2 — Migration from old layout
 # ---------------------------------------------------------------------------
+
 
 class TestSetupDetectsOldLayout:
     """Migration detects the old marketplace/marketplace.json."""
@@ -416,6 +419,7 @@ class TestSetupMigrationNeverDeletesOriginal:
 # W4A.3 — Bundled skill
 # ---------------------------------------------------------------------------
 
+
 class TestSkillBundledInPackage:
     """The skill file exists in the package data directory."""
 
@@ -454,6 +458,7 @@ class TestSetupCopiesSkillToClaude:
 # ---------------------------------------------------------------------------
 # Unit tests for internal helpers
 # ---------------------------------------------------------------------------
+
 
 class TestConvertEntry:
     """_convert_entry transforms git-submodule to github."""

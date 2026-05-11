@@ -196,9 +196,7 @@ def sync_project(
         if mcp_name not in mcp_defs:
             issues.append(f"MCP '{mcp_name}' not found in registry")
             continue
-        mcp_servers[mcp_name] = _build_server_entry(
-            mcp_name, mcp_defs[mcp_name], extra_args or None
-        )
+        mcp_servers[mcp_name] = _build_server_entry(mcp_name, mcp_defs[mcp_name], extra_args or None)
 
     mcp_file = project_dir / ".mcp.json"
     new_config = {"mcpServers": mcp_servers}

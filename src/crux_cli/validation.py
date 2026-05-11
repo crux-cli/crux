@@ -36,8 +36,7 @@ def validate_name(name: str) -> tuple[bool, str]:
         return False, "Name must be lowercase"
     if not _NAME_PATTERN.match(name):
         return False, (
-            "Name must contain only lowercase alphanumeric characters and hyphens,"
-            " and start/end with alphanumeric"
+            "Name must contain only lowercase alphanumeric characters and hyphens, and start/end with alphanumeric"
         )
     return True, ""
 
@@ -84,6 +83,7 @@ def validate_registry(data: dict[str, Any]) -> tuple[bool, list[str]]:
 # ---------------------------------------------------------------------------
 # crux.json schema validation
 # ---------------------------------------------------------------------------
+
 
 def validate_crux_json(data: dict[str, Any]) -> tuple[bool, list[str]]:
     """Validate a project's crux.json structure."""

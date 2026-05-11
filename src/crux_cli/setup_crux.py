@@ -42,6 +42,7 @@ _BUNDLED_LAUNCHERS = Path(__file__).resolve().parent / "data" / "launchers"
 # Result dataclass
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LauncherInstallResult:
     """Summary of shared launcher script installation."""
@@ -75,6 +76,7 @@ class MigrationResult:
 # Directory creation
 # ---------------------------------------------------------------------------
 
+
 def _ensure_dirs(result: SetupResult) -> None:
     dirs = [
         crux_home(),
@@ -94,6 +96,7 @@ def _ensure_dirs(result: SetupResult) -> None:
 # Config
 # ---------------------------------------------------------------------------
 
+
 def _ensure_config(result: SetupResult) -> None:
     target = config_path()
     if not target.exists():
@@ -105,6 +108,7 @@ def _ensure_config(result: SetupResult) -> None:
 # ---------------------------------------------------------------------------
 # Skill installation
 # ---------------------------------------------------------------------------
+
 
 def _claude_skill_dir() -> Path:
     return Path.home() / ".claude" / "skills" / "crux"
@@ -131,6 +135,7 @@ def install_skill(
 # Shared launcher installation
 # ---------------------------------------------------------------------------
 
+
 def _install_launchers(
     result: SetupResult,
     *,
@@ -156,6 +161,7 @@ def _install_launchers(
 # Dependency detection
 # ---------------------------------------------------------------------------
 
+
 def check_dependencies() -> list[str]:
     """Return a list of missing required tools."""
     import sys
@@ -175,6 +181,7 @@ def check_dependencies() -> list[str]:
 # ---------------------------------------------------------------------------
 # Migration from old layout
 # ---------------------------------------------------------------------------
+
 
 def _find_old_marketplace(search_path: Path | None = None) -> Path | None:
     if search_path is not None:
@@ -276,6 +283,7 @@ def _migrate_old_layout(
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
+
 
 def run_setup(
     *,

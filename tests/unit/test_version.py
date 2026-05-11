@@ -30,9 +30,7 @@ class TestVersionCheckNewerAvailable:
     def test_version_check_newer_available(self):
         """--check shows upgrade instructions when a newer version exists on PyPI."""
         fake_response = MagicMock()
-        fake_response.read.return_value = json.dumps(
-            {"info": {"version": "99.0.0"}}
-        ).encode()
+        fake_response.read.return_value = json.dumps({"info": {"version": "99.0.0"}}).encode()
         fake_response.__enter__ = lambda s: s
         fake_response.__exit__ = MagicMock(return_value=False)
 
@@ -49,9 +47,7 @@ class TestVersionCheckUpToDate:
         """--check shows 'up to date' when PyPI version matches local."""
         local = current_version()
         fake_response = MagicMock()
-        fake_response.read.return_value = json.dumps(
-            {"info": {"version": local}}
-        ).encode()
+        fake_response.read.return_value = json.dumps({"info": {"version": local}}).encode()
         fake_response.__enter__ = lambda s: s
         fake_response.__exit__ = MagicMock(return_value=False)
 

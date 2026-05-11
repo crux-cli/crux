@@ -1,6 +1,5 @@
 """Unit tests for crux_cli.validation"""
 
-
 from crux_cli.validation import validate_crux_json, validate_name, validate_registry
 
 # ---------------------------------------------------------------------------

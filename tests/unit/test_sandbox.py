@@ -1,4 +1,5 @@
 """Unit tests for crux_cli.sandbox — sandbox lifecycle."""
+
 import json
 import re
 
@@ -9,6 +10,7 @@ import crux_cli.sandbox as sb
 # ---------------------------------------------------------------------------
 # generate_run_id
 # ---------------------------------------------------------------------------
+
 
 class TestGenerateRunId:
     def test_format_matches_pattern(self):
@@ -24,6 +26,7 @@ class TestGenerateRunId:
 # ---------------------------------------------------------------------------
 # create_sandbox
 # ---------------------------------------------------------------------------
+
 
 class TestCreateSandbox:
     def test_creates_sandbox_and_workspace_dirs(self, patch_sandbox_paths, crux_root):
@@ -63,6 +66,7 @@ class TestCreateSandbox:
 # ---------------------------------------------------------------------------
 # write_run_meta / update_run_meta
 # ---------------------------------------------------------------------------
+
 
 class TestRunMeta:
     def test_write_creates_meta_file(self, patch_sandbox_paths, crux_root):
@@ -110,6 +114,7 @@ class TestRunMeta:
 # list_runs
 # ---------------------------------------------------------------------------
 
+
 class TestListRuns:
     def test_empty_sandbox_returns_empty_list(self, patch_sandbox_paths, crux_root):
         assert sb.list_runs() == []
@@ -143,6 +148,7 @@ class TestListRuns:
 # ---------------------------------------------------------------------------
 # clean_runs
 # ---------------------------------------------------------------------------
+
 
 class TestCleanRuns:
     def test_force_removes_all_sandbox_dirs(self, patch_sandbox_paths, crux_root):
@@ -183,6 +189,7 @@ class TestCleanRuns:
 # ---------------------------------------------------------------------------
 # load_run_manifest
 # ---------------------------------------------------------------------------
+
 
 class TestLoadRunManifest:
     def test_loads_valid_file(self, tmp_path):

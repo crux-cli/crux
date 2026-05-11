@@ -128,6 +128,7 @@ def update_run_meta(sandbox_path: Path, **kwargs: Any) -> None:
 def _atomic_json_write(path: Path, data: dict[str, Any]) -> None:
     """Write JSON atomically via temp file + rename."""
     import tempfile
+
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
     try:
@@ -174,8 +175,10 @@ def run_agent(
 
     cmd = [
         claude_bin,
-        "--print", task,
-        "--mcp-config", str(mcp_config_path),
+        "--print",
+        task,
+        "--mcp-config",
+        str(mcp_config_path),
     ]
 
     start = time.monotonic()
@@ -193,6 +196,7 @@ def run_agent(
             exit_code = proc.returncode
         except subprocess.TimeoutExpired:
             import signal
+
             try:
                 os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
                 proc.wait(timeout=5)

@@ -151,9 +151,7 @@ class TestMcpJsonNeverContainsSecrets:
         project = tmp_path / "proj"
         _make_crux_json(project, mcps=["authed-mcp"])
 
-        registry = _make_registry(
-            mcps={"authed-mcp": _keychain_mcp_data()}
-        )
+        registry = _make_registry(mcps={"authed-mcp": _keychain_mcp_data()})
 
         sync_project(project, registry)
 
@@ -346,9 +344,7 @@ class TestFullSyncCycleNoSecretLeaks:
 
         project_dir = tmp_path / "project"
 
-        registry = _make_registry(
-            mcps={"authed-mcp": _keychain_mcp_data()}
-        )
+        registry = _make_registry(mcps={"authed-mcp": _keychain_mcp_data()})
 
         _make_crux_json(project_dir, mcps=["authed-mcp"])
         sync_project(project_dir, registry)

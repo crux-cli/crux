@@ -48,11 +48,13 @@ def register_project(project_path: Path, name: str, *, projects_file: Path | Non
         if entry["path"] == abs_path:
             return
 
-    data["projects"].append({
-        "path": abs_path,
-        "name": name,
-        "registered_at": datetime.now(tz=UTC).isoformat(),
-    })
+    data["projects"].append(
+        {
+            "path": abs_path,
+            "name": name,
+            "registered_at": datetime.now(tz=UTC).isoformat(),
+        }
+    )
     _save_projects_file(data, projects_file)
 
 
